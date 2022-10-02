@@ -57,7 +57,7 @@ export const lightTheme = createTheme({
         variant: 'contained',
         size: 'small',
         disableElevation: true,
-        color: 'info'
+        color: 'secondary'
       },
       styleOverrides: {
         root: {          
