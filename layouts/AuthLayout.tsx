@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import Head from "next/head";
 import { FC, PropsWithChildren } from "react";
+import { AuthNavbar } from "../components/organisms";
 
 interface Props extends PropsWithChildren {
   title: string;
@@ -12,6 +13,9 @@ export const AuthLayout: FC<Props> = ({ children, title }) => {
       <Head>
         <title>{title}</title>
       </Head>
+      <nav>
+        <AuthNavbar />
+      </nav>
       <main>
         <Box
           display={"flex"}

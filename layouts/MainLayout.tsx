@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { FC, PropsWithChildren } from "react";
-import { Navbar } from "../components/organisms/navbar/Navbar";
+import { HomeNavbar } from "../components/organisms/navbar/HomeNavbar";
 
 
 interface Props extends PropsWithChildren {
@@ -25,7 +25,7 @@ export const HomeLayout: FC<Props> = ({
         {imageFullUrl && <meta name="og:image" content={imageFullUrl} />}
       </Head>
       <nav>
-        <Navbar />
+        <HomeNavbar />
       </nav>
       
       {/* <SideMenu /> */}
