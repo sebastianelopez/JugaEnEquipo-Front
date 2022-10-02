@@ -1,0 +1,9 @@
+{
+    "Navbar": {
+        "news": "News",
+        "aboutus": "About us"
+    },
+    "Home":{
+        "title": "The app that redefines the way you play."
+    }
+}
