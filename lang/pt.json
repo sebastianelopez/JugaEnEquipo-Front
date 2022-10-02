@@ -5,5 +5,14 @@
     },
     "Home":{
         "title": "O app que redefine a maneira como você joga"
+    },
+    "Register":{
+        "name": "Nome",
+        "lastname":"Sobrenome",
+        "email": "Endereço de email",
+        "password": "Senha",
+        "repeat-password":"Repita a senha",
+        "terms": "Termos e Condições",
+        "submit-button": "Enviar"
     }
 }
