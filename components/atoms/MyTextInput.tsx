@@ -1,0 +1,27 @@
+import { FormLabel, Input } from "@mui/material";
+import { ErrorMessage, useField } from "formik";
+
+interface Props {
+  label: string;
+  name: string;
+  type?: "text" | "email" | "password";
+  placeholder?: string;
+  [x: string]: any;
+}
+
+export const MyTextInput = ({ label, ...props }: Props) => {
+  const [field, meta] = useField(props);
+
+  return (
+    <>
+      <FormLabel htmlFor={props.id || props.name} children={label} />
+
+      <Input {...field} {...props} />
+      <ErrorMessage name={props.name} component="span" />
+
+      {/* {meta.touched && meta.error && (
+        <span className="error">{meta.error}</span>
+      )} */}
+    </>
+  );
+};
