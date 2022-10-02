@@ -21,7 +21,7 @@ import { useTranslations } from "next-intl";
 
 import logo from "./../../../assets/logo.png";
 
-export const Navbar = () => {
+export const HomeNavbar = () => {
   const { asPath, locale, push, query, pathname } = useRouter();
 
   const { toggleSideMenu } = useContext(UiContext);
