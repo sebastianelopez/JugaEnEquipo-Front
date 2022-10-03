@@ -13,6 +13,13 @@
         "password": "Contraseña",
         "repeat-password":"Repita contraseña",
         "terms": "Terminos y condiciones",
-        "submit-button": "Enviar"
+        "submit-button": "Enviar",
+        "existing-account": "¿Ya tiene una cuenta?"
+    },
+    "Login":{
+        "email": "Correo electronico",
+        "password": "Contraseña",
+        "submit-button": "Enviar",
+        "existing-account": "¿No tiene una cuenta aún?"
     }
 }

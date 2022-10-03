@@ -13,6 +13,13 @@
         "password": "Password",
         "repeat-password":"Repeat password",
         "terms": "Terms and conditions",
-        "submit-button": "Submit"
+        "submit-button": "Submit",
+        "existing-account": "Already have an account?"
+    },
+    "Login":{
+        "email": "Email address",
+        "password": "Password",
+        "submit-button": "Submit",
+        "existing-account": "Don't have an account yet?"
     }
 }
