@@ -1,8 +1,9 @@
-import { Button } from "@mui/material";
+import { Button, Link } from "@mui/material";
 import { Form, Formik } from "formik";
 import { useTranslations } from "next-intl";
+import NextLink from "next/link";
 import * as Yup from "yup";
-import { MyCheckbox,  MyTextInput } from "../../atoms";
+import { MyCheckbox, MyTextInput } from "../../atoms";
 
 export const RegisterForm = () => {
   const t = useTranslations("Register");
@@ -12,13 +13,18 @@ export const RegisterForm = () => {
       initialValues={{
         firstName: "",
         lastName: "",
+        password: "",
+        password2: "",
         email: "",
         terms: false,
-        jobType: "",
       }}
       onSubmit={(values) => {}}
       validationSchema={Yup.object({
-        name: Yup.string()
+        firstName: Yup.string()
+          .min(2, "El mininimo debe ser de 3 caraacteres")
+          .max(15, "El maximo de caracteres es 15")
+          .required("Requerido"),
+        lastName: Yup.string()
           .min(2, "El mininimo debe ser de 3 caraacteres")
           .max(15, "El maximo de caracteres es 15")
           .required("Requerido"),
@@ -100,6 +106,12 @@ export const RegisterForm = () => {
           />
 
           <Button type="submit">{t("submit-button")}</Button>
+
+          <NextLink href={"/auth/login"} passHref>
+            <Link mt={3}>
+              {t("existing-account")}
+            </Link>
+          </NextLink>
         </Form>
       )}
     </Formik>
