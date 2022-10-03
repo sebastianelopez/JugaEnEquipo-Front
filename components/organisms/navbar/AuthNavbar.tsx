@@ -1,5 +1,5 @@
 import {
-  AppBar,  
+  AppBar,
   Box,
   Link,
   MenuItem,
@@ -14,13 +14,12 @@ import { useEffect, useState } from "react";
 
 import { gsap } from "gsap";
 
-
 import logo from "./../../../assets/logo.png";
 
 export const AuthNavbar = () => {
-  const { asPath, push, locale, query, pathname } = useRouter();  
+  const { asPath, push, locale, query, pathname } = useRouter();
 
-  const [selectValue, setSelectValue] = useState("es");
+  const [selectValue, setSelectValue] = useState(locale ? locale : "en");
 
   const onSelectChange = (newLocale: string) => {
     setSelectValue(newLocale);
@@ -29,7 +28,7 @@ export const AuthNavbar = () => {
 
   const logotitle = ".logotitle";
 
-  useEffect(() => {
+  useEffect(() => {    
     gsap.from(logotitle, {
       opacity: 1,
       x: 100,
@@ -51,12 +50,11 @@ export const AuthNavbar = () => {
 
         <Box flex={1} />
 
-        
         <Box flex={1} />
         <Select
-          variant="filled"
+          variant="outlined"
           value={selectValue}
-          onChange={(e) => onSelectChange(e.target.value)}
+          onChange={(e) => onSelectChange(e.target.value)}          
         >
           <MenuItem value={"es"}>
             <span className="fi fi-ar" />
@@ -68,7 +66,6 @@ export const AuthNavbar = () => {
             <span className="fi fi-br" />
           </MenuItem>
         </Select>
-        
       </Toolbar>
     </AppBar>
   );

@@ -28,7 +28,7 @@ export const HomeNavbar = () => {
 
   const t = useTranslations("Navbar");
 
-  const [selectValue, setSelectValue] = useState("es");
+  const [selectValue, setSelectValue] = useState(locale ? locale : "en");
 
   const onSelectChange = (newLocale: string) => {
     setSelectValue(newLocale);
@@ -88,7 +88,7 @@ export const HomeNavbar = () => {
         </Box>
         <Box flex={1} />
         <Select
-          variant="filled"
+          variant="outlined"
           value={selectValue}
           onChange={(e) => onSelectChange(e.target.value)}
         >
