@@ -6,6 +6,9 @@
     "Home":{
         "title": "The app that redefines the way you play."
     },
+    "Publication":{
+        "comment": "Comment"
+    },
     "Register":{
         "name": "First name",
         "lastname":"Last name",
