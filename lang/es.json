@@ -6,6 +6,9 @@
     "Home":{
         "title": "La app que redefine tu forma de jugar."
     },
+    "Publication":{
+        "comment": "Comentar"
+    },
     "Register":{
         "name": "Nombre",
         "lastname":"Apellido",

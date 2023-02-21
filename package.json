@@ -13,21 +13,29 @@
     "@emotion/styled": "^11.10.4",
     "@mui/icons-material": "^5.10.6",
     "@mui/material": "^5.10.6",
+    "@react-spring/three": "^9.6.1",
+    "@react-three/drei": "^9.56.18",
+    "@react-three/fiber": "^8.11.0",
     "flag-icons": "^6.6.6",
     "formik": "^2.2.9",
     "gsap": "^3.11.1",
+    "lamina": "^1.1.23",
+    "leva": "^0.9.34",
     "next": "12.3.1",
     "next-intl": "^2.7.6",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "three": "0.145",
     "yup": "^0.32.11"
   },
   "devDependencies": {
     "@types/node": "18.7.18",
     "@types/react": "18.0.21",
     "@types/react-dom": "18.0.6",
+    "@types/three": "^0.149.0",
     "eslint": "8.23.1",
     "eslint-config-next": "12.3.1",
+    "lil-gui": "^0.17.0",
     "typescript": "4.8.3"
   }
 }

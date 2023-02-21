@@ -6,7 +6,7 @@ import * as Yup from "yup";
 import { MyCheckbox,  MyTextInput } from "../../atoms";
 
 export const LoginForm = () => {
-  const t = useTranslations("Register");
+  const t = useTranslations("Login");
 
   return (
     <Formik
