@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { FC, PropsWithChildren } from "react";
-import { HomeNavbar } from "../components/organisms/navbar/HomeNavbar";
+import { MainNavbar } from "../components/organisms";
 
 
 interface Props extends PropsWithChildren {
@@ -9,7 +9,7 @@ interface Props extends PropsWithChildren {
   imageFullUrl?: string;
 }
 
-export const HomeLayout: FC<Props> = ({
+export const MainLayout: FC<Props> = ({
   children,
   title,
   pageDescription,
@@ -24,18 +24,16 @@ export const HomeLayout: FC<Props> = ({
         <meta name="og:description" content={pageDescription} />
         {imageFullUrl && <meta name="og:image" content={imageFullUrl} />}
       </Head>
-      <nav>
-        <HomeNavbar />
-      </nav>
+      {
+        /* <nav>
+        <MainNavbar />
+      </nav>*/
+      }
+      
       
       {/* <SideMenu /> */}
 
-      <main
-        style={{
-          margin: "80px auto",
-          maxWidth: "1440px",
-          padding: "0px 30px",
-        }}
+      <main        
       >
         {children}
       </main>
