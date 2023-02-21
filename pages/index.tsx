@@ -1,27 +1,24 @@
-import { Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import type { GetStaticPropsContext, NextPage } from "next";
-import { HomeLayout } from "../layouts";
-import { useTranslations } from "next-intl";
+import { MainLayout } from "../layouts/MainLayout";
+import Scene from "../components/three/Scene";
 
 const Home: NextPage = () => {
-  const t = useTranslations("Home");
-
   return (
-    <HomeLayout
+    <MainLayout
       title={"Juga en Equipo"}
       pageDescription={"Encuentra a tu equipo ideal"}
     >
-      <Typography variant="h1" component={"h1"} textAlign="center"
-      fontSize={60}>
-        {t("title")}
-      </Typography>
-    </HomeLayout>
+      <div style={{ height:"100vh", width:"100w"}}>
+        <Scene />
+      </div>
+    </MainLayout>
   );
 };
 
 export default Home;
 
-// pages/index.js
+
 export async function getStaticProps({ locale }: GetStaticPropsContext) {
   return {
     props: {
