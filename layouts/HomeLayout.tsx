@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { FC, PropsWithChildren } from "react";
-import { HomeNavbar } from "../components/organisms/navbar/HomeNavbar";
+import { HomeNavbar } from "../components/organisms";
 
 
 interface Props extends PropsWithChildren {
