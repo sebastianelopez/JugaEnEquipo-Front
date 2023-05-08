@@ -1,7 +1,8 @@
 {
     "Navbar": {
         "news": "Notícia",
-        "aboutus": "Sobre nós"
+        "aboutus": "Sobre nós",
+        "search": "Pesquisa"
     },
     "Home":{
         "title": "O app que redefine a maneira como você joga"
@@ -21,8 +22,14 @@
     },
     "Login":{
         "email": "Endereço de email",
+        "emailPlaceholder": "usuário@gmail.com",
         "password": "Senha",
         "submit-button": "Enviar",
-        "existing-account": "Não tem uma conta ainda?"
+        "existing-account": "Não tem uma conta ainda?",
+        "requiredError": "Obrigatório",
+        "emailError":"Verifique o formato do e-mail"
+    },
+    "Profile":{
+        "profile": "Perfil"        
     }
 }

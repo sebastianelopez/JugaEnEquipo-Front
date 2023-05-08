@@ -1,7 +1,8 @@
 {
     "Navbar": {
         "news": "News",
-        "aboutus": "About us"
+        "aboutus": "About us",
+        "search": "Search"
     },
     "Home":{
         "title": "The app that redefines the way you play."
@@ -21,8 +22,14 @@
     },
     "Login":{
         "email": "Email address",
+        "emailPlaceholder": "user@gmail.com",
         "password": "Password",
         "submit-button": "Submit",
-        "existing-account": "Don't have an account yet?"
+        "existing-account": "Don't have an account yet?",
+        "requiredError": "Required",
+        "emailError":"Check the email format"
+    },
+    "Profile":{
+        "profile": "Profile"              
     }
 }
