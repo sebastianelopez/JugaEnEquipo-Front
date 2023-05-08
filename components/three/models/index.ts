@@ -1,9 +1,0 @@
-export { Cat } from "./Cat";
-export { Title } from "./Title";
-export { Text } from "./Text";
-export { Ground } from "./Ground";
-export { Computer } from "./Computer/Computer";
-export { NesController } from "./NesController";
-export { Keyboard } from "./Keyboard";
-export { Headphones } from "./Headphones";
-export { Intro } from "./Intro";
