@@ -1,24 +1,48 @@
+import { Grid } from "@mui/material";
 import { GetStaticPropsContext } from "next";
-import { Publication } from "../../components/organisms/publication/Publication";
-import { MainLayout } from "../../layouts/MainLayout";
-
-const userMock = {
-  name: "Carlos Romero",
-  email: "carlosromero@gmail.com",
-  profileImage:
-    "https://media-exp1.licdn.com/dms/image/C4D03AQGcZkggqz819A/profile-displayphoto-shrink_200_200/0/1644242636295?e=1671667200&v=beta&t=VwnFzRsmqGJcm87qw8hfLP_fIMVALcu0pcWwCYDMPG8",
-};
+import { usersMock } from "../../api/mock";
+import { PublicationCard, IdentityCard } from "../../components/organisms";
+import { MainLayout } from "../../layouts";
 
 const HomePage = () => {
   return (
     <MainLayout title={"Home"} pageDescription={""}>
-      <Publication
-        user={userMock}
-        media={"https://www.muylinux.com/wp-content/uploads/2021/11/Steam.jpg"}
-        copy={"Alta publicacion amigo"}
-        comments={[{comment:'genial', date: 'Hace 1 minuto', user: userMock }]}
-        date={'Hace 3 minutos'}
-      />
+      <Grid container columns={{ xs: 12, md: 12 }} position="relative">
+        <Grid item xs={3} md={3} position="relative">
+          <IdentityCard user={usersMock.users[0]} />
+        </Grid>
+        <Grid
+          display="flex"
+          item
+          xs={6}
+          md={3}
+          flexDirection="column"
+          justifyContent="flex-start"
+          alignItems="center"
+          position="relative"
+        >
+          <PublicationCard
+            user={usersMock.users[0]}
+            media={[
+              "https://www.muylinux.com/wp-content/uploads/2021/11/Steam.jpg",
+              "https://blz-contentstack-images.akamaized.net/v3/assets/blt9c12f249ac15c7ec/blt038029114fe902a4/632128d5e7bdcf0dd996c989/Action.jpg",
+              "https://blz-contentstack-images.akamaized.net/v3/assets/blt9c12f249ac15c7ec/blt038029114fe902a4/632128d5e7bdcf0dd996c989/Action.jpg",
+            ]}
+            copy={"Alta publicacion amigo"}
+            comments={[
+              {
+                comment: "genial",
+                date: "Hace 1 minuto",
+                user: usersMock.users[1],
+              },
+            ]}
+            date={"Hace 3 minutos"}
+          />
+        </Grid>
+        <Grid item xs={3} md={3} position="relative">
+          <IdentityCard user={usersMock.users[0]} />
+        </Grid>
+      </Grid>
     </MainLayout>
   );
 };
@@ -32,4 +56,3 @@ export async function getStaticProps({ locale }: GetStaticPropsContext) {
     },
   };
 }
-
