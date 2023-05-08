@@ -1,3 +1,4 @@
+import { Box } from "@mui/material";
 import { GetStaticPropsContext } from "next";
 import { LoginForm } from "../../components/organisms";
 import { AuthLayout } from "../../layouts";
@@ -6,7 +7,9 @@ const LoginPage = () => {
   return (
     <>
       <AuthLayout title={"Login"}>
-        <LoginForm />
+        <Box component="div">
+          <LoginForm />
+        </Box>        
       </AuthLayout>
     </>
   );
