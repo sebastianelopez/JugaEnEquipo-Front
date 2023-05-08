@@ -17,9 +17,9 @@ export const LoginForm = () => {
       onSubmit={(values) => {}}
       validationSchema={Yup.object({        
         email: Yup.string()
-          .email("Revise el formato del correo")
-          .required("Requerido"),
-        password: Yup.string().required("Requerido"),        
+          .email(t("emailError"))
+          .required(t("requiredError")),
+        password: Yup.string().required(t("requiredError")),        
       })}
     >
       {(formik) => (
@@ -37,7 +37,7 @@ export const LoginForm = () => {
             label={t("email")}
             name={"email"}
             type="text"
-            placeholder={t("email")}
+            placeholder={t("emailPlaceholder")}
             style={{
               marginBottom: "20px",
             }}
@@ -47,7 +47,7 @@ export const LoginForm = () => {
             type="password"
             label={t("password")}
             name={"password"}
-            placeholder={t("password")}
+            placeholder={"********"}
             style={{
               marginBottom: "20px",
             }}
