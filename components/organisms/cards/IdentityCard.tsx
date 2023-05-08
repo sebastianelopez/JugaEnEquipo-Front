@@ -1,0 +1,25 @@
+import { Avatar, Paper, Typography } from "@mui/material";
+import { useTranslations } from "next-intl";
+import { FC } from "react";
+import { User } from "../../../interfaces";
+
+interface Props {
+    user: User
+}
+
+export const IdentityCard: FC<Props> = ({user}) => {
+  const t = useTranslations("Publication");
+  return (
+    <Paper sx={{ p: 2, textAlign: "center" }}>
+      <Avatar
+        alt="Profile Picture"
+        src={user.profileImage}
+        sx={{ width: 200, height: 200, m: "auto" }}
+      />
+      <Typography variant="h4" fontWeight="bold">
+        {user.nickname}
+      </Typography>
+      <Typography variant="subtitle1">{`${user.name} ${user.lastname}`}</Typography>
+    </Paper>
+  );
+};
