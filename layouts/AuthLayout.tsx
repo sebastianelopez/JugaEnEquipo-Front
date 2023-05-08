@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import Box from '@mui/material/Box';
 import Head from "next/head";
 import { FC, PropsWithChildren } from "react";
 import { AuthNavbar } from "../components/organisms";
@@ -17,11 +17,13 @@ export const AuthLayout: FC<Props> = ({ children, title }) => {
         <AuthNavbar />
       </nav>
       <main>
-        <Box
-          display={"flex"}
-          justifyContent="center"
-          alignItems={"center"}
-          height="calc(100vh - 200px)"
+        <Box component={'div'}
+        sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: 'calc(100vh - 200px)'
+          }}          
         >
           {children}
         </Box>
