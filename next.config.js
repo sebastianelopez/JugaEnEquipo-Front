@@ -8,7 +8,13 @@ const nextConfig = {
     defaultLocale: 'en'
   },
   images: {
-    domains: ['media-exp1.licdn.com', 'www.muylinux.com'],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+   // domains: ['res.cloudinary.com'],
   },
 }
 
