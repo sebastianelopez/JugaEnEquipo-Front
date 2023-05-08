@@ -8,6 +8,8 @@ import { lightTheme } from "../themes";
 import { NextIntlProvider } from "next-intl";
 
 import type { NextPageContext  } from 'next' 
+import { SWRConfig } from "swr";
+import { SessionProvider } from "next-auth/react";
 
 type CustomAppProps = AppProps & {
   pageProps: NextPageContext & {messages?: {} } 
@@ -15,6 +17,13 @@ type CustomAppProps = AppProps & {
 
 function MyApp({ Component, pageProps}: CustomAppProps) {
   return (
+    <SessionProvider>
+    <SWRConfig
+      value={{
+        fetcher: (resource, init) =>
+          fetch(resource, init).then((res) => res.json()),
+      }}
+    >
     <UiProvider>
       <ThemeProvider theme={lightTheme}>
         <NextIntlProvider messages={pageProps.messages}>
@@ -23,6 +32,8 @@ function MyApp({ Component, pageProps}: CustomAppProps) {
         </NextIntlProvider>
       </ThemeProvider>
     </UiProvider>
+    </SWRConfig>
+    </SessionProvider>
   );
 }
 
