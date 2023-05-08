@@ -4,7 +4,9 @@ import {
   Badge,
   Box,
   Button,
+  Icon,
   IconButton,
+  Input,
   Link,
   MenuItem,
   Select,
@@ -14,10 +16,13 @@ import {
 import Image from "next/image";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { UiContext } from "../../../context";
 import { gsap } from "gsap";
 import { useTranslations } from "next-intl";
+import HomeIcon from "@mui/icons-material/Home";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import MessageIcon from "@mui/icons-material/Message";
 
 import logo from "./../../../assets/logo.png";
 
@@ -29,6 +34,21 @@ export const MainNavbar = () => {
   const t = useTranslations("Navbar");
 
   const [selectValue, setSelectValue] = useState(locale ? locale : "en");
+
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleExpand = () => {
+    setIsExpanded(true);
+    if(inputRef.current){
+      inputRef.current.focus();
+    }     
+  };
+
+  const handleCollapse = () => {
+    setIsExpanded(false);
+  };
 
   const onSelectChange = (newLocale: string) => {
     setSelectValue(newLocale);
@@ -50,47 +70,63 @@ export const MainNavbar = () => {
       <Toolbar>
         <NextLink href={"/"} passHref>
           <Link>
-            <Box display={"flex"} justifyContent={"center"} alignItems="center">
+            <Box
+              display={"flex"}
+              justifyContent={"center"}
+              alignItems="center"
+              component="div"
+            >
               <Image src={logo} height={40} width={70} />
               <Typography className="logotitle">Juga en equipo</Typography>
             </Box>
           </Link>
         </NextLink>
 
-        <Box flex={1} />
+        <Box component="div" flex={1} />
 
         <Box
+          component="div"
           sx={{
             display: { xs: "none", sm: "block" },
           }}
         >
-          <NextLink href={"/category/men"} passHref>
+          <NextLink href={"/home"} passHref>
             <Link>
-              <Button color={asPath === "/category/men" ? "primary" : "info"}>
-                Home
-              </Button>
+              <IconButton children={<HomeIcon />} />
             </Link>
           </NextLink>
-          <NextLink href={"/category/women"} passHref>
+          <NextLink href={"/messages"} passHref>
             <Link>
-              <Button color={asPath === "/category/women" ? "primary" : "info"}>
-                {t("news")}
-              </Button>
+              <IconButton children={<MessageIcon />} />
             </Link>
           </NextLink>
-          <NextLink href={"/category/kid"} passHref>
-            <Link>
-              <Button color={asPath === "/category/kid" ? "primary" : "info"}>
-                {t("aboutus")}
-              </Button>
-            </Link>
-          </NextLink>
+          <IconButton children={<NotificationsIcon />} />
+          
+          <Input
+            placeholder={t("search")}
+            inputRef={inputRef}            
+            sx={{
+              maxWidth: isExpanded ? 300 : 0,
+              transition: "max-width 0.3s ease",
+            }}
+            onBlur={handleCollapse}
+            endAdornment={
+              <IconButton onClick={handleExpand}>
+                <SearchOutlined />
+              </IconButton>
+            }
+          />
         </Box>
-        <Box flex={1} />
+        <Box component="div" flex={1} />
         <Select
           variant="outlined"
           value={selectValue}
           onChange={(e) => onSelectChange(e.target.value)}
+          sx={{
+            height: 35,
+            width: 70,
+            mr: 3,
+          }}
         >
           <MenuItem value={"es"}>
             <span className="fi fi-ar" />
@@ -102,15 +138,7 @@ export const MainNavbar = () => {
             <span className="fi fi-br" />
           </MenuItem>
         </Select>
-
-        <IconButton>
-          <SearchOutlined />
-        </IconButton>
-        <NextLink href={"/auth/login"} passHref>
-          <Link>
-            <Button>Login</Button>
-          </Link>
-        </NextLink>
+        <Button onClick={toggleSideMenu}>Menú</Button>
       </Toolbar>
     </AppBar>
   );
