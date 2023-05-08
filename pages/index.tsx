@@ -1,23 +1,23 @@
 import { Box } from "@mui/material";
 import type { GetStaticPropsContext, NextPage } from "next";
-import { MainLayout } from "../layouts/MainLayout";
-import Scene from "../components/three/Scene";
+import { HomeLayout } from "../layouts";
+import { HomeHeader } from "../components/organisms";
 
-const Home: NextPage = () => {
+const Home: NextPage = (props) => {
+  console.log(props);
   return (
-    <MainLayout
+    <HomeLayout
       title={"Juga en Equipo"}
       pageDescription={"Encuentra a tu equipo ideal"}
     >
-      <div style={{ height:"100vh", width:"100w"}}>
-        <Scene />
-      </div>
-    </MainLayout>
+      <HomeHeader />
+
+      
+    </HomeLayout>
   );
 };
 
 export default Home;
-
 
 export async function getStaticProps({ locale }: GetStaticPropsContext) {
   return {
