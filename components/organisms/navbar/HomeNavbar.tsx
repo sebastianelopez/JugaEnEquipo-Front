@@ -1,7 +1,6 @@
 import { SearchOutlined, ShoppingCartOutlined } from "@mui/icons-material";
 import {
   AppBar,
-  Badge,
   Box,
   Button,
   IconButton,
@@ -50,19 +49,25 @@ export const HomeNavbar = () => {
       <Toolbar>
         <NextLink href={"/"} passHref>
           <Link>
-            <Box display={"flex"} justifyContent={"center"} alignItems="center">
+            <Box
+              display={"flex"}
+              justifyContent={"center"}
+              alignItems="center"
+              component={"div"}
+            >
               <Image src={logo} height={40} width={70} />
               <Typography className="logotitle">Juga en equipo</Typography>
             </Box>
           </Link>
         </NextLink>
 
-        <Box flex={1} />
+        <Box flex={1} component="div" />
 
         <Box
           sx={{
             display: { xs: "none", sm: "block" },
           }}
+          component="div"
         >
           <NextLink href={"/category/men"} passHref>
             <Link>
@@ -86,7 +91,7 @@ export const HomeNavbar = () => {
             </Link>
           </NextLink>
         </Box>
-        <Box flex={1} />
+        <Box flex={1} component="div" />
         <Select
           variant="outlined"
           value={selectValue}
