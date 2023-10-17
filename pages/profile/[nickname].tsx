@@ -1,23 +1,9 @@
-import { Email, Language, LocationOn, Phone } from "@mui/icons-material";
-import {
-  Avatar,
-  Box,
-  Button,
-  Divider,
-  Grid,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemIcon,
-  ListItemText,
-  Paper,
-  Typography,
-} from "@mui/material";
+import { Button, Grid, Paper, Typography } from "@mui/material";
 import { GetServerSideProps, GetServerSidePropsContext, NextPage } from "next";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { getUserByNickname } from "../../api";
-import { PublicationCard } from "../../components/organisms";
+import { ProfileCard, PublicationCard } from "../../components/organisms";
 import { User } from "../../interfaces";
 import { MainLayout } from "../../layouts";
 import { usersMock } from "../../api/mock";
@@ -36,7 +22,12 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
         title={`${t("profile")} - ${userFound.name}`}
       >
         <Grid container columns={{ xs: 4, sm: 8, md: 12 }}>
-          <Grid item xs={12} position="relative">
+          <Grid
+            item
+            xs={12}
+            position="relative"
+            display={{ xs: "none", sm: "none", md: "inherit" }}
+          >
             <Image
               src="https://cdn.pixabay.com/photo/2018/08/14/13/23/ocean-3605547_1280.jpg"
               width={1500}
@@ -71,135 +62,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
                 alignItems="center"
                 mt={-20}
               >
-                <Paper
-                  sx={{
-                    pb: 2,
-                    textAlign: "center",
-                    maxWidth: 400,
-                    position:'relative'
-                  }}
-                >
-                  <Avatar
-                    alt="Profile Picture"
-                    src={userFound.profileImage}
-                    sx={{ width: "100%", height: 400, m: "auto" }}
-                    variant="square"
-                  />
-                  <Button
-                    children="Agregar jugador"
-                    sx={{
-                      position: "absolute",
-                      top: 350,
-                      left: 25,
-                    }}
-                  />
-                  <Typography variant="h4" fontWeight="bold">
-                    {userFound.nickname}
-                  </Typography>
-                  <Typography variant="subtitle1">{`${userFound.name} ${userFound.lastname}`}</Typography>
-                  <Box component={"div"} sx={{ p: 2 }}>
-                    <List sx={{ width: "100%", maxWidth: 360 }}>
-                      <ListItem>
-                        <ListItemIcon>
-                          <LocationOn />
-                        </ListItemIcon>
-                        <ListItemText primary="New York, NY" />
-                      </ListItem>
-                    </List>
-                  </Box>
-                  <Box component={"div"} sx={{ p: 2 }}>
-                    <List
-                      sx={{
-                        width: "100%",
-                        maxWidth: 360,
-                        position: "relative",
-                      }}
-                    >
-                      <ListItem>
-                        <ListItemText
-                          primary="Contactos"
-                          primaryTypographyProps={{
-                            fontWeight: "bold",
-                            color: "gray",
-                          }}
-                        />
-                        <ListItemAvatar
-                          children={
-                            <Avatar
-                              alt="Profile Picture"
-                              src={
-                                "https://thumbs.dreamstime.com/b/jugador-profesional-jugando-torneos-en-l%C3%ADnea-videojuegos-ordenador-con-auriculares-rojo-y-azul-195050715.jpg"
-                              }
-                            />
-                          }
-                          sx={{
-                            position: "absolute",
-                            right: 0,
-                            cursor: "pointer",
-                          }}
-                        />
-                        <ListItemAvatar
-                          children={
-                            <Avatar
-                              alt="Profile Picture"
-                              src={
-                                "https://estaticos-cdn.epe.es/clip/71532b63-7814-4884-887e-e7075eab4198_alta-libre-aspect-ratio_default_0.jpg"
-                              }
-                            />
-                          }
-                          sx={{
-                            position: "absolute",
-                            right: 20,
-                            cursor: "pointer",
-                          }}
-                        />
-                        <ListItemAvatar
-                          children={
-                            <Avatar
-                              alt="Profile Picture"
-                              src={
-                                "https://thumbs.dreamstime.com/b/captura-de-retrato-un-jugador-profesional-videojuegos-enfocado-en-joven-negro-foto-alta-calidad-200195882.jpg"
-                              }
-                            />
-                          }
-                          sx={{
-                            position: "absolute",
-                            right: 40,
-                            cursor: "pointer",
-                          }}
-                        />
-                        <ListItemText
-                          secondary="230"
-                          secondaryTypographyProps={{ fontWeight: "bold" }}
-                        />
-                      </ListItem>
-                      <ListItem>
-                        <ListItemText
-                          primary="Teams"
-                          primaryTypographyProps={{
-                            fontWeight: "bold",
-                            color: "gray",
-                          }}
-                        />
-                        <ListItemAvatar
-                          children={
-                            <Avatar
-                              alt="Profile Picture"
-                              src={
-                                "https://yt3.googleusercontent.com/ytc/AGIKgqPrCccU4RCZE_0QD5_BD-MlEAGd40uZpDKNwhn2=s900-c-k-c0x00ffffff-no-rj"
-                              }
-                            />
-                          }
-                          sx={{
-                            position: "absolute",
-                            right: 0,
-                            cursor: "pointer",
-                          }}
-                        />
-                      </ListItem>
-                    </List>
-                  </Box>
-                </Paper>
+                <ProfileCard user={userFound} />
                 <Paper
                   sx={{
                     p: 2,
@@ -208,7 +71,9 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
                     maxWidth: 400,
                   }}
                 >
-                  <Typography fontWeight="bold" my={3}>ABOUT</Typography>
+                  <Typography fontWeight="bold" my={3}>
+                    ABOUT
+                  </Typography>
                   <Typography>
                     Soy un apasionado jugador de E-Games con años de experiencia
                     en el mundo de los videojuegos. Me encanta competir y
@@ -251,7 +116,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
                       user: usersMock.users[1],
                     },
                   ]}
-                  date={"Hace 3 minutos"}                  
+                  date={"Hace 3 minutos"}
                 />
                 <PublicationCard
                   user={usersMock.users[0]}

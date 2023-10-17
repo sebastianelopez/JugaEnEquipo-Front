@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import type { GetStaticPropsContext, NextPage } from "next";
 import { HomeLayout } from "../layouts";
-import { HomeHeader } from "../components/organisms";
+import { HomeHeader, HomeNews, SliderText } from "../components/organisms";
 
 const Home: NextPage = (props) => {
   console.log(props);
@@ -11,7 +11,10 @@ const Home: NextPage = (props) => {
       pageDescription={"Encuentra a tu equipo ideal"}
     >
       <HomeHeader />
+      <HomeNews />
+      <SliderText Text="Juega - Compite - Disfruta - Comparte - Desafiate -" />
 
+      {/**Contenido */}
       
     </HomeLayout>
   );
