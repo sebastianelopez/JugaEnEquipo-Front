@@ -8,7 +8,7 @@ export const HomeHeader=()=>{
       sx={{
         background: '#f5f5f5',
         padding: '30px 0',
-        height: "calc(100vh - 60px)"
+        height: "100vh"
       }}
     >
       <Grid container display="flex" height={'100%'}>
@@ -26,20 +26,23 @@ export const HomeHeader=()=>{
           flexDirection="column"
         >
           <Typography
-            variant="h3"
+            variant="h1"
             align="center"
             sx={{
               fontSize: { xs: '36px', md: '48px' },
+              fontWeight: 'bold',
+              letterSpacing: 6,
               marginBottom: '20px',
             }}
             display="block"
           >
-            Título de mi sitio web
+            Juga al maximo
           </Typography>
           <Typography
             variant="h5"
             align="center"
-            sx={{ marginBottom: '10px' }}
+            sx={{ marginBottom: '10px',
+            letterSpacing: 2, }}
             display="block"
           >
             Subtítulo del sitio web
@@ -47,7 +50,8 @@ export const HomeHeader=()=>{
           <Typography
             variant="body1"
             align="center"
-            sx={{ marginBottom: '30px' }}
+            sx={{ marginBottom: '30px',
+            letterSpacing: 1.2, }}
             display="block"
           >
             Descripción breve del sitio web. Lorem ipsum dolor sit amet,

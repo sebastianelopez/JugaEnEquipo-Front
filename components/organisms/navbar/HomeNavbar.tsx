@@ -69,9 +69,9 @@ export const HomeNavbar = () => {
           }}
           component="div"
         >
-          <NextLink href={"/category/men"} passHref>
+          <NextLink href={"/"} passHref>
             <Link>
-              <Button color={asPath === "/category/men" ? "primary" : "info"}>
+              <Button color={asPath === "/" ? "primary" : "info"}>
                 Home
               </Button>
             </Link>

@@ -23,6 +23,8 @@ import { useTranslations } from "next-intl";
 import HomeIcon from "@mui/icons-material/Home";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MessageIcon from "@mui/icons-material/Message";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import MenuIcon from "@mui/icons-material/Menu";
 
 import logo from "./../../../assets/logo.png";
 
@@ -41,9 +43,9 @@ export const MainNavbar = () => {
 
   const handleExpand = () => {
     setIsExpanded(true);
-    if(inputRef.current){
+    if (inputRef.current) {
       inputRef.current.focus();
-    }     
+    }
   };
 
   const handleCollapse = () => {
@@ -77,17 +79,29 @@ export const MainNavbar = () => {
               component="div"
             >
               <Image src={logo} height={40} width={70} />
-              <Typography className="logotitle">Juga en equipo</Typography>
+              <Typography
+                className="logotitle"
+                sx={{ display: { xs: "none" } }}
+              >
+                Juga en equipo
+              </Typography>
             </Box>
           </Link>
         </NextLink>
 
-        <Box component="div" flex={1} />
-
         <Box
           component="div"
           sx={{
-            display: { xs: "none", sm: "block" },
+            minWidth: { xs: "5%", sm: "15%", md: "40%" },
+            transition: "min-width 0.5s ease",
+          }}
+        />
+
+        <Box
+          component="div"
+          position="relative"
+          sx={{
+            display: "block",
           }}
         >
           <NextLink href={"/home"} passHref>
@@ -100,13 +114,23 @@ export const MainNavbar = () => {
               <IconButton children={<MessageIcon />} />
             </Link>
           </NextLink>
+          <NextLink href={"/tournaments"} passHref>
+            <Link>
+              <IconButton children={<EmojiEventsIcon />} />
+            </Link>
+          </NextLink>
           <IconButton children={<NotificationsIcon />} />
-          
+
           <Input
             placeholder={t("search")}
-            inputRef={inputRef}            
+            disableUnderline={true}
+            inputRef={inputRef}
             sx={{
+              borderRadius: "15px",
+              border: "none",
+              px: isExpanded ? 1 : 0,
               maxWidth: isExpanded ? 300 : 0,
+              boxShadow: "inset 2px 5px 10px rgba(0,0,0,0.3)",
               transition: "max-width 0.3s ease",
             }}
             onBlur={handleCollapse}
@@ -138,7 +162,12 @@ export const MainNavbar = () => {
             <span className="fi fi-br" />
           </MenuItem>
         </Select>
-        <Button onClick={toggleSideMenu}>Menú</Button>
+        <Button
+          color="info"          
+          onClick={toggleSideMenu}
+        >
+          <MenuIcon />
+        </Button>
       </Toolbar>
     </AppBar>
   );

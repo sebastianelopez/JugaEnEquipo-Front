@@ -10,7 +10,7 @@ interface Props {
 export const IdentityCard: FC<Props> = ({user}) => {
   const t = useTranslations("Publication");
   return (
-    <Paper sx={{ p: 2, textAlign: "center" }}>
+    <Paper sx={{ p: 2, textAlign: "center", width:"100%", maxWidth: '250px', mb:3}}>
       <Avatar
         alt="Profile Picture"
         src={user.profileImage}

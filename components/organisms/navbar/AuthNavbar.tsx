@@ -28,7 +28,7 @@ export const AuthNavbar = () => {
 
   const logotitle = ".logotitle";
 
-  useEffect(() => {    
+  useEffect(() => {
     gsap.from(logotitle, {
       opacity: 1,
       x: 100,
@@ -41,20 +41,25 @@ export const AuthNavbar = () => {
       <Toolbar>
         <NextLink href={"/"} passHref>
           <Link>
-            <Box display={"flex"} justifyContent={"center"} alignItems="center">
+            <Box
+              component="div"
+              display={"flex"}
+              justifyContent={"center"}
+              alignItems="center"
+            >
               <Image src={logo} height={40} width={70} />
               <Typography className="logotitle">Juga en equipo</Typography>
             </Box>
           </Link>
         </NextLink>
 
-        <Box flex={1} />
+        <Box flex={1} component="div" />
 
-        <Box flex={1} />
+        <Box flex={1} component="div" />
         <Select
           variant="outlined"
           value={selectValue}
-          onChange={(e) => onSelectChange(e.target.value)}          
+          onChange={(e) => onSelectChange(e.target.value)}
         >
           <MenuItem value={"es"}>
             <span className="fi fi-ar" />
