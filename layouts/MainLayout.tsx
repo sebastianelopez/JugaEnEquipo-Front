@@ -37,7 +37,7 @@ export const MainLayout: FC<Props> = ({
 
       <main
         style={{
-          margin: "0px auto 0px auto",
+          margin: "60px auto",          
           maxWidth: "1440px",
           padding: "0px 30px",          
         }}
