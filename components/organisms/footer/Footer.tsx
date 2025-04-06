@@ -7,7 +7,7 @@ import logo from "./../../../assets/logo.png";
 export const Footer = () => {
   return (
     <footer>
-      <Grid container columns={12} height="400px">
+      <Grid container columns={12} padding={2} >
         <Grid
           item
           position="relative"
@@ -67,7 +67,7 @@ export const Footer = () => {
           flexDirection="row"
           width="100%"
         >
-          'logo'
+          <Image src={logo} height={40} width={70} />
         </Grid>
       </Grid>
     </footer>
