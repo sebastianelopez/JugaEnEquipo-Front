@@ -2,6 +2,13 @@ import { Box } from "@mui/material";
 import type { GetStaticPropsContext, NextPage } from "next";
 import { HomeLayout } from "../layouts";
 import { HomeHeader, HomeNews, SliderText } from "../components/organisms";
+import MovingWords from "../components/organisms/movingWords/MovingWords";
+import InfiniteCarousel from "../components/organisms/infiniteCarousel/InfiniteCarousel";
+import lolLogo from "../assets/logos/lol.jpg";
+import counterstrikeLogo from "../assets/logos/counterstrike.webp";
+import heroesofthestormLogo from "../assets/logos/heroesofthestorm.jpg";
+import overwatchLogo from "../assets/logos/overwatch.jpg";
+import valorantLogo from "../assets/logos/valorant.png";
 
 const Home: NextPage = (props) => {
   console.log(props);
@@ -25,7 +32,6 @@ const Home: NextPage = (props) => {
       />
 
       {/**Contenido */}
-      
     </HomeLayout>
   );
 };
