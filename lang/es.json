@@ -5,7 +5,9 @@
         "search": "Buscar"
     },
     "Home":{
-        "title": "La app que redefine tu forma de jugar."
+        "headerFirstLine": "La app que",
+        "headerSecondLine": "redefine tu forma",
+        "headerThirdLine": "de jugar"
     },
     "Publication":{
         "comment": "Responde a esta publicacion..."

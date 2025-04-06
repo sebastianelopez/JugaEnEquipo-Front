@@ -5,7 +5,9 @@
         "search": "Search"
     },
     "Home":{
-        "title": "The app that redefines the way you play."
+        "headerFirstLine": "The app that",
+        "headerSecondLine": "redefines the way",
+        "headerThirdLine": "you play"
     },
     "Publication":{
         "comment": "Reply to this post..."

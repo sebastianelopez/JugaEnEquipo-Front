@@ -5,7 +5,9 @@
         "search": "Pesquisa"
     },
     "Home":{
-        "title": "O app que redefine a maneira como você joga"
+        "headerFirstLine": "O app que",
+        "headerSecondLine": "redefine a maneira",
+        "headerThirdLine": "como você joga"
     },
     "Publication":{
         "comment": "Responda a esta postagem..."

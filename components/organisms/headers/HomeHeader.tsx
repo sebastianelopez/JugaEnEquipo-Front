@@ -1,68 +1,111 @@
-import { Box, Grid, Typography } from "@mui/material"
-import Scene from "../../three/Scene"
+import { Box, Container, Grid, Stack, Typography } from "@mui/material";
+import Image from "next/image";
+import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
+import gsap from "gsap";
 
-export const HomeHeader=()=>{
+import styles from "./HomeHeader.module.css";
 
-    return (
-    <Box component="div"
-      sx={{
-        background: '#f5f5f5',
-        padding: '30px 0',
-        height: "100vh"
-      }}
-    >
-      <Grid container display="flex" height={'100%'}>
-        <Grid
-          item
-          xs={12}
-          md={6}
-          sx={{
-            textAlign: { xs: 'center', md: 'left' },
-            paddingRight: { xs: 0, md: '20px' },
-          }}
-          display="flex"
-          justifyContent={'center'}
-          alignItems="center"
-          flexDirection="column"
-        >
-          <Typography
-            variant="h1"
-            align="center"
-            sx={{
-              fontSize: { xs: '36px', md: '48px' },
-              fontWeight: 'bold',
-              letterSpacing: 6,
-              marginBottom: '20px',
-            }}
-            display="block"
+export const HomeHeader = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const duplicateRef = useRef<HTMLElement>(null);
+
+  const t = useTranslations("Home");
+
+  useEffect(() => {
+    const xTo = gsap.quickTo(duplicateRef.current, "--xpercent", {
+      duration: 0.4,
+      ease: "back",
+    });
+
+    const yTo = gsap.quickTo(duplicateRef.current, "--ypercent", {
+      duration: 0.4,
+      ease: "back",
+    });
+
+    const handleMouseMove = (e: MouseEvent) => {
+      // X position calculation
+      const mRangeX = gsap.utils.mapRange(
+        0,
+        window.innerWidth,
+        0,
+        100,
+        e.clientX
+      );
+      xTo(mRangeX);
+
+      // Y position calculation - using the section's bounds
+      if (sectionRef.current) {
+        const bound = sectionRef.current.getBoundingClientRect();
+        const mRangeY = gsap.utils.mapRange(
+          bound.top,
+          bound.top + bound.height,
+          0,
+          100,
+          e.clientY
+        );
+        yTo(mRangeY);
+      }
+    };
+
+    // Use the ref instead of querySelector
+    const section = sectionRef.current;
+    section?.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      section?.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
+  return (
+    <Box component="section" className={styles['home-header']} ref={sectionRef}>
+      <Box className={styles.root}>
+        <Box className={styles.containers}>
+          <Box className={styles.container}>
+            <Box className={styles.line}>
+              <Typography className={styles.lineText}>
+                {t("headerFirstLine")}
+              </Typography>
+            </Box>
+
+            <Box className={styles.line}>
+              <Typography className={styles.lineText}>
+                {t("headerSecondLine")}
+              </Typography>
+            </Box>
+
+            <Box className={styles.line}>
+              <Typography className={styles.lineText}>
+                {t("headerThirdLine")}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Duplicate container for animation effect */}
+          <Box
+            className={`${styles.container} ${styles.duplicate}`}
+            aria-hidden="true"
+            ref={duplicateRef}
           >
-            Juga al maximo
-          </Typography>
-          <Typography
-            variant="h5"
-            align="center"
-            sx={{ marginBottom: '10px',
-            letterSpacing: 2, }}
-            display="block"
-          >
-            Subtítulo del sitio web
-          </Typography>
-          <Typography
-            variant="body1"
-            align="center"
-            sx={{ marginBottom: '30px',
-            letterSpacing: 1.2, }}
-            display="block"
-          >
-            Descripción breve del sitio web. Lorem ipsum dolor sit amet,
-            consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-            labore et dolore magna aliqua.
-          </Typography>
-        </Grid>
-        <Grid item xs={12} md={6} >
-          <Scene />          
-        </Grid>
-      </Grid>
+            <Box className={styles.line}>
+              <Typography className={styles.lineText}>
+                {t("headerFirstLine")}
+              </Typography>
+            </Box>
+
+            <Box className={styles.line}>
+              <Typography className={styles.lineText}>
+                {t("headerSecondLine")}
+              </Typography>
+            </Box>
+            <Box className={styles.line}>
+              <Typography className={styles.lineText}>
+                {t("headerThirdLine")}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
     </Box>
-    )
-}
+  );
+};
