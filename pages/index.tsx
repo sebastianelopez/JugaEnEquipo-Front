@@ -11,8 +11,18 @@ const Home: NextPage = (props) => {
       pageDescription={"Encuentra a tu equipo ideal"}
     >
       <HomeHeader />
-      <HomeNews />
-      <SliderText Text="Juega - Compite - Disfruta - Comparte - Desafiate -" />
+      <MovingWords
+        words={["Juega", "Compite", "Disfruta", "Comparte", "Desafiate"]}
+      />
+      <InfiniteCarousel
+        images={[
+          lolLogo.src,
+          counterstrikeLogo.src,
+          heroesofthestormLogo.src,
+          overwatchLogo.src,
+          valorantLogo.src,
+        ]}
+      />
 
       {/**Contenido */}
       

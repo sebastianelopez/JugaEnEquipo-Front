@@ -2361,6 +2361,11 @@ language-tags@^1.0.5:
   dependencies:
     language-subtag-registry "~0.3.2"
 
+lenis@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.npmjs.intuit.com:443/artifactory/api/npm/npm-intuit/lenis/-/lenis-1.2.3.tgz#7fa22af6e58ba1aa3229712214b63e640a2444f1"
+  integrity sha512-H3VUn62jvQPfyxGW2F0STJPhP1VzX5r05KtiZ0uxHYD9xtbfTvj2eX/Km26+x13zlaKfHacEe1DTC3ouFrxw+g==
+
 leva@^0.9.20, leva@^0.9.34:
   version "0.9.34"
   resolved "https://registry.yarnpkg.com/leva/-/leva-0.9.34.tgz#24f2d717f620de959e9ff27b0118d8d94d4e730b"
