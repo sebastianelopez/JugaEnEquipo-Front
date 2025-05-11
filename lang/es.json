@@ -1,13 +1,16 @@
 {
     "Navbar": {
         "news": "Noticias",
-        "aboutus": "Sobre nosotros"
+        "aboutus": "Sobre nosotros",
+        "search": "Buscar"
     },
     "Home":{
-        "title": "La app que redefine tu forma de jugar."
+        "headerFirstLine": "La app que",
+        "headerSecondLine": "redefine tu forma",
+        "headerThirdLine": "de jugar"
     },
     "Publication":{
-        "comment": "Comentar"
+        "comment": "Responde a esta publicacion..."
     },
     "Register":{
         "name": "Nombre",
@@ -21,8 +24,14 @@
     },
     "Login":{
         "email": "Correo electronico",
+        "emailPlaceholder": "usuario@gmail.com",
         "password": "Contraseña",
         "submit-button": "Enviar",
-        "existing-account": "¿No tiene una cuenta aún?"
+        "existing-account": "¿No tiene una cuenta aún?",
+        "requiredError": "Requerido",
+        "emailError":"Revise el formato del correo"
+    },
+    "Profile":{
+        "profile": "Perfil"        
     }
 }

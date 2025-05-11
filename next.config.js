@@ -2,13 +2,18 @@
 
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   i18n: {
     locales: ['en', 'es', 'pt'],
     defaultLocale: 'en'
   },
   images: {
-    domains: ['media-exp1.licdn.com', 'www.muylinux.com'],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+   // domains: ['res.cloudinary.com'],
   },
 }
 

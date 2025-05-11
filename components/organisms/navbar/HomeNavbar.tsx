@@ -1,7 +1,6 @@
 import { SearchOutlined, ShoppingCartOutlined } from "@mui/icons-material";
 import {
   AppBar,
-  Badge,
   Box,
   Button,
   IconButton,
@@ -46,47 +45,53 @@ export const HomeNavbar = () => {
   }, []);
 
   return (
-    <AppBar>
+    <AppBar component="nav">
       <Toolbar>
         <NextLink href={"/"} passHref>
-          <Link>
-            <Box display={"flex"} justifyContent={"center"} alignItems="center">
-              <Image src={logo} height={40} width={70} />
+          <Link component="span">
+            <Box
+              display={"flex"}
+              justifyContent={"center"}
+              alignItems="center"
+              component={"div"}
+            >
+              <Image src={logo} height={40} width={70} alt="Juga en Equipo logo" />
               <Typography className="logotitle">Juga en equipo</Typography>
             </Box>
           </Link>
         </NextLink>
 
-        <Box flex={1} />
+        <Box flex={1} component="div" />
 
         <Box
           sx={{
             display: { xs: "none", sm: "block" },
           }}
+          component="div"
         >
-          <NextLink href={"/category/men"} passHref>
-            <Link>
-              <Button color={asPath === "/category/men" ? "primary" : "info"}>
+          <NextLink href={"/"} passHref>
+            <Link component="span">
+              <Button color={asPath === "/" ? "primary" : "info"}>
                 Home
               </Button>
             </Link>
           </NextLink>
           <NextLink href={"/category/women"} passHref>
-            <Link>
+            <Link component="span">
               <Button color={asPath === "/category/women" ? "primary" : "info"}>
                 {t("news")}
               </Button>
             </Link>
           </NextLink>
           <NextLink href={"/category/kid"} passHref>
-            <Link>
+            <Link component="span">
               <Button color={asPath === "/category/kid" ? "primary" : "info"}>
                 {t("aboutus")}
               </Button>
             </Link>
           </NextLink>
         </Box>
-        <Box flex={1} />
+        <Box flex={1} component="div" />
         <Select
           variant="outlined"
           value={selectValue}
@@ -107,7 +112,7 @@ export const HomeNavbar = () => {
           <SearchOutlined />
         </IconButton>
         <NextLink href={"/auth/login"} passHref>
-          <Link>
+          <Link component="span">
             <Button>Login</Button>
           </Link>
         </NextLink>

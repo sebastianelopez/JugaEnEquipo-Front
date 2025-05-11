@@ -108,7 +108,7 @@ export const RegisterForm = () => {
           <Button type="submit">{t("submit-button")}</Button>
 
           <NextLink href={"/auth/login"} passHref>
-            <Link mt={3}>
+            <Link mt={3} component="span">
               {t("existing-account")}
             </Link>
           </NextLink>

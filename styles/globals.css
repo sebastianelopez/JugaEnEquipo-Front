@@ -1,0 +1,17 @@
+html, body {
+    height: 100vh;
+    width: 100vw;
+    background-color: #e9e5e5;
+}
+
+body {
+  text-rendering: optimizeLegibility;
+  margin: 0;
+  overscroll-behavior: none;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

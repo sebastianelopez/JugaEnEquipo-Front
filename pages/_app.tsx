@@ -5,22 +5,30 @@ import type { AppProps } from "next/app";
 import { UiProvider } from "../context";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { lightTheme } from "../themes";
-import { NextIntlProvider } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
 
-import type { NextPageContext  } from 'next' 
+import type { NextPageContext } from "next";
+import { useRouter } from "next/router";
+import { UserProvider } from "../context/user";
 
 type CustomAppProps = AppProps & {
-  pageProps: NextPageContext & {messages?: {} } 
-}
+  pageProps: NextPageContext & { messages?: {} };
+};
 
-function MyApp({ Component, pageProps}: CustomAppProps) {
+function MyApp({ Component, pageProps }: CustomAppProps) {
+  const router = useRouter();
   return (
     <UiProvider>
       <ThemeProvider theme={lightTheme}>
-        <NextIntlProvider messages={pageProps.messages}>
-          <CssBaseline />
-          <Component {...pageProps} />
-        </NextIntlProvider>
+        <UserProvider>
+          <NextIntlClientProvider
+            messages={pageProps.messages}
+            locale={router.locale}
+          >
+            <CssBaseline />
+            <Component {...pageProps} />
+          </NextIntlClientProvider>
+        </UserProvider>
       </ThemeProvider>
     </UiProvider>
   );

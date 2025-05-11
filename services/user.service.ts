@@ -1,0 +1,90 @@
+import { User } from "../interfaces";
+import { api } from "../lib/api";
+import { getToken } from "../services/auth.service";
+
+interface UserResponse {
+  data: User;
+}
+
+export const userService = {
+  getUserById: async (id: string) => {
+    const token = await getToken();
+    const response = await api.get<UserResponse>(`/user/${id}`, {}, token);
+    return response.data;
+  },
+
+  createUser: async (userData: User) => {
+    const token = await getToken();
+    const response = await api.post<UserResponse>("/user", userData, undefined, token);
+    return response.data;
+  },
+
+  updateUser: async (id: string, userData: Partial<User>) => {
+    const token = await getToken();
+    const response = await api.put<UserResponse>(`/user/${id}`, userData, token);
+    return response.data;
+  },
+
+  deleteUser: async (id: string) => {
+    const token = await getToken();
+    return api.delete<void>(`/user/${id}`, token);
+  },
+
+  // Password management
+  updatePassword: async (
+    id: string,
+    passwordData: {
+      oldPassword: string;
+      newPassword: string;
+      confirmationNewPassword: string;
+    }
+  ) => {
+    const token = await getToken();
+    return api.put<void>(`/user/password/${id}`, passwordData, token);
+  },
+
+  restorePassword: async (
+    id: string,
+    passwordData: {
+      newPassword: string;
+      confirmationNewPassword: string;
+    }
+  ) => {
+    const token = await getToken();
+    return api.put<void>(`/user/${id}/restore`, passwordData, token);
+  },
+
+  // Profile image
+  updateProfileImage: async (imageFile: File) => {
+    const token = await getToken();
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    return api.post<{ imageUrl: string }>(
+      "/user-profile-image",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+      token
+    );
+  },
+
+  // User relationships
+  followUser: async (id: string) => {
+    const token = await getToken();
+    return api.put<void>(`/user/${id}/follow`, {}, token);
+  },
+
+  unfollowUser: async (id: string) => {
+    const token = await getToken();
+    return api.put<void>(`/user/${id}/unfollow`, {}, token);
+  },
+
+  getUserFollowings: async (id: string) => {
+    const token = await getToken();
+    return api.get<User[]>(`/user/${id}/followings`, {}, token);
+  },
+
+  getUserFollowers: async (id: string) => {
+    const token = await getToken();
+    return api.get<User[]>(`/user/${id}/followers`, {}, token);
+  },
+};
