@@ -68,7 +68,6 @@ export const PublicateCard = ({ sx = [] }: Props) => {
           justifyContent="start"
         >
           <Button
-            children="Foto/Video"
             startIcon={<PermMediaIcon />}
             sx={{
               backgroundColor: "white",
@@ -78,7 +77,9 @@ export const PublicateCard = ({ sx = [] }: Props) => {
               },
             }}
             onClick={() => setIsOpen(true)}
-          />
+          >
+            Foto/Video
+          </Button>
         </Box>
         <CreatePublicationModal
           open={isOpen}
