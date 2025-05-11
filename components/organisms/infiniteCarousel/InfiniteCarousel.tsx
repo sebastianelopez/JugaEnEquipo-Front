@@ -91,8 +91,9 @@ const InfiniteCarousel: React.FC<InfiniteCarouselProps> = ({ images }) => {
             <Image
               src={image}
               alt={`Carousel image ${index + 1}`}
-              layout="fill"
-              objectFit="cover"
+              fill
+              style={{ objectFit: "cover" }}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className={styles["image"]}
             />
           </Box>
@@ -102,8 +103,9 @@ const InfiniteCarousel: React.FC<InfiniteCarouselProps> = ({ images }) => {
             <Image
               src={image}
               alt={`Duplicated carousel image ${index + 1}`}
-              layout="fill"
-              objectFit="cover"
+              fill
+              style={{ objectFit: "cover" }}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className={styles["image"]}
             />
           </Box>
