@@ -47,7 +47,12 @@ export const AuthNavbar = () => {
               justifyContent={"center"}
               alignItems="center"
             >
-              <Image src={logo} height={40} width={70} />
+              <Image
+                src={logo}
+                height={40}
+                width={70}
+                alt="Juga en Equipo logo"
+              />
               <Typography className="logotitle">Juga en equipo</Typography>
             </Box>
           </Link>
