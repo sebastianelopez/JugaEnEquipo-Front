@@ -7,9 +7,8 @@ import logo from "./../../../assets/logo.png";
 export const Footer = () => {
   return (
     <footer>
-      <Grid container columns={12} padding={2} >
+      <Grid container columns={12} padding={2}>
         <Grid
-          item
           position="relative"
           display="flex"
           alignItems="center"
@@ -18,11 +17,10 @@ export const Footer = () => {
           width="100%"
         >
           <Grid
-            item
             display="flex"
             alignItems="center"
             flexDirection="column"
-            md={4}
+            size={{ md: 4 }}
           >
             <NextLink href={"/"} passHref>
               <Link component="span">
@@ -32,7 +30,12 @@ export const Footer = () => {
                   alignItems="center"
                   component="div"
                 >
-                  <Image src={logo} height={40} width={70} />
+                  <Image
+                    src={logo}
+                    height={40}
+                    width={70}
+                    alt="Juga en equipo logo "
+                  />
                   <Typography
                     className="logotitle"
                     sx={{ display: { xs: "none" } }}
@@ -44,22 +47,19 @@ export const Footer = () => {
             </NextLink>
           </Grid>
           <Grid
-            item
             display="flex"
             alignItems="center"
             flexDirection="column"
-            md={4}
+            size={{ md: 4 }}
           ></Grid>
           <Grid
-            item
             display="flex"
             alignItems="center"
             flexDirection="column"
-            md={4}
+            size={{ md: 4 }}
           ></Grid>
         </Grid>
         <Grid
-          item
           position="relative"
           display="flex"
           justifyContent="center"
@@ -67,7 +67,7 @@ export const Footer = () => {
           flexDirection="row"
           width="100%"
         >
-          <Image src={logo} height={40} width={70} />
+          <Image src={logo} height={40} width={70} alt="Juga en Equipo Logo" />
         </Grid>
       </Grid>
     </footer>
