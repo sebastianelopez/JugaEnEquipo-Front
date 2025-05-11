@@ -17,9 +17,9 @@ export const IdentityCard: FC<Props> = ({user}) => {
         sx={{ width: 200, height: 200, m: "auto" }}
       />
       <Typography variant="h4" fontWeight="bold">
-        {user.nickname}
+        {user.username}
       </Typography>
-      <Typography variant="subtitle1">{`${user.name} ${user.lastname}`}</Typography>
+      <Typography variant="subtitle1">{`${user.firstname} ${user.lastname}`}</Typography>
     </Paper>
   );
 };
