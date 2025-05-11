@@ -46,7 +46,7 @@ export const PublicateCard = ({ sx = [] }: Props) => {
             fullWidth
             disableUnderline
             readOnly
-            onClick={() => setIsOpen(true)}            
+            onClick={() => setIsOpen(true)}
             sx={{
               ml: 2,
               backgroundColor: "#f0f2f5",
