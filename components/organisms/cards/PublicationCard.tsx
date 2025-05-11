@@ -25,6 +25,8 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { LikeButton } from "../../atoms";
+import { Post } from "../../../interfaces/post";
+import Image from "next/image";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -48,21 +50,15 @@ type PublicationComment = {
   media?: string[];
 };
 
-interface Props {
-  user: User;
-  media: string[];
-  copy: string;
-  comments: PublicationComment[];
-  date: string;
-}
-
 export const PublicationCard = ({
-  user,
-  media,
-  copy,
-  comments,
-  date,
-}: Props) => {
+  id,
+  body,
+  createdAt,
+  username,
+  resources,
+  sharedPost,
+  urlProfileImage,
+}: Post) => {
   const [expanded, setExpanded] = useState(false);
 
   const t = useTranslations("Publication");
@@ -74,10 +70,8 @@ export const PublicationCard = ({
   };
 
   const handleCommentClick = () => {
-    setExpanded(true);   
-      inputRef.current?.focus();    
-    
-    console.log(inputRef.current)
+    setExpanded(true);
+    inputRef.current?.focus();
   };
 
   return (
@@ -89,51 +83,57 @@ export const PublicationCard = ({
         }}
       >
         <CardHeader
-          avatar={<Avatar src={user.profileImage} alt="Profile Picture" />}
+          avatar={<Avatar src={urlProfileImage} alt="Profile Picture" />}
           action={
             <IconButton aria-label="settings">
               <MoreVertIcon />
             </IconButton>
           }
-          title={user.name}
-          subheader={date}
+          title={username}
+          subheader={createdAt}
         />
         <CardContent>
           <Typography variant="body2" color="text.secondary">
-            {copy}
+            {body}
           </Typography>
-          {media.length > 1 ? (
-            <ImageList
-              sx={{ width: { xs: "100%", md: 500 }, maxHeight: 450 }}
-              cols={3}
-              rowHeight={164}
-            >
-              {media.map((mediaItem, index) => (
-                <ImageListItem key={index}>
-                  <img
-                    key={mediaItem}
-                    src={`${mediaItem}?w=164&h=164&fit=crop&auto=format`}
-                    srcSet={`${mediaItem}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                    alt={"image"}
-                    loading="lazy"
-                    style={{ borderRadius: "6px" }}
-                  />
-                </ImageListItem>
-              ))}
-            </ImageList>
-          ) : (
-            <CardMedia
-              image={media[0]}
-              sx={{
-                width: { xs: 350, sm: 425, md: 500 },
-                height: { xs: 315, sm: 383, md: 450 },
-                transition: "width 0.5s ease, height 0.5s ease",
-                marginTop: 5,
-                borderRadius: 1.5,
-              }}
-              title="Paella dish"
-            />
-          )}
+
+          {
+            resources && resources.length > 0 ? (
+              resources.length > 1 ? (
+                // Case 1: Multiple resources - show ImageList
+                <ImageList
+                  sx={{ width: { xs: "100%", md: 500 }, maxHeight: 450 }}
+                  cols={3}
+                  rowHeight={164}
+                >
+                  {resources.map((mediaItem, index) => (
+                    <ImageListItem key={index}>
+                      <Image
+                        src={mediaItem.url || ""}
+                        alt={`Image ${index + 1}`}
+                        width={164}
+                        height={164}
+                        style={{ borderRadius: "6px" }}
+                      />
+                    </ImageListItem>
+                  ))}
+                </ImageList>
+              ) : // Case 2: Single resource - show CardMedia
+              resources[0]?.url ? (
+                <CardMedia
+                  image={resources[0].url}
+                  sx={{
+                    width: { xs: 350, sm: 425, md: 500 },
+                    height: { xs: 315, sm: 383, md: 450 },
+                    transition: "width 0.5s ease, height 0.5s ease",
+                    marginTop: 5,
+                    borderRadius: 1.5,
+                  }}
+                  title="Post image"
+                />
+              ) : null
+            ) : null /* Case 3: No resources - show nothing */
+          }
         </CardContent>
 
         <CardActions disableSpacing>
@@ -162,7 +162,7 @@ export const PublicationCard = ({
             }}
           >
             <Box component={"div"}>
-              {comments &&
+              {/* {comments &&
                 comments.map(({ comment, user, date, media }) => (
                   <CardContent>
                     <Typography variant="subtitle2">{user.nickname}</Typography>
@@ -171,7 +171,7 @@ export const PublicationCard = ({
                       {date}
                     </Typography>
                   </CardContent>
-                ))}
+                ))} */}
             </Box>
             <Box paddingX={2} paddingY={2} component={"div"}>
               <Input fullWidth placeholder={t("comment")} inputRef={inputRef} />
