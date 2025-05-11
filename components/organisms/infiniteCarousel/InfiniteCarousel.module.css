@@ -15,6 +15,7 @@
   }
 
   .card {
+    position: relative;
     width: 25vw;
     aspect-ratio: 1;
 
