@@ -78,7 +78,12 @@ export const MainNavbar = () => {
               alignItems="center"
               component="div"
             >
-              <Image src={logo} height={40} width={70} />
+              <Image
+                src={logo}
+                height={40}
+                width={70}
+                alt="Juga en Equipo logo"
+              />
               <Typography
                 className="logotitle"
                 sx={{ display: { xs: "none" } }}
@@ -170,10 +175,7 @@ export const MainNavbar = () => {
             <span className="fi fi-br" />
           </MenuItem>
         </Select>
-        <Button
-          color="info"          
-          onClick={toggleSideMenu}
-        >
+        <Button color="info" onClick={toggleSideMenu}>
           <MenuIcon />
         </Button>
       </Toolbar>
