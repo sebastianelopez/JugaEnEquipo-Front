@@ -17,7 +17,7 @@ export const HashtagsCard: FC<Props> = ({ hashtags }) => {
       <Box component="div" display="flex" flexDirection="column">
         {hashtags.map((hashtag, index) => (
           <NextLink key={index} href={"/auth/register"} passHref>
-            <Link py={1}>{`#${hashtag}`}</Link>
+            <Link py={1} component="span">{`#${hashtag}`}</Link>
           </NextLink>
         ))}
       </Box>

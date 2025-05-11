@@ -40,7 +40,7 @@ export const AuthNavbar = () => {
     <AppBar>
       <Toolbar>
         <NextLink href={"/"} passHref>
-          <Link>
+          <Link component="span">
             <Box
               component="div"
               display={"flex"}

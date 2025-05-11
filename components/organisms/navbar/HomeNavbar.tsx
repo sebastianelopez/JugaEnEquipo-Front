@@ -48,7 +48,7 @@ export const HomeNavbar = () => {
     <AppBar>
       <Toolbar>
         <NextLink href={"/"} passHref>
-          <Link>
+          <Link component="span">
             <Box
               display={"flex"}
               justifyContent={"center"}
@@ -70,21 +70,21 @@ export const HomeNavbar = () => {
           component="div"
         >
           <NextLink href={"/"} passHref>
-            <Link>
+            <Link component="span">
               <Button color={asPath === "/" ? "primary" : "info"}>
                 Home
               </Button>
             </Link>
           </NextLink>
           <NextLink href={"/category/women"} passHref>
-            <Link>
+            <Link component="span">
               <Button color={asPath === "/category/women" ? "primary" : "info"}>
                 {t("news")}
               </Button>
             </Link>
           </NextLink>
           <NextLink href={"/category/kid"} passHref>
-            <Link>
+            <Link component="span">
               <Button color={asPath === "/category/kid" ? "primary" : "info"}>
                 {t("aboutus")}
               </Button>
@@ -112,7 +112,7 @@ export const HomeNavbar = () => {
           <SearchOutlined />
         </IconButton>
         <NextLink href={"/auth/login"} passHref>
-          <Link>
+          <Link component="span">
             <Button>Login</Button>
           </Link>
         </NextLink>

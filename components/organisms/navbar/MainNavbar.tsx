@@ -71,7 +71,7 @@ export const MainNavbar = () => {
     <AppBar>
       <Toolbar>
         <NextLink href={"/"} passHref>
-          <Link>
+          <Link component="span">
             <Box
               display={"flex"}
               justifyContent={"center"}
@@ -105,21 +105,29 @@ export const MainNavbar = () => {
           }}
         >
           <NextLink href={"/home"} passHref>
-            <Link>
-              <IconButton children={<HomeIcon />} />
+            <Link component="span">
+              <IconButton>
+                <HomeIcon />
+              </IconButton>
             </Link>
           </NextLink>
           <NextLink href={"/messages"} passHref>
-            <Link>
-              <IconButton children={<MessageIcon />} />
+            <Link component="span">
+              <IconButton>
+                <MessageIcon />
+              </IconButton>
             </Link>
           </NextLink>
           <NextLink href={"/tournaments"} passHref>
-            <Link>
-              <IconButton children={<EmojiEventsIcon />} />
+            <Link component="span">
+              <IconButton>
+                <EmojiEventsIcon />
+              </IconButton>
             </Link>
           </NextLink>
-          <IconButton children={<NotificationsIcon />} />
+          <IconButton>
+            <NotificationsIcon />
+          </IconButton>
 
           <Input
             placeholder={t("search")}

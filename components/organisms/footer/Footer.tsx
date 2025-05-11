@@ -25,7 +25,7 @@ export const Footer = () => {
             md={4}
           >
             <NextLink href={"/"} passHref>
-              <Link>
+              <Link component="span">
                 <Box
                   display={"flex"}
                   justifyContent={"center"}
