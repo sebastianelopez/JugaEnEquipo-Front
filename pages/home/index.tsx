@@ -1,6 +1,5 @@
-import { Box, Grid } from "@mui/material";
+import { Box, Grid, Skeleton, Typography } from "@mui/material";
 import { GetStaticPropsContext } from "next";
-import { usersMock } from "../../api/mock";
 import {
   PublicationCard,
   IdentityCard,
@@ -8,13 +7,49 @@ import {
   PublicateCard,
 } from "../../components/organisms";
 import { MainLayout } from "../../layouts";
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "../../context/user";
+import { postService } from "../../services/post.service";
+import { Post } from "../../interfaces/post";
 
 const HomePage = () => {
+  const { user } = useContext(UserContext);
+
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadPosts = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedPosts = await postService.getMyFeed();
+        setPosts(Array.isArray(fetchedPosts) ? fetchedPosts : [fetchedPosts]);
+      } catch (error) {
+        console.error("Error loading posts:", error);
+        setPosts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPosts();
+  }, []);
+
   return (
     <MainLayout title={"Home"} pageDescription={""}>
-      <Grid container columns={{ xs: 12, md: 12 }} sx={{ mt: 12 }}>
+      <Grid
+        container
+        columns={12}
+        sx={{
+          mt: 12,
+          display: "flex",
+          mx: "auto",
+          width: "100%",
+          justifyContent: "center",
+          // Ensure the Grid spans the full width
+        }}
+      >
         <Grid
-          item
           md={3}
           position="relative"
           justifyContent="start"
@@ -24,7 +59,7 @@ const HomePage = () => {
             display: { xs: "none", md: "flex" },
           }}
         >
-          <IdentityCard user={usersMock.users[0]} />
+          {user && <IdentityCard user={user} />}
           <HashtagsCard
             hashtags={[
               "Overwatch",
@@ -41,7 +76,6 @@ const HomePage = () => {
         </Grid>
         <Grid
           display="flex"
-          item
           xs={12}
           md={6}
           flexDirection="column"
@@ -53,58 +87,67 @@ const HomePage = () => {
           }}
         >
           <PublicateCard />
-          <Box
-            component="div"
-            sx={{
-              mb: 3,
-            }}
-          >
-            <PublicationCard
-              user={usersMock.users[0]}
-              media={[
-                "https://www.muylinux.com/wp-content/uploads/2021/11/Steam.jpg",
-              ]}
-              copy={"Alta publicacion amigo"}
-              comments={[
-                {
-                  comment: "genial",
-                  date: "Hace 1 minuto",
-                  user: usersMock.users[1],
-                },
-              ]}
-              date={"Hace 3 minutos"}
-            />
-          </Box>
-          {Array.from({ length: 8 }, (_, i) => (
+          {/* Loading State */}
+          {isLoading && (
+            <>
+              {[1, 2, 3].map((item) => (
+                <Box
+                  key={`skeleton-${item}`}
+                  component="div"
+                  sx={{
+                    mb: 3,
+                    width: { xs: "100%", md: 530 },
+                    maxWidth: { xs: 530 },
+                  }}
+                >
+                  <Skeleton variant="rectangular" height={60} />
+                  <Skeleton variant="rectangular" height={300} sx={{ mt: 1 }} />
+                  <Box sx={{ pt: 0.5 }}>
+                    <Skeleton width="60%" />
+                    <Skeleton width="80%" />
+                    <Skeleton width="40%" />
+                  </Box>
+                </Box>
+              ))}
+            </>
+          )}
+
+          {/* No Posts State */}
+          {!isLoading && posts.length === 0 && (
             <Box
-              component="div"
-              key={i}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
               sx={{
-                mb: 3,
+                width: { xs: "100%", md: 530 },
+                height: 200,
+                border: "1px dashed grey",
+                borderRadius: 2,
+                mt: 4,
               }}
             >
-              <PublicationCard
-                user={usersMock.users[0]}
-                media={[
-                  "https://www.muylinux.com/wp-content/uploads/2021/11/Steam.jpg",
-                  "https://blz-contentstack-images.akamaized.net/v3/assets/blt9c12f249ac15c7ec/blt038029114fe902a4/632128d5e7bdcf0dd996c989/Action.jpg",
-                  "https://blz-contentstack-images.akamaized.net/v3/assets/blt9c12f249ac15c7ec/blt038029114fe902a4/632128d5e7bdcf0dd996c989/Action.jpg",
-                ]}
-                copy={"Alta publicacion amigo"}
-                comments={[
-                  {
-                    comment: "genial",
-                    date: "Hace 1 minuto",
-                    user: usersMock.users[1],
-                  },
-                ]}
-                date={"Hace 3 minutos"}
-              />
+              <Typography variant="h6" color="text.secondary">
+                No hay publicaciones para mostrar
+              </Typography>
             </Box>
-          ))}
+          )}
+
+          {/* Posts Exist State */}
+          {!isLoading &&
+            posts.length > 0 &&
+            posts.map((post, index) => (
+              <Box
+                component="div"
+                key={`post-${post.id || index}`}
+                sx={{
+                  mb: 3,
+                }}
+              >
+                <PublicationCard {...post} />
+              </Box>
+            ))}
         </Grid>
         <Grid
-          item
           md={3}
           position="relative"
           justifyContent="start"
@@ -114,7 +157,7 @@ const HomePage = () => {
             display: { xs: "none", md: "flex" },
           }}
         >
-          <IdentityCard user={usersMock.users[0]} />
+          {user && <IdentityCard user={user} />}
         </Grid>
       </Grid>
     </MainLayout>
