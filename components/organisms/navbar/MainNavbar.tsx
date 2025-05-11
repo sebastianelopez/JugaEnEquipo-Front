@@ -68,7 +68,7 @@ export const MainNavbar = () => {
   }, []);
 
   return (
-    <AppBar>
+    <AppBar component="nav">
       <Toolbar>
         <NextLink href={"/"} passHref>
           <Link component="span">

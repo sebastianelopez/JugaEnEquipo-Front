@@ -23,17 +23,14 @@ export const HomeLayout: FC<Props> = ({
         <meta name="og:description" content={pageDescription} />
         {imageFullUrl && <meta name="og:image" content={imageFullUrl} />}
       </Head>
-      {
-        <nav>
-          <HomeNavbar />
-        </nav>
-      }
-     
+
+      <HomeNavbar />
+
       <main
         style={{
-          margin: "60px auto",          
+          margin: "60px auto",
           padding: "0px 30px 0px 30px",
-          backgroundColor: '#f5f5f5'
+          backgroundColor: "#f5f5f5",
         }}
       >
         {children}
