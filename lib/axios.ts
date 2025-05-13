@@ -96,7 +96,7 @@ axiosInstance.interceptors.response.use(
         }
       );
 
-      const { token: newToken, refreshToken: newRefreshToken } = response.data;
+      const { token: newToken, refreshToken: newRefreshToken } = response.data.data;
 
       // Update cookies with new tokens
       Cookies.set("token", newToken, {
