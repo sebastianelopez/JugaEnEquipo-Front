@@ -27,6 +27,7 @@ import { Post } from "../../../interfaces/post";
 import Image from "next/image";
 import { postService } from "../../../services/post.service";
 import { Comment } from "../../../interfaces/comment";
+import { SharedPostCard } from "./SharedPostCard";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -153,6 +154,8 @@ export const PublicationCard = ({
             ) : null /* Case 3: No resources - show nothing */
           }
         </CardContent>
+
+        {sharedPost && <SharedPostCard {...sharedPost} />}
 
         <CardActions disableSpacing>
           <IconButton aria-label="like" onClick={handleCommentClick}>
