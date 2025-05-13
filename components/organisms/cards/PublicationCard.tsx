@@ -12,6 +12,7 @@ import {
   ImageList,
   ImageListItem,
   Input,
+  Skeleton,
   styled,
   Typography,
 } from "@mui/material";
@@ -88,7 +89,8 @@ export const PublicationCard = ({
     if (expanded) {
       loadComments();
     }
-  }, [expanded, id, loading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expanded, id]);
 
   return (
     <>
@@ -178,7 +180,13 @@ export const PublicationCard = ({
             }}
           >
             <Box component={"div"}>
-              {comments.length > 0 &&
+              {loading ? (
+                <CardContent>
+                  <Skeleton variant="text" width="10%" />
+                  <Skeleton variant="text" width="80%" />
+                  <Skeleton variant="text" width="30%" />
+                </CardContent>
+              ) : comments.length > 0 ? (
                 comments.map(({ id, comment, user, createdAt }) => (
                   <CardContent key={id}>
                     <Typography variant="subtitle2">{user}</Typography>
@@ -187,7 +195,17 @@ export const PublicationCard = ({
                       {createdAt}
                     </Typography>
                   </CardContent>
-                ))}
+                ))
+              ) : (
+                <>
+                  <Typography variant="subtitle2" align="center">
+                    No comments yet
+                  </Typography>
+                  <Typography variant="body2" align="center">
+                    Add a comment
+                  </Typography>
+                </>
+              )}
             </Box>
             <Box paddingX={2} paddingY={2} component={"div"}>
               <Input fullWidth placeholder={t("comment")} inputRef={inputRef} />
