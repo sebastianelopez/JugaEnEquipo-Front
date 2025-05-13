@@ -23,7 +23,19 @@ const HomePage = () => {
       try {
         setIsLoading(true);
         const fetchedPosts = await postService.getMyFeed();
-        setPosts(Array.isArray(fetchedPosts) ? fetchedPosts : [fetchedPosts]);
+        const postsArray = Array.isArray(fetchedPosts)
+          ? fetchedPosts
+          : [fetchedPosts];
+
+        const postsWithTimestamps = postsArray.map((post) => ({
+          ...post,
+          timestamp: new Date(post.createdAt).getTime(),
+        }));
+
+        postsWithTimestamps.sort((a, b) => b.timestamp - a.timestamp);
+        const sortedPosts = postsWithTimestamps;
+
+        setPosts(sortedPosts);
       } catch (error) {
         console.error("Error loading posts:", error);
         setPosts([]);
