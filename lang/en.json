@@ -33,5 +33,9 @@
     },
     "Profile":{
         "profile": "Profile"              
+    },
+    "SideMenu":{
+        "profile": "Profile",
+        "logOut": "Log out"              
     }
 }
