@@ -13,20 +13,19 @@ import {
   ImageListItem,
   Input,
   styled,
-  TextField,
   Typography,
 } from "@mui/material";
-import { User } from "../../../interfaces";
-import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShareIcon from "@mui/icons-material/Share";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { LikeButton } from "../../atoms";
 import { Post } from "../../../interfaces/post";
 import Image from "next/image";
+import { postService } from "../../../services/post.service";
+import { Comment } from "../../../interfaces/comment";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -43,13 +42,6 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
   }),
 }));
 
-type PublicationComment = {
-  user: User;
-  date: string;
-  comment: string;
-  media?: string[];
-};
-
 export const PublicationCard = ({
   id,
   body,
@@ -60,6 +52,8 @@ export const PublicationCard = ({
   urlProfileImage,
 }: Post) => {
   const [expanded, setExpanded] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const t = useTranslations("Publication");
 
@@ -73,6 +67,28 @@ export const PublicationCard = ({
     setExpanded(true);
     inputRef.current?.focus();
   };
+
+  useEffect(() => {
+    const loadComments = async () => {
+      if (expanded && !loading) {
+        setLoading(true);
+        try {
+          const fetchedComments = await postService.getPostComments(id);
+          setComments(
+            Array.isArray(fetchedComments) ? fetchedComments : [fetchedComments]
+          );
+        } catch (error) {
+          console.error("Error cargando comentarios:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    if (expanded) {
+      loadComments();
+    }
+  }, [expanded, id, loading]);
 
   return (
     <>
@@ -162,16 +178,16 @@ export const PublicationCard = ({
             }}
           >
             <Box component={"div"}>
-              {/* {comments &&
-                comments.map(({ comment, user, date, media }) => (
-                  <CardContent>
-                    <Typography variant="subtitle2">{user.nickname}</Typography>
+              {comments.length > 0 &&
+                comments.map(({ id, comment, user, createdAt }) => (
+                  <CardContent key={id}>
+                    <Typography variant="subtitle2">{user}</Typography>
                     <Typography variant="body2">{comment}</Typography>
                     <Typography variant="caption" alignSelf={"end"}>
-                      {date}
+                      {createdAt}
                     </Typography>
                   </CardContent>
-                ))} */}
+                ))}
             </Box>
             <Box paddingX={2} paddingY={2} component={"div"}>
               <Input fullWidth placeholder={t("comment")} inputRef={inputRef} />
