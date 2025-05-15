@@ -1,17 +1,25 @@
 import {
   Avatar,
   Box,
+  Button,
   Card,
   CardActions,
   CardContent,
   CardHeader,
   CardMedia,
   Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   IconButtonProps,
   ImageList,
   ImageListItem,
   Input,
+  Menu,
+  MenuItem,
   Skeleton,
   styled,
   Typography,
@@ -20,7 +28,7 @@ import ShareIcon from "@mui/icons-material/Share";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { LikeButton } from "../../atoms";
 import { Post } from "../../../interfaces/post";
@@ -28,6 +36,7 @@ import Image from "next/image";
 import { postService } from "../../../services/post.service";
 import { Comment } from "../../../interfaces/comment";
 import { SharedPostCard } from "./SharedPostCard";
+import { UserContext } from "../../../context/user";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -56,6 +65,10 @@ export const PublicationCard = ({
   const [expanded, setExpanded] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const { user } = useContext(UserContext);
+
+  const isLoggedUser = user?.username === username;
 
   const t = useTranslations("Publication");
 
@@ -103,11 +116,7 @@ export const PublicationCard = ({
       >
         <CardHeader
           avatar={<Avatar src={urlProfileImage} alt="Profile Picture" />}
-          action={
-            <IconButton aria-label="settings">
-              <MoreVertIcon />
-            </IconButton>
-          }
+          action={isLoggedUser && <SettingsMenu postId={id} />}
           title={username}
           subheader={createdAt}
         />
@@ -220,6 +229,78 @@ export const PublicationCard = ({
           </Box>
         </Collapse>
       </Card>
+    </>
+  );
+};
+
+interface SettingsMenuProps {
+  postId: string;
+}
+
+const SettingsMenu = ({ postId }: SettingsMenuProps) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const t = useTranslations("Publication");
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleDeleteClick = () => {
+    setAnchorEl(null);
+    setOpenConfirmDialog(true);
+  };
+
+  const handleCancelDelete = () => {
+    setOpenConfirmDialog(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await postService.deletePost(postId);
+      setOpenConfirmDialog(false);
+      // TODO: add some feedback that post was deleted and refresh the posts list after deletion
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      // Handle error (maybe show an error message)
+    }
+  };
+
+  return (
+    <>
+      <IconButton aria-label="settings" onClick={handleClick}>
+        <MoreVertIcon />
+      </IconButton>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleDeleteClick}>Eliminar publicacion</MenuItem>
+      </Menu>
+
+      <Dialog
+        open={openConfirmDialog}
+        onClose={handleCancelDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"¿Eliminar publicación?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            ¿Estás seguro que deseas eliminar esta publicación? Esta acción no
+            se puede deshacer.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete}>Cancelar</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
