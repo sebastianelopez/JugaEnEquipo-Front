@@ -155,7 +155,11 @@ export const PublicationCard = ({
           }
         </CardContent>
 
-        {sharedPost && <SharedPostCard {...sharedPost} />}
+        {sharedPost && (
+          <Box sx={{ paddingX: 2 }}>
+            <SharedPostCard {...sharedPost} />{" "}
+          </Box>
+        )}
 
         <CardActions disableSpacing>
           <IconButton aria-label="like" onClick={handleCommentClick}>
