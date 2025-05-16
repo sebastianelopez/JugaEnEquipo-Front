@@ -10,7 +10,11 @@
         "headerThirdLine": "you play"
     },
     "Publication":{
-        "comment": "Reply to this post..."
+        "comment": "Reply to this post...",
+        "mediaButton": "Photo / Video",
+        "createPost": "Create a post",
+        "sharePost": "Share post",
+        "writeSomething": "Write something..."
     },
     "Register":{
         "name": "First name",

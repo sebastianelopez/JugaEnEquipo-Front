@@ -10,7 +10,11 @@
         "headerThirdLine": "como você joga"
     },
     "Publication":{
-        "comment": "Responda a esta postagem..."
+        "comment": "Responda a esta postagem...",
+        "mediaButton": "Foto / Video",
+        "createPost": "Criar publicação",
+        "sharePost": "Compartilhar publicação",
+        "writeSomething": "Escreva algo..."
     },
     "Register":{
         "name": "Nome",
