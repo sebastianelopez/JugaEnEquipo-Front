@@ -37,6 +37,9 @@ import { postService } from "../../../services/post.service";
 import { Comment } from "../../../interfaces/comment";
 import { SharedPostCard } from "./SharedPostCard";
 import { UserContext } from "../../../context/user";
+import { CreatePublicationModal } from "../modals/CreatePublicationModal";
+import { PostContext } from "../../../context/post";
+import { v4 as uuidv4 } from "uuid";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -62,17 +65,32 @@ export const PublicationCard = ({
   sharedPost,
   urlProfileImage,
 }: Post) => {
+
+  const t = useTranslations("Publication");
+
   const [expanded, setExpanded] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { user } = useContext(UserContext);
 
   const isLoggedUser = user?.username === username;
 
-  const t = useTranslations("Publication");
-
   const inputRef = useRef<HTMLInputElement>();
+
+  const { setPostId, removePostId } = useContext(PostContext);
+
+  const handleOpenModal = async () => {
+    const postId = uuidv4();
+    setPostId(postId);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    removePostId();
+    setIsModalOpen(false);
+  };
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -175,7 +193,7 @@ export const PublicationCard = ({
             <AddCommentRoundedIcon />
           </IconButton>
           <LikeButton />
-          <IconButton aria-label="share">
+          <IconButton aria-label="share" onClick={handleOpenModal}>
             <ShareIcon />
           </IconButton>
           <ExpandMore
@@ -229,6 +247,18 @@ export const PublicationCard = ({
           </Box>
         </Collapse>
       </Card>
+      <CreatePublicationModal
+        sharePost={{
+          id,
+          body,
+          createdAt,
+          username,
+          resources,
+          urlProfileImage,
+        }}
+        open={isModalOpen}
+        onClose={() => handleCloseModal()}
+      />
     </>
   );
 };
