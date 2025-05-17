@@ -30,15 +30,15 @@ import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { LikeButton } from "../../atoms";
-import { Post } from "../../../interfaces/post";
+import { LikeButton } from "../../../atoms";
+import { Post } from "../../../../interfaces/post";
 import Image from "next/image";
-import { postService } from "../../../services/post.service";
-import { Comment } from "../../../interfaces/comment";
-import { SharedPostCard } from "./SharedPostCard";
-import { UserContext } from "../../../context/user";
-import { CreatePublicationModal } from "../modals/CreatePublicationModal";
-import { PostContext } from "../../../context/post";
+import { postService } from "../../../../services/post.service";
+import { Comment } from "../../../../interfaces/comment";
+import { SharedPostCard } from "../SharedPostCard";
+import { UserContext } from "../../../../context/user";
+import { CreatePublicationModal } from "../../modals/CreatePublicationModal";
+import { PostContext } from "../../../../context/post";
 import { v4 as uuidv4 } from "uuid";
 
 interface ExpandMoreProps extends IconButtonProps {

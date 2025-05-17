@@ -20,7 +20,7 @@ export { Footer } from './footer/Footer';
 
 //Cards
 export { IdentityCard } from './cards/IdentityCard';
-export { PublicationCard } from './cards/PublicationCard';
+export { PublicationCard } from './cards/PublicationCard/PublicationCard';
 export { HashtagsCard } from './cards/HashtagsCard';
 export { PublicateCard } from './cards/PublicateCard';
 export { ProfileCard } from './cards/ProfileCard';
