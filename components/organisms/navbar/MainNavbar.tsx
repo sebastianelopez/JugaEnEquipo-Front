@@ -1,21 +1,16 @@
-import { SearchOutlined, ShoppingCartOutlined } from "@mui/icons-material";
+import { SearchOutlined } from "@mui/icons-material";
 import {
   AppBar,
-  Badge,
   Box,
   Button,
-  Icon,
   IconButton,
   Input,
   Link,
-  MenuItem,
-  Select,
   Toolbar,
   Typography,
 } from "@mui/material";
 import Image from "next/image";
 import NextLink from "next/link";
-import { useRouter } from "next/router";
 import { useContext, useEffect, useState, useRef } from "react";
 import { UiContext } from "../../../context";
 import { gsap } from "gsap";
@@ -29,13 +24,9 @@ import MenuIcon from "@mui/icons-material/Menu";
 import logo from "./../../../assets/logo.png";
 
 export const MainNavbar = () => {
-  const { asPath, locale, push, query, pathname } = useRouter();
-
   const { toggleSideMenu } = useContext(UiContext);
 
   const t = useTranslations("Navbar");
-
-  const [selectValue, setSelectValue] = useState(locale ? locale : "en");
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -51,12 +42,6 @@ export const MainNavbar = () => {
   const handleCollapse = () => {
     setIsExpanded(false);
   };
-
-  const onSelectChange = (newLocale: string) => {
-    setSelectValue(newLocale);
-    push({ pathname, query }, asPath, { locale: newLocale });
-  };
-
   const logotitle = ".logotitle";
 
   useEffect(() => {
@@ -155,26 +140,7 @@ export const MainNavbar = () => {
           />
         </Box>
         <Box component="div" flex={1} />
-        <Select
-          variant="outlined"
-          value={selectValue}
-          onChange={(e) => onSelectChange(e.target.value)}
-          sx={{
-            height: 35,
-            width: 70,
-            mr: 3,
-          }}
-        >
-          <MenuItem value={"es"}>
-            <span className="fi fi-ar" />
-          </MenuItem>
-          <MenuItem value={"en"}>
-            <span className="fi fi-us" />
-          </MenuItem>
-          <MenuItem value={"pt"}>
-            <span className="fi fi-br" />
-          </MenuItem>
-        </Select>
+
         <Button color="info" onClick={toggleSideMenu}>
           <MenuIcon />
         </Button>
