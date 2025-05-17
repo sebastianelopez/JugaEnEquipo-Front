@@ -1,9 +1,19 @@
-import { Select, MenuItem } from "@mui/material";
+import { Select, MenuItem, Box } from "@mui/material";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
-export const SelectCountry = () => {
-    const { asPath, locale, push, query, pathname } = useRouter();
+interface Props {
+  fullWidth?: boolean;
+}
+
+const languages = [
+  { code: "es", flag: "fi-ar", name: "Español" },
+  { code: "en", flag: "fi-us", name: "Inglés" },
+  { code: "pt", flag: "fi-br", name: "Português" },
+];
+
+export const SelectCountry = ({ fullWidth = false }: Props) => {
+  const { asPath, locale, push, query, pathname } = useRouter();
   const [selectValue, setSelectValue] = useState(locale ? locale : "en");
 
   const onSelectChange = (newLocale: string) => {
@@ -11,21 +21,36 @@ export const SelectCountry = () => {
     push({ pathname, query }, asPath, { locale: newLocale });
   };
 
+  const menuItemStyle = {
+    display: fullWidth ? "flex" : undefined,
+    justifyContent: fullWidth ? "left" : undefined,
+    alignItems: "center",
+    gap: 1,
+  };
+
   return (
     <Select
       variant="outlined"
       value={selectValue}
+      fullWidth={fullWidth}
       onChange={(e) => onSelectChange(e.target.value)}
+      renderValue={(value) => {
+        const language = languages.find((lang) => lang.code === value);
+        return (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <span className={`fi ${language?.flag}`} />
+            {fullWidth && <span>{language?.name}</span>}
+          </Box>
+        );
+      }}
+      aria-label="Select language"
     >
-      <MenuItem value={"es"}>
-        <span className="fi fi-ar" />
-      </MenuItem>
-      <MenuItem value={"en"}>
-        <span className="fi fi-us" />
-      </MenuItem>
-      <MenuItem value={"pt"}>
-        <span className="fi fi-br" />
-      </MenuItem>
+      {languages.map((language) => (
+        <MenuItem key={language.code} value={language.code} sx={menuItemStyle}>
+          <span className={`fi ${language.flag}`} />
+          {fullWidth && <span>{language.name}</span>}
+        </MenuItem>
+      ))}
     </Select>
   );
 };
