@@ -31,6 +31,8 @@ import { UserContext } from "../../../../context/user";
 import { CreatePublicationModal } from "../../modals/CreatePublicationModal";
 import { PostContext } from "../../../../context/post";
 import { v4 as uuidv4 } from "uuid";
+import { SettingsMenu } from "../../../molecules/SettingsMenu/SettingsMenu";
+import { MediaViewerModal } from "../../modals/MediaViewerModal";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -62,6 +64,8 @@ export const PublicationCard = ({
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
   const { user } = useContext(UserContext);
 
@@ -89,6 +93,15 @@ export const PublicationCard = ({
   const handleCommentClick = () => {
     setExpanded(true);
     inputRef.current?.focus();
+  };
+
+  const handleCloseMediaViewer = () => {
+    setMediaViewerOpen(false);
+  };
+
+  const handleMediaClick = (index: number) => {
+    setSelectedMediaIndex(index);
+    setMediaViewerOpen(true);
   };
 
   useEffect(() => {
@@ -237,6 +250,13 @@ export const PublicationCard = ({
           </Box>
         </Collapse>
       </Card>
+      <MediaViewerModal
+        ariaLabel="Post media viewer"
+        open={mediaViewerOpen}
+        onClose={handleCloseMediaViewer}
+        allMedia={resources || []}
+        initialIndex={selectedMediaIndex}
+      />
       <CreatePublicationModal
         sharePost={{
           id,
