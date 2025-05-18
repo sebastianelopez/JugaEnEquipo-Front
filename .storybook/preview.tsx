@@ -48,6 +48,21 @@ const preview: Preview = {
       },
     },
   },
+  globalTypes: {
+    locale: {
+      name: 'Language',
+      description: 'App language',
+      defaultValue: 'en',
+      toolbar: {
+        icon: 'globe',
+        items: [
+          { value: 'en', title: 'English', right: '🇺🇸' },
+          { value: 'es', title: 'Español', right: '🇦🇷' },
+          { value: 'pt', title: 'Português', right: '🇧🇷' },
+        ],
+      },
+    },
+  },
   decorators: [withProviders],
 };
 
