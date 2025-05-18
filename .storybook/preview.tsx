@@ -5,6 +5,16 @@ import { PostContext } from "../context/post";
 import { NextIntlClientProvider } from "next-intl";
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 
+import enMessages from "../lang/en.json";
+import esMessages from "../lang/es.json";
+import ptMessages from "../lang/pt.json";
+
+const messages = {
+  en: enMessages,
+  es: esMessages,
+  pt: ptMessages,
+};
+
 const userMock = {
   username: "testUser",
   setUser: () => {},
@@ -16,9 +26,10 @@ const postContextValue = {
   removePostId: () => {},
 };
 
-const withProviders = (Story) => {
+const withProviders = (Story, context) => {
+  const locale = context.globals.locale || "en";
   return (
-    <NextIntlClientProvider locale="en">
+    <NextIntlClientProvider locale="en" messages={messages[locale]}>
       <UserContext.Provider value={userMock}>
         <PostContext.Provider value={postContextValue}>
           <Story />
