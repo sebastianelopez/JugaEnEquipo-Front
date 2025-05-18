@@ -1,4 +1,5 @@
 import { Select, MenuItem, Box } from "@mui/material";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -6,13 +7,8 @@ interface Props {
   fullWidth?: boolean;
 }
 
-const languages = [
-  { code: "es", flag: "fi-ar", name: "Español" },
-  { code: "en", flag: "fi-us", name: "Inglés" },
-  { code: "pt", flag: "fi-br", name: "Português" },
-];
-
 export const SelectCountry = ({ fullWidth = false }: Props) => {
+  const t = useTranslations("Global");
   const { asPath, locale, push, query, pathname } = useRouter();
   const [selectValue, setSelectValue] = useState(locale ? locale : "en");
 
@@ -21,6 +17,11 @@ export const SelectCountry = ({ fullWidth = false }: Props) => {
     push({ pathname, query }, asPath, { locale: newLocale });
   };
 
+  const languages = [
+    { code: "es", flag: "fi-ar", name: t("spanish") },
+    { code: "en", flag: "fi-us", name: t("english") },
+    { code: "pt", flag: "fi-br", name: t("portuguese") },
+  ];
   const menuItemStyle = {
     display: fullWidth ? "flex" : undefined,
     justifyContent: fullWidth ? "left" : undefined,
@@ -43,7 +44,7 @@ export const SelectCountry = ({ fullWidth = false }: Props) => {
           </Box>
         );
       }}
-      aria-label="Select language"
+      inputProps={{ "aria-label": t("selectLanguage",) }}
     >
       {languages.map((language) => (
         <MenuItem key={language.code} value={language.code} sx={menuItemStyle}>

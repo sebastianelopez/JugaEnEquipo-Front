@@ -41,5 +41,11 @@
     "SideMenu":{
         "profile": "Profile",
         "logOut": "Log out"              
+    },
+    "Global":{
+        "selectLanguage": "Select language",
+        "spanish": "Spanish",
+        "english": "English",
+        "portuguese": "Portuguese"
     }
 }
