@@ -3,13 +3,12 @@ import React from "react";
 import { UserContext } from "../context/user";
 import { PostContext } from "../context/post";
 import { NextIntlClientProvider } from "next-intl";
+import "/node_modules/flag-icons/css/flag-icons.min.css";
 
-// Mock values for your contexts
 const userMock = {
   username: "testUser",
   setUser: () => {},
   removeUser: () => {},
-  // Add other user properties as needed
 };
 
 const postContextValue = {
@@ -17,7 +16,6 @@ const postContextValue = {
   removePostId: () => {},
 };
 
-// Global decorator that wraps all stories with your providers
 const withProviders = (Story) => {
   return (
     <NextIntlClientProvider locale="en">
