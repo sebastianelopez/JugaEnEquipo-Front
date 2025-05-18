@@ -22,7 +22,7 @@ import { useRouter } from "next/router";
 import { logout } from "../../../services/auth.service";
 import { UserContext } from "../../../context/user";
 import { useTranslations } from "next-intl";
-import { SelectCountry } from "../../molecules/SelectCountry";
+import { SelectCountry } from "../../molecules/SelectCountry/SelectCountry";
 
 export const SideMenu = () => {
   const router = useRouter();

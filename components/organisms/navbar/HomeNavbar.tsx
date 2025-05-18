@@ -14,7 +14,7 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { gsap } from "gsap";
 import { useTranslations } from "next-intl";
-import { SelectCountry } from "../../molecules/SelectCountry";
+import { SelectCountry } from "../../molecules/SelectCountry/SelectCountry";
 
 import logo from "./../../../assets/logo.png";
 
