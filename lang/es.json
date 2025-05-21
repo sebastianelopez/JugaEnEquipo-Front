@@ -36,7 +36,11 @@
         "emailError":"Revise el formato del correo"
     },
     "Profile":{
-        "profile": "Perfil"        
+        "profile": "Perfil",
+        "editProfilePicture": "Cambiar foto",
+        "followUser": "Seguir",
+        "editProfileBackground": "Cambiar fondo",
+        "shareProfile": "Compartir perfil"
     },
     "SideMenu":{
         "profile": "Perfil",
@@ -47,5 +51,22 @@
         "spanish": "Español",
         "english": "Ingles",
         "portuguese": "Portugues"
+    },
+    "Time":{
+        "timePrefixText": "Hace ",
+        "timeYearSuffixText": "año",
+        "timeYearsSuffixText": "años",
+        "timeMonthSuffixText": "mes",
+        "timeMonthsSuffixText": "meses",
+        "timeWeekSuffixText": "semana",
+        "timeWeeksSuffixText": "semanas",
+        "timeDaySuffixText": "día",
+        "timeDaysSuffixText": "días",
+        "timeHourSuffixText": "hora",
+        "timeHoursSuffixText": "horas",
+        "timeMinuteSuffixText": "minuto",
+        "timeMinutesSuffixText": "minutos",
+        "timeSecondSuffixText": "segundo",
+        "timeSecondsSuffixText": "segundos"
     }
 }
