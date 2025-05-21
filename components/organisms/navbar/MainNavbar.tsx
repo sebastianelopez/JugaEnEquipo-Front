@@ -41,7 +41,7 @@ export const MainNavbar = () => {
   return (
     <AppBar component="nav">
       <Toolbar>
-        <NextLink href={"/"} passHref>
+        <NextLink href={"/home"} passHref>
           <Link component="span">
             <Box
               display={"flex"}
