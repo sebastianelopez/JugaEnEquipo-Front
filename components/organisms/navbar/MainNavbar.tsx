@@ -1,4 +1,3 @@
-import { SearchOutlined } from "@mui/icons-material";
 import {
   AppBar,
   Box,
@@ -20,6 +19,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import MessageIcon from "@mui/icons-material/Message";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import MenuIcon from "@mui/icons-material/Menu";
+import { Search } from "../../molecules/Search/Search";
 
 import logo from "./../../../assets/logo.png";
 
@@ -28,20 +28,6 @@ export const MainNavbar = () => {
 
   const t = useTranslations("Navbar");
 
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleExpand = () => {
-    setIsExpanded(true);
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  };
-
-  const handleCollapse = () => {
-    setIsExpanded(false);
-  };
   const logotitle = ".logotitle";
 
   useEffect(() => {
@@ -119,25 +105,7 @@ export const MainNavbar = () => {
             <NotificationsIcon />
           </IconButton>
 
-          <Input
-            placeholder={t("search")}
-            disableUnderline={true}
-            inputRef={inputRef}
-            sx={{
-              borderRadius: "15px",
-              border: "none",
-              px: isExpanded ? 1 : 0,
-              maxWidth: isExpanded ? 300 : 0,
-              boxShadow: "inset 2px 5px 10px rgba(0,0,0,0.3)",
-              transition: "max-width 0.3s ease",
-            }}
-            onBlur={handleCollapse}
-            endAdornment={
-              <IconButton onClick={handleExpand}>
-                <SearchOutlined />
-              </IconButton>
-            }
-          />
+          <Search />
         </Box>
         <Box component="div" flex={1} />
 
