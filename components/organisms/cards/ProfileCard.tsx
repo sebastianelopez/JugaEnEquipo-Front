@@ -43,7 +43,9 @@ export const ProfileCard: FC<Props> = ({ user }) => {
           top: 350,
           left: 25,
         }}
-      />
+      >
+        {isLoggedUser ? t("editProfilePicture") : t("followUser")}
+      </Button>
       <Typography variant="h4" fontWeight="bold">
         {user.nickname}
       </Typography>
