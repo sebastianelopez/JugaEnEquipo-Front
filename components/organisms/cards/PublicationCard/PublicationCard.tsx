@@ -33,6 +33,8 @@ import { PostContext } from "../../../../context/post";
 import { v4 as uuidv4 } from "uuid";
 import { SettingsMenu } from "../../../molecules/SettingsMenu/SettingsMenu";
 import { MediaViewerModal } from "../../modals/MediaViewerModal";
+import { useRouter } from "next/router";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -59,6 +61,10 @@ export const PublicationCard = ({
   urlProfileImage,
 }: Post) => {
   const t = useTranslations("Publication");
+
+  const matches = useMediaQuery("(min-width:650px)");
+
+  const router = useRouter();
 
   const [expanded, setExpanded] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -104,6 +110,10 @@ export const PublicationCard = ({
     setMediaViewerOpen(true);
   };
 
+  const handleNavigateToProfile = (username: string) => {
+    router.push(`/profile/${username}`);
+  };
+
   useEffect(() => {
     const loadComments = async () => {
       if (expanded && !loading) {
@@ -136,9 +146,24 @@ export const PublicationCard = ({
         }}
       >
         <CardHeader
-          avatar={<Avatar src={urlProfileImage} alt="Profile Picture" />}
+          avatar={
+            <Avatar
+              src={urlProfileImage}
+              alt="Profile Picture"
+              sx={{ cursor: "pointer" }}
+              onClick={() => handleNavigateToProfile(username)}
+            />
+          }
           action={isLoggedUser && <SettingsMenu postId={id} />}
-          title={username}
+          title={
+            <Typography
+              variant="subtitle1"
+              sx={{ cursor: "pointer" }}
+              onClick={() => handleNavigateToProfile(username)}
+            >
+              {username}
+            </Typography>
+          }
           subheader={createdAt}
         />
         <CardContent>
