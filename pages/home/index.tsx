@@ -11,6 +11,7 @@ import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../../context/user";
 import { postService } from "../../services/post.service";
 import { Post } from "../../interfaces/post";
+import { PostList } from "../../components/molecules/PostList";
 
 const HomePage = () => {
   const { user } = useContext(UserContext);
@@ -99,65 +100,7 @@ const HomePage = () => {
           }}
         >
           <PublicateCard />
-          {/* Loading State */}
-          {isLoading && (
-            <>
-              {[1, 2, 3].map((item) => (
-                <Box
-                  key={`skeleton-${item}`}
-                  component="div"
-                  sx={{
-                    mb: 3,
-                    width: { xs: "100%", md: 530 },
-                    maxWidth: { xs: 530 },
-                  }}
-                >
-                  <Skeleton variant="rectangular" height={60} />
-                  <Skeleton variant="rectangular" height={300} sx={{ mt: 1 }} />
-                  <Box sx={{ pt: 0.5 }}>
-                    <Skeleton width="60%" />
-                    <Skeleton width="80%" />
-                    <Skeleton width="40%" />
-                  </Box>
-                </Box>
-              ))}
-            </>
-          )}
-
-          {/* No Posts State */}
-          {!isLoading && posts.length === 0 && (
-            <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              sx={{
-                width: { xs: "100%", md: 530 },
-                height: 200,
-                border: "1px dashed grey",
-                borderRadius: 2,
-                mt: 4,
-              }}
-            >
-              <Typography variant="h6" color="text.secondary">
-                No hay publicaciones para mostrar
-              </Typography>
-            </Box>
-          )}
-
-          {/* Posts Exist State */}
-          {!isLoading &&
-            posts.length > 0 &&
-            posts.map((post, index) => (
-              <Box
-                component="div"
-                key={`post-${post.id || index}`}
-                sx={{
-                  mb: 3,
-                }}
-              >
-                <PublicationCard {...post} />
-              </Box>
-            ))}
+          <PostList isLoading={isLoading} posts={posts} />
         </Grid>
         <Grid
           md={3}
