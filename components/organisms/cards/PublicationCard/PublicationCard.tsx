@@ -1,6 +1,7 @@
 import {
   Avatar,
   Box,
+  Button,
   Card,
   CardActions,
   CardContent,
@@ -60,6 +61,9 @@ export const PublicationCard = ({
   resources,
   sharedPost,
   urlProfileImage,
+  likesQuantity,
+  commentsQuantity,
+  sharesQuantity,
 }: Post) => {
   const t = useTranslations("Publication");
 
@@ -287,6 +291,58 @@ export const PublicationCard = ({
           </Box>
         )}
 
+        {(likesQuantity > 0 || sharesQuantity > 0 || commentsQuantity > 0) && (
+          <Box
+            component={"div"}
+            sx={{
+              paddingX: 2,
+              paddingY: 1,
+              display: "flex",
+              justifyContent:
+                likesQuantity === 0 && sharesQuantity === 0
+                  ? "end"
+                  : likesQuantity > 0 &&
+                    sharesQuantity > 0 &&
+                    commentsQuantity === 0
+                  ? "start"
+                  : "space-between",
+            }}
+          >
+            <Box
+              sx={{
+                paddingX: 2,
+                paddingY: 1,
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              {likesQuantity > 0 && (
+                <Button>
+                  <FavoriteIcon color="red" />
+                  <Typography>{likesQuantity}</Typography>
+                </Button>
+              )}
+              {sharesQuantity > 0 && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <ShareIcon />
+                  <Typography>{sharesQuantity}</Typography>
+                </Box>
+              )}
+            </Box>
+            {commentsQuantity > 0 && (
+              <Button variant="text">
+                <Typography>{commentsQuantity}</Typography>
+              </Button>
+            )}
+          </Box>
+        )}
+
         <CardActions disableSpacing>
           <IconButton aria-label="like" onClick={handleCommentClick}>
             <AddCommentRoundedIcon />
@@ -361,6 +417,9 @@ export const PublicationCard = ({
           username,
           resources,
           urlProfileImage,
+          likesQuantity,
+          commentsQuantity,
+          sharesQuantity,
         }}
         open={isModalOpen}
         onClose={() => handleCloseModal()}

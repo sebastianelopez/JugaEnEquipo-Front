@@ -8,4 +8,7 @@ export interface Post {
   createdAt: string;
   urlProfileImage?: string | null;
   sharedPost?: Post | null;
+  likesQuantity: number;
+  sharesQuantity: number;
+  commentsQuantity: number;
 }
