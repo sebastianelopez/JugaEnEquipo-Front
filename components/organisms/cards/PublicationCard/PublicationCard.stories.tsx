@@ -9,7 +9,16 @@ export default {
 } as Meta;
 
 const Template: StoryFn = (args) => (
-  <PublicationCard id={""} body={""} username={""} createdAt={""} {...args} />
+  <PublicationCard
+    id={""}
+    body={""}
+    username={""}
+    createdAt={""}
+    commentsQuantity={0}
+    likesQuantity={0}
+    sharesQuantity={0}
+    {...args}
+  />
 );
 
 export const Default = Template.bind({});
