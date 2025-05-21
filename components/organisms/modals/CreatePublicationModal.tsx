@@ -16,6 +16,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import { PostContext } from "../../../context/post";
 import { Post } from "../../../interfaces";
 import { SharedPostCard } from "../cards/SharedPostCard";
+import { v4 as uuidv4 } from "uuid";
+import { postService } from "../../../services/post.service";
 
 interface Props {
   sx?: SxProps<Theme>;
@@ -35,38 +37,75 @@ export const CreatePublicationModal = ({
   const { postId } = useContext(PostContext);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [postContent, setPostContent] = useState<string>("");
+  const [mediaIds, setMediaIds] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (postId === undefined) return;
     if (event.target.files && event.target.files.length > 0) {
       const filesArray = Array.from(event.target.files);
+      const newMediaIds: string[] = [];
+      filesArray.forEach((element) => {
+        const mediaId = uuidv4();
+        newMediaIds.push(mediaId);
+        const file = element;
+        const resourceType = file.type.startsWith("video/") ? "video" : "image";
+
+        postService
+          .addResource(postId, {
+            id: mediaId,
+            resource: file,
+            type: resourceType,
+          })
+          .then((res) => {
+            console.log("Resource added successfully:", res);
+          });
+      });
       setSelectedFiles((prev) => [...prev, ...filesArray]);
+      setMediaIds((prev) => [...prev, ...newMediaIds]);
     }
   };
 
   const removeFile = (index: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setMediaIds((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const clearState = () => {
+    setSelectedFiles([]);
+    setMediaIds([]);
+    setPostContent("");
+  };
+
+  const handleClose = () => {
+    clearState();
+    onClose(false);
   };
 
   const handleSubmit = () => {
-    // Aquí puedes implementar la lógica para enviar el post con los archivos
-    console.log("Submitting post:", {
-      postId,
-      content: postContent,
-      files: selectedFiles,
-    });
+    if (postId === undefined) return;
 
-    // Limpiar el estado después del envío
-    setSelectedFiles([]);
-    setPostContent("");
-    onClose(false);
+    postService
+      .createPost(postId, {
+        body: postContent,
+        resources: mediaIds,
+        sharedPostId: sharePost ? sharePost.id : null,
+      })
+      .then((res) => {
+        console.log("Post created successfully:", res);
+      })
+      .catch((error) => {
+        console.error("Error creating post:", error);
+      });
+
+    handleClose();
   };
 
   return (
     <>
       <Modal
         open={open}
-        onClose={onClose}
+        onClose={handleClose}
         aria-labelledby="modal-title"
         aria-describedby="modal-description"
         sx={[...(Array.isArray(sx) ? sx : [sx]), { marginInline: 3 }]}
