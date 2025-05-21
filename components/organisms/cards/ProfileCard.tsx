@@ -12,8 +12,9 @@ import {
   Typography,
 } from "@mui/material";
 import { useTranslations } from "next-intl";
-import { FC } from "react";
+import { FC, useContext } from "react";
 import { User } from "../../../interfaces";
+import { UserContext } from "../../../context/user";
 
 interface Props {
   user: User;
@@ -21,12 +22,16 @@ interface Props {
 
 export const ProfileCard: FC<Props> = ({ user }) => {
   const t = useTranslations("Profile");
+
+  const { user: loggedUser } = useContext(UserContext);
+
+  const isLoggedUser = loggedUser?.username === user.username;
   return (
     <Paper
       sx={{
         pb: 2,
         textAlign: "center",
-        maxWidth: 400,
+        maxWidth: { xs: 530, md: 400 },
         position: "relative",
       }}
     >
@@ -37,7 +42,6 @@ export const ProfileCard: FC<Props> = ({ user }) => {
         variant="square"
       />
       <Button
-        children="Agregar jugador"
         sx={{
           position: "absolute",
           top: 350,
@@ -47,9 +51,9 @@ export const ProfileCard: FC<Props> = ({ user }) => {
         {isLoggedUser ? t("editProfilePicture") : t("followUser")}
       </Button>
       <Typography variant="h4" fontWeight="bold">
-        {user.nickname}
+        {user.username}
       </Typography>
-      <Typography variant="subtitle1">{`${user.name} ${user.lastname}`}</Typography>
+      <Typography variant="subtitle1">{`${user.firstname} ${user.lastname}`}</Typography>
       <Box component={"div"} sx={{ p: 2 }}>
         <List sx={{ width: "100%", maxWidth: 360 }}>
           <ListItem>
