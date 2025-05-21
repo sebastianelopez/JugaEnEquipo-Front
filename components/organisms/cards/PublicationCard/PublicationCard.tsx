@@ -14,6 +14,7 @@ import {
   Skeleton,
   styled,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -141,7 +142,9 @@ export const PublicationCard = ({
     <>
       <Card
         sx={{
-          width: { xs: "100%", md: 530 },
+          width: "100%",
+          maxWidth: 530,
+          height: "100%",
           transition: "width 0.5s ease, height 0.5s ease",
         }}
       >
@@ -166,48 +169,116 @@ export const PublicationCard = ({
           }
           subheader={createdAt}
         />
-        <CardContent>
+        <CardContent sx={{ paddingBottom: 0 }}>
           <Typography variant="body2" color="text.secondary">
             {body}
           </Typography>
 
-          {
-            resources && resources.length > 0 ? (
-              resources.length > 1 ? (
-                // Case 1: Multiple resources - show ImageList
-                <ImageList
-                  sx={{ width: { xs: "100%", md: 500 }, maxHeight: 450 }}
-                  cols={3}
-                  rowHeight={164}
-                >
-                  {resources.map((mediaItem, index) => (
-                    <ImageListItem key={index}>
-                      <Image
-                        src={mediaItem.url || ""}
-                        alt={`Image ${index + 1}`}
-                        width={164}
-                        height={164}
-                        style={{ borderRadius: "6px" }}
+          <Box
+            width="100%"
+            height="100%"
+            display="flex"
+            justifyContent="center"
+          >
+            {
+              resources && resources.length > 0 ? (
+                resources.length > 1 ? (
+                  // Case 1: Multiple resources - show ImageList
+                  <ImageList
+                    sx={{ width: { xs: "100%", md: 500 }, maxHeight: 450 }}
+                    cols={matches ? 3 : 2}
+                    rowHeight={164}
+                  >
+                    {resources
+                      .slice(0, Math.min(matches ? 6 : 4, resources.length))
+                      .map((mediaItem, index) => (
+                        <ImageListItem
+                          key={index}
+                          onClick={() => handleMediaClick(index)}
+                          sx={{
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            position: "relative",
+                            ...(index === (matches ? 5 : 3) &&
+                              resources.length > (matches ? 6 : 4) && {
+                                "&::after": {
+                                  content: `"+${
+                                    resources.length - (matches ? 6 : 4)
+                                  }"`,
+                                  position: "absolute",
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  backgroundColor: "rgba(0, 0, 0, 0.6)",
+                                  color: "white",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontSize: "1.5rem",
+                                  fontWeight: "bold",
+                                  borderRadius: "6px",
+                                  zIndex: 1,
+                                },
+                              }),
+                          }}
+                        >
+                          <Image
+                            src={mediaItem.url || ""}
+                            alt={`Image ${index + 1}`}
+                            layout="fill"
+                            style={{
+                              borderRadius: "6px",
+                              objectFit: "cover",
+                              maxWidth: matches ? 164 : 300,
+                              maxHeight: 164,
+                            }}
+                          />
+                        </ImageListItem>
+                      ))}
+                  </ImageList>
+                ) : // Case 2: Single resource - show CardMedia
+                resources[0]?.url ? (
+                  <Box
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      marginTop: 2,
+                      display: "flex",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => handleMediaClick(0)}
+                  >
+                    {resources[0].type === "video" ? (
+                      <video
+                        controls
+                        src={resources[0].url}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: "12px",
+                          objectFit: "contain",
+                        }}
                       />
-                    </ImageListItem>
-                  ))}
-                </ImageList>
-              ) : // Case 2: Single resource - show CardMedia
-              resources[0]?.url ? (
-                <CardMedia
-                  image={resources[0].url}
-                  sx={{
-                    width: { xs: 350, sm: 425, md: 500 },
-                    height: { xs: 315, sm: 383, md: 450 },
-                    transition: "width 0.5s ease, height 0.5s ease",
-                    marginTop: 5,
-                    borderRadius: 1.5,
-                  }}
-                  title="Post image"
-                />
-              ) : null
-            ) : null /* Case 3: No resources - show nothing */
-          }
+                    ) : (
+                      <img
+                        src={resources[0].url}
+                        alt="Post image"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: "5px",
+                          objectFit: "contain",
+                        }}
+                      />
+                    )}
+                  </Box>
+                ) : null
+              ) : null /* Case 3: No resources - show nothing */
+            }
+          </Box>
         </CardContent>
 
         {sharedPost && (
