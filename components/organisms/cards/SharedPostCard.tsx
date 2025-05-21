@@ -2,15 +2,12 @@ import {
   Card,
   CardHeader,
   Avatar,
-  IconButton,
   CardContent,
   Typography,
   ImageList,
   ImageListItem,
-  CardMedia,
   CardActionArea,
 } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Post } from "../../../interfaces";
 import Image from "next/image";
 
@@ -58,26 +55,38 @@ export const SharedPostCard = ({
                       <Image
                         src={mediaItem.url || ""}
                         alt={`Image ${index + 1}`}
-                        width={164}
-                        height={164}
-                        style={{ borderRadius: "6px" }}
+                        fill
+                        style={{ borderRadius: "6px", objectFit: "cover" }}
                       />
                     </ImageListItem>
                   ))}
                 </ImageList>
               ) : // Case 2: Single resource - show CardMedia
               resources[0]?.url ? (
-                <CardMedia
-                  image={resources[0].url}
-                  sx={{
-                    width: { xs: 350, sm: 425, md: 500 },
-                    height: { xs: 315, sm: 383, md: 450 },
-                    transition: "width 0.5s ease, height 0.5s ease",
-                    marginTop: 5,
-                    borderRadius: 1.5,
-                  }}
-                  title="Post image"
-                />
+                resources[0].type === "video" ? (
+                  <video
+                    controls
+                    src={resources[0].url}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      borderRadius: "12px",
+                      objectFit: "contain",
+                    }}
+                  />
+                ) : (
+                  <img
+                    src={resources[0].url}
+                    alt="Post image"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      transition: "width 0.5s ease, height 0.5s ease",
+                      marginTop: 5,
+                      borderRadius: 5,
+                    }}
+                  />
+                )
               ) : null
             ) : null /* Case 3: No resources - show nothing */
           }
