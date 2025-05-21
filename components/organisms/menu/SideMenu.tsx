@@ -27,7 +27,7 @@ import { SelectCountry } from "../../molecules/SelectCountry/SelectCountry";
 export const SideMenu = () => {
   const router = useRouter();
   const { isMenuOpen, toggleSideMenu } = useContext(UiContext);
-  const { removeUser } = useContext(UserContext);
+  const { user, removeUser } = useContext(UserContext);
   const t = useTranslations("SideMenu");
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -76,7 +76,10 @@ export const SideMenu = () => {
           </ListItem>
 
           <>
-            <ListItem button onClick={() => navigateTo("/orders/history")}>
+            <ListItem
+              button
+              onClick={() => navigateTo(`/profile/${user?.username}`)}
+            >
               <ListItemIcon>
                 <AccountCircleOutlined />
               </ListItemIcon>
