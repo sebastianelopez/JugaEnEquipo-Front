@@ -1,4 +1,6 @@
 export interface Comment {
-  commentId: string;
-  commentBody: string;
+  id: string;
+  user: string;
+  comment: string;
+  createdAt: string;
 }

@@ -25,7 +25,7 @@ export const UserProvider: FC<PropsWithChildren> = ({ children }) => {
         if (token) {
           const userId = decodeUserIdByToken(token);
           const user = await userService.getUserById(userId);
-          console.log("User from token:", user);
+          
           if (user) {
             setUser(user);
           }

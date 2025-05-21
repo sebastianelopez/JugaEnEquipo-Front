@@ -10,7 +10,11 @@
         "headerThirdLine": "como você joga"
     },
     "Publication":{
-        "comment": "Responda a esta postagem..."
+        "comment": "Responda a esta postagem...",
+        "mediaButton": "Foto / Video",
+        "createPost": "Criar publicação",
+        "sharePost": "Compartilhar publicação",
+        "writeSomething": "Escreva algo..."
     },
     "Register":{
         "name": "Nome",
@@ -32,6 +36,37 @@
         "emailError":"Verifique o formato do e-mail"
     },
     "Profile":{
-        "profile": "Perfil"        
+        "profile": "Perfil",
+        "editProfilePicture": "Atualizar foto",
+        "followUser": "Seguir",
+        "editProfileBackground": "Atualizar plano de fundo",
+        "shareProfile": "Compartilhar perfil"        
+    },
+    "SideMenu":{
+        "profile": "Perfil",
+        "logOut": "Sair"              
+    },
+    "Global":{
+        "selectLanguage": "Selecione o idioma",
+        "spanish": "Espanhol",
+        "english": "Inglês",
+        "portuguese": "Português"
+    },
+    "Time":{
+        "timePrefixText": "",
+        "timeYearSuffixText": "ano atras",
+        "timeYearsSuffixText": "anos atras",
+        "timeMonthSuffixText": "mes atras",
+        "timeMonthsSuffixText": "meses atras",
+        "timeWeekSuffixText": "semana atras",
+        "timeWeeksSuffixText": "semanas atras",
+        "timeDaySuffixText": "dia atras",
+        "timeDaysSuffixText": "dias atras",
+        "timeHourSuffixText": "hora atras",
+        "timeHoursSuffixText": "horas atras",
+        "timeMinuteSuffixText": "minuto atras",
+        "timeMinutesSuffixText": "minutos atras",
+        "timeSecondSuffixText": "segundo atras",
+        "timeSecondsSuffixText": "segundos atras"
     }
 }

@@ -1,10 +1,14 @@
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
+// Determine if we're running on server or client
+const isServer = typeof window === "undefined";
 
-const baseURL =
-  process.env.NODE_ENV === "development"
-    ? "/api/proxy"
-    : process.env.NEXT_PUBLIC_API_URL || "https://api.jugaenequipo.com/api";
+// Use absolute URL when on server, relative URL when on client in development
+const baseURL = isServer
+  ? process.env.NEXT_PUBLIC_API_URL || "https://api.jugaenequipo.com/api"
+  : process.env.NODE_ENV === "development"
+  ? "/api/proxy"
+  : process.env.NEXT_PUBLIC_API_URL || "https://api.jugaenequipo.com/api";
 
 const axiosInstance = axios.create({
   baseURL,
@@ -96,7 +100,8 @@ axiosInstance.interceptors.response.use(
         }
       );
 
-      const { token: newToken, refreshToken: newRefreshToken } = response.data;
+      const { token: newToken, refreshToken: newRefreshToken } =
+        response.data.data;
 
       // Update cookies with new tokens
       Cookies.set("token", newToken, {

@@ -1,150 +1,103 @@
-import { useContext, useState } from 'react';
+import { useContext, useState } from "react";
 
-import { Box, Divider, Drawer, IconButton, Input, InputAdornment, List, ListItem, ListItemIcon, ListItemText, ListSubheader } from "@mui/material"
-import { AccountCircleOutlined, AdminPanelSettings, CategoryOutlined, ConfirmationNumberOutlined, EscalatorWarningOutlined, FemaleOutlined, LoginOutlined, MaleOutlined, SearchOutlined, VpnKeyOutlined, DashboardOutlined } from '@mui/icons-material';
+import {
+  Box,
+  Drawer,
+  IconButton,
+  Input,
+  InputAdornment,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+} from "@mui/material";
+import {
+  AccountCircleOutlined,
+  LoginOutlined,
+  SearchOutlined,
+} from "@mui/icons-material";
 
-import { UiContext } from '../../../context';
-import { useRouter } from 'next/router';
-
+import { UiContext } from "../../../context";
+import { useRouter } from "next/router";
+import { logout } from "../../../services/auth.service";
+import { UserContext } from "../../../context/user";
+import { useTranslations } from "next-intl";
+import { SelectCountry } from "../../molecules/SelectCountry/SelectCountry";
 
 export const SideMenu = () => {
+  const router = useRouter();
+  const { isMenuOpen, toggleSideMenu } = useContext(UiContext);
+  const { user, removeUser } = useContext(UserContext);
+  const t = useTranslations("SideMenu");
 
-    const router = useRouter();
-    const { isMenuOpen, toggleSideMenu } = useContext( UiContext );
-    //const { user, isLoggedIn, logout } = useContext(  AuthContext );
+  const [searchTerm, setSearchTerm] = useState("");
 
-    const [searchTerm, setSearchTerm] = useState('');
+  const onSearchTerm = () => {
+    if (searchTerm.trim().length === 0) return;
+    navigateTo(`/search/${searchTerm}`);
+  };
 
-    const onSearchTerm = () => {
-        if( searchTerm.trim().length === 0 ) return;
-        navigateTo(`/search/${ searchTerm }`);
-    }
+  const onLogOut = () => {
+    logout();
+    removeUser();
+    router.push("/");
+  };
 
-    
-    const navigateTo = ( url: string ) => {
-        toggleSideMenu();
-        router.push(url);
-    }
-
+  const navigateTo = (url: string) => {
+    toggleSideMenu();
+    router.push(url);
+  };
 
   return (
     <Drawer
-        open={ isMenuOpen }
-        anchor='right'
-        sx={{ backdropFilter: 'blur(4px)', transition: 'all 0.5s ease-out' }}
-        onClose={ toggleSideMenu }
+      open={isMenuOpen}
+      anchor="right"
+      sx={{ backdropFilter: "blur(4px)", transition: "all 0.5s ease-out" }}
+      onClose={toggleSideMenu}
     >
-        <Box component="div" sx={{ width: 250, paddingTop: 5 }}>
-            
-            <List>
+      <Box component="div" sx={{ width: 250, paddingTop: 5 }}>
+        <List>
+          <ListItem>
+            <Input
+              autoFocus
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => (e.key === "Enter" ? onSearchTerm() : null)}
+              type="text"
+              placeholder="Buscar..."
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton onClick={onSearchTerm}>
+                    <SearchOutlined />
+                  </IconButton>
+                </InputAdornment>
+              }
+            />
+          </ListItem>
 
-                <ListItem>
-                    <Input
-                        autoFocus
-                        value={ searchTerm }
-                        onChange={ (e) => setSearchTerm( e.target.value ) }
-                        onKeyPress={ (e) => e.key === 'Enter' ? onSearchTerm() : null }
-                        type='text'
-                        placeholder="Buscar..."
-                        endAdornment={
-                            <InputAdornment position="end">
-                                <IconButton
-                                    onClick={ onSearchTerm }
-                                >
-                                 <SearchOutlined />
-                                </IconButton>
-                            </InputAdornment>
-                        }
-                    />
-                </ListItem>
+          <>
+            <ListItem
+              button
+              onClick={() => navigateTo(`/profile/${user?.username}`)}
+            >
+              <ListItemIcon>
+                <AccountCircleOutlined />
+              </ListItemIcon>
+              <ListItemText primary={t("profile")} />
+            </ListItem>
+            <ListItem>
+              <SelectCountry fullWidth />
+            </ListItem>
+          </>
 
-                {
-                   // isLoggedIn &&
-                     (
-                        <>
-                            <ListItem button>
-                                <ListItemIcon>
-                                    <AccountCircleOutlined/>
-                                </ListItemIcon>
-                                <ListItemText primary={'Perfil'} />
-                            </ListItem>
-
-                            <ListItem 
-                                button 
-                                onClick={() => navigateTo('/orders/history') }
-                            >
-                                <ListItemIcon>
-                                    <ConfirmationNumberOutlined/>
-                                </ListItemIcon>
-                                <ListItemText primary={'Mis Ordenes'} />
-                            </ListItem>
-                        </>
-                    )
-                }
-
-
-                <ListItem 
-                    button 
-                    sx={{ display: { xs: '', sm: 'none' } }} 
-                    onClick={ () => navigateTo('/category/men') }
-                >
-                    <ListItemIcon>
-                        <MaleOutlined/>
-                    </ListItemIcon>
-                    <ListItemText primary={'Hombres'} />
-                </ListItem>
-
-                <ListItem 
-                    button 
-                    sx={{ display: { xs: '', sm: 'none' } }}
-                    onClick={ () => navigateTo('/category/women') }
-                >
-                    <ListItemIcon>
-                        <FemaleOutlined/>
-                    </ListItemIcon>
-                    <ListItemText primary={'Mujeres'} />
-                </ListItem>
-
-                <ListItem 
-                    button 
-                    sx={{ display: { xs: '', sm: 'none' } }}
-                    onClick={ () => navigateTo('/category/kid') }
-                >
-                    <ListItemIcon>
-                        <EscalatorWarningOutlined/>
-                    </ListItemIcon>
-                    <ListItemText primary={'Niños'} />
-                </ListItem>
-
-
-                {
-                   // isLoggedIn ?
-                     (
-                        <ListItem button 
-                       // onClick={ logout }
-                        >
-                            <ListItemIcon>
-                                <LoginOutlined/>
-                            </ListItemIcon>
-                            <ListItemText primary={'Salir'} />
-                        </ListItem>
-                    )
-                    // : (
-                    //     <ListItem 
-                    //         button
-                    //         onClick={ () => navigateTo(`/auth/login?p=${ router.asPath }`) }
-                    //     >
-                    //         <ListItemIcon>
-                    //             <VpnKeyOutlined/>
-                    //         </ListItemIcon>
-                    //         <ListItemText primary={'Ingresar'} />
-                    //     </ListItem>
-                    // )
-                }
-               
-                
-            </List>
-        </Box>
+          <ListItem button onClick={onLogOut}>
+            <ListItemIcon>
+              <LoginOutlined />
+            </ListItemIcon>
+            <ListItemText primary={t("logOut")} />
+          </ListItem>
+        </List>
+      </Box>
     </Drawer>
-  )
-}
+  );
+};

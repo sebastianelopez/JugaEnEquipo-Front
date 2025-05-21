@@ -7,5 +7,8 @@ export interface Post {
   resources?: Resource[];
   createdAt: string;
   urlProfileImage?: string | null;
-  sharedPost?: string | null;
+  sharedPost?: Post | null;
+  likesQuantity: number;
+  sharesQuantity: number;
+  commentsQuantity: number;
 }

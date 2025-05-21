@@ -10,7 +10,11 @@
         "headerThirdLine": "you play"
     },
     "Publication":{
-        "comment": "Reply to this post..."
+        "comment": "Reply to this post...",
+        "mediaButton": "Photo / Video",
+        "createPost": "Create a post",
+        "sharePost": "Share post",
+        "writeSomething": "Write something..."
     },
     "Register":{
         "name": "First name",
@@ -32,6 +36,37 @@
         "emailError":"Check the email format"
     },
     "Profile":{
-        "profile": "Profile"              
+        "profile": "Profile",
+        "editProfilePicture": "Update photo",
+        "followUser": "Follow",
+        "editProfileBackground": "Update background",
+        "shareProfile": "Share profile"              
+    },
+    "SideMenu":{
+        "profile": "Profile",
+        "logOut": "Log out"              
+    },
+    "Global":{
+        "selectLanguage": "Select language",
+        "spanish": "Spanish",
+        "english": "English",
+        "portuguese": "Portuguese"
+    },
+    "Time":{
+        "timePrefixText": "",
+        "timeYearSuffixText": "year ago",
+        "timeYearsSuffixText": "years ago",
+        "timeMonthSuffixText": "month ago",
+        "timeMonthsSuffixText": "months ago",
+        "timeWeekSuffixText": "week ago",
+        "timeWeeksSuffixText": "weeks ago",
+        "timeDaySuffixText": "day ago",
+        "timeDaysSuffixText": "days ago",
+        "timeHourSuffixText": "hour ago",
+        "timeHoursSuffixText": "hours ago",
+        "timeMinuteSuffixText": "minute ago",
+        "timeMinutesSuffixText": "minutes ago",
+        "timeSecondSuffixText": "second ago",
+        "timeSecondsSuffixText": "seconds ago"
     }
 }

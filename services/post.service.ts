@@ -12,6 +12,10 @@ interface PostResponse {
   data: Post | Post[];
 }
 
+interface CommentResponse {
+  data: Comment | Comment[];
+}
+
 export const postService = {
   createPost: async (
     postId: string,
@@ -61,11 +65,18 @@ export const postService = {
       params: { q: query },
     }),
 
+  getPostsByUsername: async (username: string) =>
+    (
+      await api.get<PostResponse>(`/posts`, {
+        q: `username:${username}`,
+      })
+    ).data,
+
   addComment: async (postId: string, commentData: Comment) =>
     await api.put<Comment>(`/post/${postId}/comment`, commentData),
 
   getPostComments: async (postId: string) =>
-    await api.get<Comment[]>(`/post/${postId}/comments`),
+    (await api.get<CommentResponse>(`/post/${postId}/comments`)).data,
 
   getMyFeed: async () => {
     const token = await getToken();
