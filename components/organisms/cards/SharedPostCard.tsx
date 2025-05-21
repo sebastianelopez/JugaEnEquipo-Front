@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { Post } from "../../../interfaces";
 import Image from "next/image";
+import { formatTimeElapsed } from "../../../utils/formatTimeElapsed";
 
 export const SharedPostCard = ({
   id,
@@ -34,7 +35,7 @@ export const SharedPostCard = ({
         <CardHeader
           avatar={<Avatar src={urlProfileImage} alt="Profile Picture" />}
           title={username}
-          subheader={createdAt}
+          subheader={formatTimeElapsed(new Date(createdAt))}
         />
         <CardContent>
           <Typography variant="body2" color="text.secondary">

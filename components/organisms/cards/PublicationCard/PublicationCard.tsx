@@ -37,6 +37,7 @@ import { SettingsMenu } from "../../../molecules/SettingsMenu/SettingsMenu";
 import { MediaViewerModal } from "../../modals/MediaViewerModal";
 import { useRouter } from "next/router";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import { formatTimeElapsed } from "../../../../utils/formatTimeElapsed";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -171,7 +172,7 @@ export const PublicationCard = ({
               {username}
             </Typography>
           }
-          subheader={createdAt}
+          subheader={formatTimeElapsed(new Date(createdAt))}
         />
         <CardContent sx={{ paddingBottom: 0 }}>
           <Typography variant="body2" color="text.secondary">
@@ -381,7 +382,7 @@ export const PublicationCard = ({
                     <Typography variant="subtitle2">{user}</Typography>
                     <Typography variant="body2">{comment}</Typography>
                     <Typography variant="caption" alignSelf={"end"}>
-                      {createdAt}
+                      {formatTimeElapsed(new Date(createdAt))}
                     </Typography>
                   </CardContent>
                 ))
