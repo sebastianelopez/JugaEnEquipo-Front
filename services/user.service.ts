@@ -6,6 +6,15 @@ interface UserResponse {
   data: User;
 }
 
+interface SearchUsersResponse {
+  data: {
+    data: User[];
+    metadata: {
+      quantity: number;
+    };
+  };
+}
+
 export const userService = {
   getUserById: async (id: string) => {
     const token = await getToken();
@@ -13,15 +22,42 @@ export const userService = {
     return response.data;
   },
 
+  getUserByUsername: async (username: string, serverToken?: string) => {
+    try {
+      const token =
+        typeof window === "undefined" ? serverToken : await getToken();
+
+      const response = await api.get<UserResponse>(
+        `/user/by-username/${username}`,
+        {},
+        token
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user:", (error as Error).message);
+      return null;
+    }
+  },
+
   createUser: async (userData: User) => {
     const token = await getToken();
-    const response = await api.post<UserResponse>("/user", userData, undefined, token);
+    const response = await api.post<UserResponse>(
+      "/user",
+      userData,
+      undefined,
+      token
+    );
     return response.data;
   },
 
   updateUser: async (id: string, userData: Partial<User>) => {
     const token = await getToken();
-    const response = await api.put<UserResponse>(`/user/${id}`, userData, token);
+    const response = await api.put<UserResponse>(
+      `/user/${id}`,
+      userData,
+      token
+    );
     return response.data;
   },
 
@@ -86,5 +122,16 @@ export const userService = {
   getUserFollowers: async (id: string) => {
     const token = await getToken();
     return api.get<User[]>(`/user/${id}/followers`, {}, token);
+  },
+
+  searchUsers: async (query: string) => {
+    const token = await getToken();
+    return (
+      await api.get<SearchUsersResponse>(
+        `/users`,
+        { q: `username:${encodeURIComponent(query)}` },
+        token
+      )
+    ).data;
   },
 };

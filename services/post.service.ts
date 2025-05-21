@@ -65,6 +65,13 @@ export const postService = {
       params: { q: query },
     }),
 
+  getPostsByUsername: async (username: string) =>
+    (
+      await api.get<PostResponse>(`/posts`, {
+        q: `username:${username}`,
+      })
+    ).data,
+
   addComment: async (postId: string, commentData: Comment) =>
     await api.put<Comment>(`/post/${postId}/comment`, commentData),
 
