@@ -20,6 +20,7 @@ import {
 import ShareIcon from "@mui/icons-material/Share";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
+import SendIcon from "@mui/icons-material/Send";
 
 import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -97,6 +98,8 @@ export const PublicationCard = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
+  const [commentInput, setCommentInput] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
 
   const { user } = useContext(UserContext);
 
@@ -133,6 +136,43 @@ export const PublicationCard = ({
   const handleMediaClick = (index: number) => {
     setSelectedMediaIndex(index);
     setMediaViewerOpen(true);
+  };
+
+  const handleSubmitComment = async (
+    e: React.KeyboardEvent<HTMLInputElement> | React.FormEvent
+  ) => {
+    e.preventDefault();
+
+    if (!commentInput.trim() || submittingComment || !user) return;
+
+    setSubmittingComment(true);
+
+    try {
+      const commentId = uuidv4();
+      const newComment = await postService.addComment(id, {
+        commentId: commentId,
+        commentBody: commentInput,
+      });
+
+      if (!newComment) return;
+
+      setComments((prev) => [...prev, newComment]);
+      setCommentInput("");
+    } catch (error) {
+      console.error("Error submitting comment:", error);
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const handleCommentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCommentInput(e.target.value);
+  };
+
+  const handleCommentKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSubmitComment(e);
+    }
   };
 
   const handleNavigateToProfile = (username: string) => {
@@ -417,7 +457,23 @@ export const PublicationCard = ({
               )}
             </Box>
             <Box paddingX={2} paddingY={2} component={"div"}>
-              <Input fullWidth placeholder={t("comment")} inputRef={inputRef} />
+              <Input
+                fullWidth
+                placeholder={t("comment")}
+                inputRef={inputRef}
+                onChange={handleCommentInputChange}
+                onKeyPress={handleCommentKeyPress}
+                disabled={submittingComment}
+                endAdornment={
+                  <IconButton
+                    size="small"
+                    onClick={handleSubmitComment}
+                    disabled={!commentInput.trim() || submittingComment}
+                  >
+                    <SendIcon fontSize="small" />
+                  </IconButton>
+                }
+              />
             </Box>
           </Box>
         </Collapse>

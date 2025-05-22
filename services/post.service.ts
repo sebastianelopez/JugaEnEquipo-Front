@@ -72,8 +72,10 @@ export const postService = {
       })
     ).data,
 
-  addComment: async (postId: string, commentData: Comment) =>
-    await api.put<Comment>(`/post/${postId}/comment`, commentData),
+  addComment: async (
+    postId: string,
+    commentData: { commentId: string; commentBody: string }
+  ) => await api.put<Comment>(`/post/${postId}/comment`, commentData),
 
   getPostComments: async (postId: string) =>
     (await api.get<CommentResponse>(`/post/${postId}/comments`)).data,
