@@ -67,6 +67,25 @@ export const PublicationCard = ({
   sharesQuantity,
 }: Post) => {
   const t = useTranslations("Publication");
+  const timeT = useTranslations("Time");
+
+  const timeTranslations = {
+    timePrefixText: timeT("timePrefixText"),
+    timeYearsSuffixText: timeT("timeYearsSuffixText"),
+    timeYearSuffixText: timeT("timeYearSuffixText"),
+    timeMonthsSuffixText: timeT("timeMonthsSuffixText"),
+    timeMonthSuffixText: timeT("timeMonthSuffixText"),
+    timeWeeksSuffixText: timeT("timeWeeksSuffixText"),
+    timeWeekSuffixText: timeT("timeWeekSuffixText"),
+    timeDaysSuffixText: timeT("timeDaysSuffixText"),
+    timeDaySuffixText: timeT("timeDaySuffixText"),
+    timeHoursSuffixText: timeT("timeHoursSuffixText"),
+    timeHourSuffixText: timeT("timeHourSuffixText"),
+    timeMinutesSuffixText: timeT("timeMinutesSuffixText"),
+    timeMinuteSuffixText: timeT("timeMinuteSuffixText"),
+    timeSecondsSuffixText: timeT("timeSecondsSuffixText"),
+    timeSecondSuffixText: timeT("timeSecondSuffixText"),
+  };
 
   const matches = useMediaQuery("(min-width:650px)");
 
@@ -172,7 +191,7 @@ export const PublicationCard = ({
               {username}
             </Typography>
           }
-          subheader={formatTimeElapsed(new Date(createdAt))}
+          subheader={formatTimeElapsed(new Date(createdAt), timeTranslations)}
         />
         <CardContent sx={{ paddingBottom: 0 }}>
           <Typography variant="body2" color="text.secondary">
@@ -382,7 +401,7 @@ export const PublicationCard = ({
                     <Typography variant="subtitle2">{user}</Typography>
                     <Typography variant="body2">{comment}</Typography>
                     <Typography variant="caption" alignSelf={"end"}>
-                      {formatTimeElapsed(new Date(createdAt))}
+                      {formatTimeElapsed(new Date(createdAt), timeTranslations)}
                     </Typography>
                   </CardContent>
                 ))

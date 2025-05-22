@@ -11,6 +11,7 @@ import {
 import { Post } from "../../../interfaces";
 import Image from "next/image";
 import { formatTimeElapsed } from "../../../utils/formatTimeElapsed";
+import { useTranslations } from "next-intl";
 
 export const SharedPostCard = ({
   id,
@@ -20,6 +21,25 @@ export const SharedPostCard = ({
   urlProfileImage,
   createdAt,
 }: Post) => {
+  const timeT = useTranslations("Time");
+
+  const timeTranslations = {
+    timePrefixText: timeT("timePrefixText"),
+    timeYearsSuffixText: timeT("timeYearsSuffixText"),
+    timeYearSuffixText: timeT("timeYearSuffixText"),
+    timeMonthsSuffixText: timeT("timeMonthsSuffixText"),
+    timeMonthSuffixText: timeT("timeMonthSuffixText"),
+    timeWeeksSuffixText: timeT("timeWeeksSuffixText"),
+    timeWeekSuffixText: timeT("timeWeekSuffixText"),
+    timeDaysSuffixText: timeT("timeDaysSuffixText"),
+    timeDaySuffixText: timeT("timeDaySuffixText"),
+    timeHoursSuffixText: timeT("timeHoursSuffixText"),
+    timeHourSuffixText: timeT("timeHourSuffixText"),
+    timeMinutesSuffixText: timeT("timeMinutesSuffixText"),
+    timeMinuteSuffixText: timeT("timeMinuteSuffixText"),
+    timeSecondsSuffixText: timeT("timeSecondsSuffixText"),
+    timeSecondSuffixText: timeT("timeSecondSuffixText"),
+  };
   return (
     <Card
       key={`${id}-shared-post`}
@@ -35,7 +55,7 @@ export const SharedPostCard = ({
         <CardHeader
           avatar={<Avatar src={urlProfileImage} alt="Profile Picture" />}
           title={username}
-          subheader={formatTimeElapsed(new Date(createdAt))}
+          subheader={formatTimeElapsed(new Date(createdAt), timeTranslations)}
         />
         <CardContent>
           <Typography variant="body2" color="text.secondary">
