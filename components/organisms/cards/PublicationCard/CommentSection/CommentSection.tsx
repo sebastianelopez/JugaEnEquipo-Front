@@ -26,20 +26,17 @@ import { v4 as uuidv4 } from "uuid";
 import { postService } from "../../../../../services/post.service";
 
 export interface CommentSectionHandle {
-  expand: () => void;
-  collapse: () => void;
-  toggle: () => void;
-  focus: () => void;
+  focus: (onFocus: () => void) => void;
 }
 
 interface Props {
   postId: string;
+  expanded: boolean;
 }
 
 export const CommentSection = forwardRef<CommentSectionHandle, Props>(
-  ({ postId }, ref) => {
+  ({ postId, expanded }, ref) => {
     const { user } = useContext(UserContext);
-    const [expanded, setExpanded] = useState(false);
     const [comments, setComments] = useState<Comment[]>([]);
     const [newCommentId, setNewCommentId] = useState<string | null>(null);
     const [commentInput, setCommentInput] = useState("");
@@ -70,23 +67,11 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
     const inputRef = useRef<HTMLInputElement>();
 
     useImperativeHandle(ref, () => ({
-      expand: () => setExpanded(true),
-      collapse: () => setExpanded(false),
-      toggle: () => setExpanded((prev) => !prev),
-      focus: () => {
-        setExpanded(true);
+      focus: (onFocus: () => void) => {
+        onFocus();
         setTimeout(() => inputRef.current?.focus(), 100);
       },
     }));
-
-    const handleExpandClick = () => {
-      setExpanded(!expanded);
-    };
-
-    const handleCommentClick = () => {
-      setExpanded(true);
-      inputRef.current?.focus();
-    };
 
     const handleSubmitComment = async (
       e: React.KeyboardEvent<HTMLInputElement> | React.FormEvent

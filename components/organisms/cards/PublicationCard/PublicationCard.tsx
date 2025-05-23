@@ -123,11 +123,11 @@ export const PublicationCard = ({
   };
 
   const handleExpandClick = () => {
-    commentSectionRef.current?.toggle();
+    setExpanded(!expanded);
   };
 
   const handleCommentClick = () => {
-    commentSectionRef.current?.focus();
+    commentSectionRef.current?.focus(() => setExpanded(true));
   };
 
   const handleNavigateToProfile = (username: string) => {
@@ -352,7 +352,11 @@ export const PublicationCard = ({
             <ExpandMoreIcon />
           </ExpandMore>
         </CardActions>
-        <CommentSection ref={commentSectionRef} postId={id} />
+        <CommentSection
+          expanded={expanded}
+          ref={commentSectionRef}
+          postId={id}
+        />
       </Card>
       <MediaViewerModal
         ariaLabel="Post media viewer"
