@@ -6,13 +6,10 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  Collapse,
   IconButton,
   IconButtonProps,
   ImageList,
   ImageListItem,
-  Input,
-  Skeleton,
   styled,
   Typography,
   useMediaQuery,
@@ -20,15 +17,12 @@ import {
 import ShareIcon from "@mui/icons-material/Share";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
-import SendIcon from "@mui/icons-material/Send";
 
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { LikeButton } from "../../../atoms";
 import { Post } from "../../../../interfaces/post";
 import Image from "next/image";
-import { postService } from "../../../../services/post.service";
-import { Comment } from "../../../../interfaces/comment";
 import { SharedPostCard } from "../SharedPostCard";
 import { UserContext } from "../../../../context/user";
 import { CreatePublicationModal } from "../../modals/CreatePublicationModal";
@@ -39,6 +33,10 @@ import { MediaViewerModal } from "../../modals/MediaViewerModal";
 import { useRouter } from "next/router";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import { formatTimeElapsed } from "../../../../utils/formatTimeElapsed";
+import {
+  CommentSection,
+  CommentSectionHandle,
+} from "./CommentSection/CommentSection";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -67,7 +65,6 @@ export const PublicationCard = ({
   commentsQuantity,
   sharesQuantity,
 }: Post) => {
-  const t = useTranslations("Publication");
   const timeT = useTranslations("Time");
 
   const timeTranslations = {
@@ -93,19 +90,15 @@ export const PublicationCard = ({
   const router = useRouter();
 
   const [expanded, setExpanded] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
-  const [commentInput, setCommentInput] = useState("");
-  const [submittingComment, setSubmittingComment] = useState(false);
 
   const { user } = useContext(UserContext);
 
   const isLoggedUser = user?.username === username;
 
-  const inputRef = useRef<HTMLInputElement>();
+  const commentSectionRef = useRef<CommentSectionHandle>(null);
 
   const { setPostId, removePostId } = useContext(PostContext);
 
@@ -120,15 +113,6 @@ export const PublicationCard = ({
     setIsModalOpen(false);
   };
 
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
-
-  const handleCommentClick = () => {
-    setExpanded(true);
-    inputRef.current?.focus();
-  };
-
   const handleCloseMediaViewer = () => {
     setMediaViewerOpen(false);
   };
@@ -138,69 +122,17 @@ export const PublicationCard = ({
     setMediaViewerOpen(true);
   };
 
-  const handleSubmitComment = async (
-    e: React.KeyboardEvent<HTMLInputElement> | React.FormEvent
-  ) => {
-    e.preventDefault();
-
-    if (!commentInput.trim() || submittingComment || !user) return;
-
-    setSubmittingComment(true);
-
-    try {
-      const commentId = uuidv4();
-      const newComment = await postService.addComment(id, {
-        commentId: commentId,
-        commentBody: commentInput,
-      });
-
-      if (!newComment) return;
-
-      setComments((prev) => [...prev, newComment]);
-      setCommentInput("");
-    } catch (error) {
-      console.error("Error submitting comment:", error);
-    } finally {
-      setSubmittingComment(false);
-    }
+  const handleExpandClick = () => {
+    commentSectionRef.current?.toggle();
   };
 
-  const handleCommentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCommentInput(e.target.value);
-  };
-
-  const handleCommentKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSubmitComment(e);
-    }
+  const handleCommentClick = () => {
+    commentSectionRef.current?.focus();
   };
 
   const handleNavigateToProfile = (username: string) => {
     router.push(`/profile/${username}`);
   };
-
-  useEffect(() => {
-    const loadComments = async () => {
-      if (expanded && !loading) {
-        setLoading(true);
-        try {
-          const fetchedComments = await postService.getPostComments(id);
-          setComments(
-            Array.isArray(fetchedComments) ? fetchedComments : [fetchedComments]
-          );
-        } catch (error) {
-          console.error("Error cargando comentarios:", error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    if (expanded) {
-      loadComments();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expanded, id]);
 
   return (
     <>
@@ -396,8 +328,8 @@ export const PublicationCard = ({
               )}
             </Box>
             {commentsQuantity > 0 && (
-              <Button variant="text">
-                <Typography>{commentsQuantity}</Typography>
+              <Button variant="text" onClick={() => setExpanded(true)}>
+                <Typography>{`${commentsQuantity} comments`}</Typography>
               </Button>
             )}
           </Box>
@@ -420,63 +352,7 @@ export const PublicationCard = ({
             <ExpandMoreIcon />
           </ExpandMore>
         </CardActions>
-        <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <Box
-            component={"div"}
-            sx={{
-              transition: "opacity 0.5s ease-out",
-              opacity: expanded ? 1 : 0,
-            }}
-          >
-            <Box component={"div"}>
-              {loading ? (
-                <CardContent>
-                  <Skeleton variant="text" width="10%" />
-                  <Skeleton variant="text" width="80%" />
-                  <Skeleton variant="text" width="30%" />
-                </CardContent>
-              ) : comments.length > 0 ? (
-                comments.map(({ id, comment, user, createdAt }) => (
-                  <CardContent key={id}>
-                    <Typography variant="subtitle2">{user}</Typography>
-                    <Typography variant="body2">{comment}</Typography>
-                    <Typography variant="caption" alignSelf={"end"}>
-                      {formatTimeElapsed(new Date(createdAt), timeTranslations)}
-                    </Typography>
-                  </CardContent>
-                ))
-              ) : (
-                <>
-                  <Typography variant="subtitle2" align="center">
-                    No comments yet
-                  </Typography>
-                  <Typography variant="body2" align="center">
-                    Add a comment
-                  </Typography>
-                </>
-              )}
-            </Box>
-            <Box paddingX={2} paddingY={2} component={"div"}>
-              <Input
-                fullWidth
-                placeholder={t("comment")}
-                inputRef={inputRef}
-                onChange={handleCommentInputChange}
-                onKeyPress={handleCommentKeyPress}
-                disabled={submittingComment}
-                endAdornment={
-                  <IconButton
-                    size="small"
-                    onClick={handleSubmitComment}
-                    disabled={!commentInput.trim() || submittingComment}
-                  >
-                    <SendIcon fontSize="small" />
-                  </IconButton>
-                }
-              />
-            </Box>
-          </Box>
-        </Collapse>
+        <CommentSection ref={commentSectionRef} postId={id} />
       </Card>
       <MediaViewerModal
         ariaLabel="Post media viewer"
