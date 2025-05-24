@@ -173,7 +173,8 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
                       display: "flex",
                       flexDirection: "column",
                       alignItems: isCurrentUser ? "flex-end" : "flex-start",
-                      padding: 2,
+                      paddingX: 2,
+                      marginBottom: 1,
                       width: "100%",
                       opacity: isNewComment ? 0 : 1,
                       transform: isNewComment
@@ -201,7 +202,8 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
                           ? "primary.light"
                           : "red.50",
                         borderRadius: 2,
-                        padding: 1.5,
+                        paddingY: 1,
+                        paddingX: 1.5,
                         mb: 0.5,
                       }}
                     >
