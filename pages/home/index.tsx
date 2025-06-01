@@ -59,7 +59,6 @@ const HomePage = () => {
           mx: "auto",
           width: "100%",
           justifyContent: "center",
-          // Ensure the Grid spans the full width
         }}
       >
         <Grid
