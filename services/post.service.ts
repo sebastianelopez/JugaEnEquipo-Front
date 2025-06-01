@@ -57,8 +57,22 @@ export const postService = {
   deletePost: async (postId: string) =>
     await api.delete<void>(`/post/${postId}/delete`),
 
-  getPostById: async (postId: string) =>
-    (await api.get<PostResponse>(`/post/${postId}`)).data,
+  getPostById: async (postId: string, serverToken?: string) => {
+    try {
+      const token =
+        typeof window === "undefined" ? serverToken : await getToken();
+      const response = await api.get<PostResponse>(
+        `/post/${postId}`,
+        {},
+        token
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching post:", (error as Error).message);
+      return null;
+    }
+  },
 
   searchPosts: (query: string) =>
     api.get<Post[]>(`/posts`, {
