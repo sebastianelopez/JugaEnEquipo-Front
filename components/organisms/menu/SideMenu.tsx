@@ -52,7 +52,19 @@ export const SideMenu = () => {
     <Drawer
       open={isMenuOpen}
       anchor="right"
-      sx={{ backdropFilter: "blur(4px)", transition: "all 0.5s ease-out" }}
+      sx={{ backdropFilter: "blur(4px)", transition: "all 0.5s ease-out",
+        '& .MuiDrawer-paper': { 
+          boxSizing: 'border-box',
+          width: 250,
+        },
+        '& .MuiBackdrop-root': {
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        }
+       }}
+      variant="temporary"
+      ModalProps={{
+        keepMounted: true,
+      }}
       onClose={toggleSideMenu}
     >
       <Box component="div" sx={{ width: 250, paddingTop: 5 }}>
