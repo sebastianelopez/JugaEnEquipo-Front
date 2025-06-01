@@ -53,6 +53,10 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
   }),
 }));
 
+interface PublicationCardProps extends Post {
+  maxWidth?: number;
+}
+
 export const PublicationCard = ({
   id,
   body,
@@ -64,7 +68,8 @@ export const PublicationCard = ({
   likesQuantity,
   commentsQuantity,
   sharesQuantity,
-}: Post) => {
+  maxWidth,
+}: PublicationCardProps) => {
   const timeT = useTranslations("Time");
 
   const timeTranslations = {
@@ -139,7 +144,7 @@ export const PublicationCard = ({
       <Card
         sx={{
           width: "100%",
-          maxWidth: 530,
+          maxWidth: maxWidth ?? 530,
           height: "100%",
           transition: "width 0.5s ease, height 0.5s ease",
         }}
