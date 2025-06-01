@@ -24,6 +24,7 @@ import { useTranslations } from "next-intl";
 
 import { v4 as uuidv4 } from "uuid";
 import { postService } from "../../../../../services/post.service";
+import { useTimeTranslations } from "../../../../../hooks/useTimeTranslations";
 
 export interface CommentSectionHandle {
   focus: (onFocus: () => void) => void;
@@ -44,25 +45,8 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
     const [loading, setLoading] = useState(false);
 
     const t = useTranslations("Publication");
-    const timeT = useTranslations("Time");
 
-    const timeTranslations = {
-      timePrefixText: timeT("timePrefixText"),
-      timeYearsSuffixText: timeT("timeYearsSuffixText"),
-      timeYearSuffixText: timeT("timeYearSuffixText"),
-      timeMonthsSuffixText: timeT("timeMonthsSuffixText"),
-      timeMonthSuffixText: timeT("timeMonthSuffixText"),
-      timeWeeksSuffixText: timeT("timeWeeksSuffixText"),
-      timeWeekSuffixText: timeT("timeWeekSuffixText"),
-      timeDaysSuffixText: timeT("timeDaysSuffixText"),
-      timeDaySuffixText: timeT("timeDaySuffixText"),
-      timeHoursSuffixText: timeT("timeHoursSuffixText"),
-      timeHourSuffixText: timeT("timeHourSuffixText"),
-      timeMinutesSuffixText: timeT("timeMinutesSuffixText"),
-      timeMinuteSuffixText: timeT("timeMinuteSuffixText"),
-      timeSecondsSuffixText: timeT("timeSecondsSuffixText"),
-      timeSecondSuffixText: timeT("timeSecondSuffixText"),
-    };
+    const timeTranslations = useTimeTranslations();
 
     const inputRef = useRef<HTMLInputElement>();
 
