@@ -12,6 +12,7 @@ import { Post } from "../../../interfaces";
 import Image from "next/image";
 import { formatTimeElapsed } from "../../../utils/formatTimeElapsed";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/router";
 
 export const SharedPostCard = ({
   id,
@@ -21,6 +22,7 @@ export const SharedPostCard = ({
   urlProfileImage,
   createdAt,
 }: Post) => {
+  const router = useRouter();
   const timeT = useTranslations("Time");
 
   const timeTranslations = {
@@ -40,6 +42,11 @@ export const SharedPostCard = ({
     timeSecondsSuffixText: timeT("timeSecondsSuffixText"),
     timeSecondSuffixText: timeT("timeSecondSuffixText"),
   };
+
+  const handleNavigateToPost = (postId: string) => {
+    router.push(`/post/${postId}`);
+  };
+
   return (
     <Card
       key={`${id}-shared-post`}
@@ -51,7 +58,7 @@ export const SharedPostCard = ({
         backgroundColor: "rgba(0, 0, 0, 0.02)",
       }}
     >
-      <CardActionArea>
+      <CardActionArea onClick={() => handleNavigateToPost(id)}>
         <CardHeader
           avatar={<Avatar src={urlProfileImage} alt="Profile Picture" />}
           title={username}
