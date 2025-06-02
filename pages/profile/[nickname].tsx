@@ -10,6 +10,7 @@ import { useContext, useEffect, useState } from "react";
 import { postService } from "../../services/post.service";
 import { PostList } from "../../components/molecules/PostList";
 import { UserContext } from "../../context/user";
+import { BlizzardButton } from "../../components/atoms";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -181,7 +182,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
                   aria-label="basic tabs example"
                 >
                   <Tab label="Publicaciones" {...getA11yProps(0)} />
-                  <Tab label="Item Two" {...getA11yProps(1)} />
+                  <Tab label="Stats" {...getA11yProps(1)} />
                   <Tab label="Item Three" {...getA11yProps(2)} />
                 </Tabs>
               </Box>
@@ -189,7 +190,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
                 <PostList isLoading={isLoading} posts={posts} />
               </CustomTabPanel>
               <CustomTabPanel value={tab} index={1}>
-                Item Two
+                <BlizzardButton />
               </CustomTabPanel>
               <CustomTabPanel value={tab} index={2}>
                 Item Three

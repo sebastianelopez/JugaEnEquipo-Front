@@ -1,0 +1,201 @@
+import {
+  Grid,
+  Box,
+  Typography,
+  TextField,
+  InputAdornment,
+  List,
+  ListItem,
+  ListItemAvatar,
+  Avatar,
+  ListItemText,
+  Divider,
+} from "@mui/material";
+import { formatTimeElapsed } from "../../../utils/formatTimeElapsed";
+import { Search as SearchIcon } from "@mui/icons-material";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { Conversation } from "../../../interfaces/conversation";
+import { useTimeTranslations } from "../../../hooks/useTimeTranslations";
+
+export interface ConversationsListHandle {
+  selectConversation: (conversation: Conversation | null) => void;
+}
+
+interface ConversationListProps {
+  conversations: Array<Conversation>;
+  onSelectConversation?: (conversation: Conversation | null) => void;
+}
+
+export const ConversationsList = forwardRef<
+  ConversationsListHandle,
+  ConversationListProps
+>(({ conversations, onSelectConversation }, ref) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredConversations, setFilteredConversations] =
+    useState(conversations);
+
+  const [selectedConversation, setSelectedConversation] =
+    useState<Conversation | null>(null);
+
+  const timeTranslations = useTimeTranslations();
+
+  const handleSelectConversation = (conversation: Conversation | null) => {
+    setSelectedConversation(conversation);
+    if (onSelectConversation) {
+      onSelectConversation(conversation);
+    }
+  };
+
+  useImperativeHandle(ref, () => ({
+    selectConversation: (conversation) => {
+      handleSelectConversation(conversation);
+    },
+  }));
+
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredConversations(conversations);
+    } else {
+      const filtered = conversations.filter(
+        (convo) =>
+          convo.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          convo.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredConversations(filtered);
+    }
+  }, [searchTerm, conversations]);
+
+  return (
+    <Grid size={{xs: 12, md: 5}} sx={{ height: "100%" }}>
+      <Box
+        sx={{
+          padding: 2,
+          backgroundColor: "#f0f0f0",
+          borderRadius: 1,
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          overflow: "hidden",
+        }}
+      >
+        <Typography variant="h5" component="h2" gutterBottom>
+          Mensajes
+        </Typography>
+
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Buscar mensajes o contactos..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          margin="normal"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ mb: 3 }}
+        />
+
+        {filteredConversations.length === 0 ? (
+          <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
+            No se encontraron conversaciones
+          </Typography>
+        ) : (
+          <List
+            sx={{
+              bgcolor: "background.paper",
+              borderRadius: 1,
+              overflow: "auto",
+              maxHeight: "100%",
+            }}
+          >
+            {filteredConversations.map((conversation, index) => (
+              <Box key={conversation.id}>
+                <ListItem
+                  button
+                  alignItems="flex-start"
+                  onClick={() => handleSelectConversation(conversation)}
+                  sx={{
+                    position: "relative",
+                    ...(conversation.unread > 0 && {
+                      bgcolor: "rgba(25, 118, 210, 0.08)",
+                    }),
+                    ...(selectedConversation?.id === conversation.id && {
+                      bgcolor: "rgba(25, 118, 210, 0.15)",
+                    }),
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar>{conversation.username[0].toUpperCase()}</Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Box display="flex" justifyContent="space-between">
+                        <Typography
+                          component="span"
+                          fontWeight={
+                            conversation.unread > 0 ? "bold" : "normal"
+                          }
+                        >
+                          {conversation.username}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {formatTimeElapsed(
+                            new Date(conversation.createdAt),
+                            timeTranslations
+                          )}
+                        </Typography>
+                      </Box>
+                    }
+                    slotProps={{ secondary: { component: "div" } }}
+                    secondary={
+                      <Box display="flex" justifyContent="space-between">
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="text.primary"
+                          noWrap
+                          sx={{
+                            display: "inline",
+                            maxWidth: "80%",
+                            fontWeight:
+                              conversation.unread > 0 ? "medium" : "normal",
+                          }}
+                        >
+                          {conversation.lastMessage}
+                        </Typography>
+                        {conversation.unread > 0 && (
+                          <Box
+                            sx={{
+                              bgcolor: "primary.main",
+                              color: "primary.contrastText",
+                              borderRadius: "50%",
+                              width: 20,
+                              height: 20,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "0.75rem",
+                            }}
+                          >
+                            {conversation.unread}
+                          </Box>
+                        )}
+                      </Box>
+                    }
+                  />
+                </ListItem>
+                {index < filteredConversations.length - 1 && (
+                  <Divider variant="inset" component="li" />
+                )}
+              </Box>
+            ))}
+          </List>
+        )}
+      </Box>
+    </Grid>
+  );
+});

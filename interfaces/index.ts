@@ -1,4 +1,4 @@
-export type { Group } from './group';
+export type { Team } from './team';
 export type { User } from './user';
 export type { Game } from './game';
 export type { Resource } from './resource';

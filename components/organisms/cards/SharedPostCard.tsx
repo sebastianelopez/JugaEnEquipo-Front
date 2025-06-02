@@ -11,6 +11,8 @@ import {
 import { Post } from "../../../interfaces";
 import Image from "next/image";
 import { formatTimeElapsed } from "../../../utils/formatTimeElapsed";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/router";
 
 export const SharedPostCard = ({
   id,
@@ -20,6 +22,31 @@ export const SharedPostCard = ({
   urlProfileImage,
   createdAt,
 }: Post) => {
+  const router = useRouter();
+  const timeT = useTranslations("Time");
+
+  const timeTranslations = {
+    timePrefixText: timeT("timePrefixText"),
+    timeYearsSuffixText: timeT("timeYearsSuffixText"),
+    timeYearSuffixText: timeT("timeYearSuffixText"),
+    timeMonthsSuffixText: timeT("timeMonthsSuffixText"),
+    timeMonthSuffixText: timeT("timeMonthSuffixText"),
+    timeWeeksSuffixText: timeT("timeWeeksSuffixText"),
+    timeWeekSuffixText: timeT("timeWeekSuffixText"),
+    timeDaysSuffixText: timeT("timeDaysSuffixText"),
+    timeDaySuffixText: timeT("timeDaySuffixText"),
+    timeHoursSuffixText: timeT("timeHoursSuffixText"),
+    timeHourSuffixText: timeT("timeHourSuffixText"),
+    timeMinutesSuffixText: timeT("timeMinutesSuffixText"),
+    timeMinuteSuffixText: timeT("timeMinuteSuffixText"),
+    timeSecondsSuffixText: timeT("timeSecondsSuffixText"),
+    timeSecondSuffixText: timeT("timeSecondSuffixText"),
+  };
+
+  const handleNavigateToPost = (postId: string) => {
+    router.push(`/post/${postId}`);
+  };
+
   return (
     <Card
       key={`${id}-shared-post`}
@@ -31,11 +58,11 @@ export const SharedPostCard = ({
         backgroundColor: "rgba(0, 0, 0, 0.02)",
       }}
     >
-      <CardActionArea>
+      <CardActionArea onClick={() => handleNavigateToPost(id)}>
         <CardHeader
           avatar={<Avatar src={urlProfileImage} alt="Profile Picture" />}
           title={username}
-          subheader={formatTimeElapsed(new Date(createdAt))}
+          subheader={formatTimeElapsed(new Date(createdAt), timeTranslations)}
         />
         <CardContent>
           <Typography variant="body2" color="text.secondary">

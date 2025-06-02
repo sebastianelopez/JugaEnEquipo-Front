@@ -1,5 +1,3 @@
-import { useTranslations } from "next-intl";
-
 const secondsPerMinute = 60;
 const minutesPerHour = 60;
 const hoursPerDay = 24;
@@ -7,8 +5,25 @@ const daysPerWeek = 7;
 const daysPerMonth = 30;
 const daysPerYear = 365;
 
-export const formatTimeElapsed = (date: Date) => {
-  const t = useTranslations("Time");
+interface Translations {
+  timePrefixText: string;
+  timeYearsSuffixText: string;
+  timeYearSuffixText: string;
+  timeMonthsSuffixText: string;
+  timeMonthSuffixText: string;
+  timeWeeksSuffixText: string;
+  timeWeekSuffixText: string;
+  timeDaysSuffixText: string;
+  timeDaySuffixText: string;
+  timeHoursSuffixText: string;
+  timeHourSuffixText: string;
+  timeMinutesSuffixText: string;
+  timeMinuteSuffixText: string;
+  timeSecondsSuffixText: string;
+  timeSecondSuffixText: string;
+}
+
+export const formatTimeElapsed = (date: Date, translations: Translations) => {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
 
@@ -19,34 +34,48 @@ export const formatTimeElapsed = (date: Date) => {
 
   if (diffDays >= daysPerYear) {
     const years = Math.floor(diffDays / daysPerYear);
-    return `${t("timePrefixText")}${years} ${
-      years > 1 ? t("timeYearsSuffixText") : t("timeYearSuffixText")
+    return `${translations.timePrefixText}${years} ${
+      years > 1
+        ? translations.timeYearsSuffixText
+        : translations.timeYearSuffixText
     }`;
   } else if (diffDays >= daysPerMonth) {
     const months = Math.floor(diffDays / daysPerMonth);
-    return `${t("timePrefixText")}${months} ${
-      months > 1 ? t("timeMonthsSuffixText") : t("timeMonthSuffixText")
+    return `${translations.timePrefixText}${months} ${
+      months > 1
+        ? translations.timeMonthsSuffixText
+        : translations.timeMonthSuffixText
     }`;
   } else if (diffDays >= daysPerWeek) {
     const weeks = Math.floor(diffDays / daysPerWeek);
-    return `${t("timePrefixText")}${weeks} ${
-      weeks > 1 ? t("timeWeeksSuffixText") : t("timeWeekSuffixText")
+    return `${translations.timePrefixText}${weeks} ${
+      weeks > 1
+        ? translations.timeWeeksSuffixText
+        : translations.timeWeekSuffixText
     }`;
   } else if (diffDays >= 1) {
-    return `${t("timePrefixText")}${diffDays} ${
-      diffDays > 1 ? t("timeDaysSuffixText") : t("timeDaySuffixText")
+    return `${translations.timePrefixText}${diffDays} ${
+      diffDays > 1
+        ? translations.timeDaysSuffixText
+        : translations.timeDaySuffixText
     }`;
   } else if (diffHours >= 1) {
-    return `${t("timePrefixText")}${diffHours} ${
-      diffHours > 1 ? t("timeHoursSuffixText") : t("timeHourSuffixText")
+    return `${translations.timePrefixText}${diffHours} ${
+      diffHours > 1
+        ? translations.timeHoursSuffixText
+        : translations.timeHourSuffixText
     }`;
   } else if (diffMinutes >= 1) {
-    return `${t("timePrefixText")}${diffMinutes} ${
-      diffMinutes > 1 ? t("timeMinutesSuffixText") : t("timeMinuteSuffixText")
+    return `${translations.timePrefixText}${diffMinutes} ${
+      diffMinutes > 1
+        ? translations.timeMinutesSuffixText
+        : translations.timeMinuteSuffixText
     }`;
   } else {
-    return `${t("timePrefixText")}${diffSeconds} ${
-      diffSeconds > 1 ? t("timeSecondsSuffixText") : t("timeSecondSuffixText")
+    return `${translations.timePrefixText}${diffSeconds} ${
+      diffSeconds > 1
+        ? translations.timeSecondsSuffixText
+        : translations.timeSecondSuffixText
     }`;
   }
 };

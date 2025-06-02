@@ -7,6 +7,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
+import { SxProps, Theme } from "@mui/material";
 import { FC } from "react";
 import { Game } from "../../../interfaces";
 
@@ -37,9 +38,10 @@ interface TournamentData {
     maxTeams: number;
     game: Game;
   }>;
+  sx?: SxProps<Theme>;
 }
 
-export const TournamentTable: FC<TournamentData> = ({ tournaments }) => {
+export const TournamentTable: FC<TournamentData> = ({ tournaments, sx }) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
@@ -55,7 +57,7 @@ export const TournamentTable: FC<TournamentData> = ({ tournaments }) => {
   };
 
   return (
-    <Paper sx={{ width: "100%" }}>
+    <Paper sx={{ width: "100%", ...(sx || {}) }}>
       <TableContainer sx={{ maxHeight: 440 }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>

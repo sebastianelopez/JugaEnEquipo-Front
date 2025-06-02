@@ -22,6 +22,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { Search } from "../../molecules/Search/Search";
 
 import logo from "./../../../assets/logo.png";
+import { NotificationsButton } from "../../atoms/NotificationsButton";
 
 export const MainNavbar = () => {
   const { toggleSideMenu } = useContext(UiContext);
@@ -101,9 +102,7 @@ export const MainNavbar = () => {
               </IconButton>
             </Link>
           </NextLink>
-          <IconButton>
-            <NotificationsIcon />
-          </IconButton>
+          <NotificationsButton notificationCount={3} />
 
           <Search />
         </Box>

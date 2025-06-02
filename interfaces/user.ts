@@ -1,4 +1,5 @@
 import { Game } from "./game";
+import { UserGame } from "./userGame";
 
 export interface User{
     _id: string;
@@ -9,5 +10,5 @@ export interface User{
     profileImage?: string;
     role?: string;
     country?: string;
-    games?: Game[];
+    games?: UserGame[];
 }

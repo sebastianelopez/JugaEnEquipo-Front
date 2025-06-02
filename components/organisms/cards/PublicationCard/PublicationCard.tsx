@@ -6,13 +6,10 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  Collapse,
   IconButton,
   IconButtonProps,
   ImageList,
   ImageListItem,
-  Input,
-  Skeleton,
   styled,
   Typography,
   useMediaQuery,
@@ -21,13 +18,11 @@ import ShareIcon from "@mui/icons-material/Share";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
 
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { LikeButton } from "../../../atoms";
 import { Post } from "../../../../interfaces/post";
 import Image from "next/image";
-import { postService } from "../../../../services/post.service";
-import { Comment } from "../../../../interfaces/comment";
 import { SharedPostCard } from "../SharedPostCard";
 import { UserContext } from "../../../../context/user";
 import { CreatePublicationModal } from "../../modals/CreatePublicationModal";
@@ -38,6 +33,10 @@ import { MediaViewerModal } from "../../modals/MediaViewerModal";
 import { useRouter } from "next/router";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import { formatTimeElapsed } from "../../../../utils/formatTimeElapsed";
+import {
+  CommentSection,
+  CommentSectionHandle,
+} from "./CommentSection/CommentSection";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -54,6 +53,10 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
   }),
 }));
 
+interface PublicationCardProps extends Post {
+  maxWidth?: number;
+}
+
 export const PublicationCard = ({
   id,
   body,
@@ -65,16 +68,33 @@ export const PublicationCard = ({
   likesQuantity,
   commentsQuantity,
   sharesQuantity,
-}: Post) => {
-  const t = useTranslations("Publication");
+  maxWidth,
+}: PublicationCardProps) => {
+  const timeT = useTranslations("Time");
+
+  const timeTranslations = {
+    timePrefixText: timeT("timePrefixText"),
+    timeYearsSuffixText: timeT("timeYearsSuffixText"),
+    timeYearSuffixText: timeT("timeYearSuffixText"),
+    timeMonthsSuffixText: timeT("timeMonthsSuffixText"),
+    timeMonthSuffixText: timeT("timeMonthSuffixText"),
+    timeWeeksSuffixText: timeT("timeWeeksSuffixText"),
+    timeWeekSuffixText: timeT("timeWeekSuffixText"),
+    timeDaysSuffixText: timeT("timeDaysSuffixText"),
+    timeDaySuffixText: timeT("timeDaySuffixText"),
+    timeHoursSuffixText: timeT("timeHoursSuffixText"),
+    timeHourSuffixText: timeT("timeHourSuffixText"),
+    timeMinutesSuffixText: timeT("timeMinutesSuffixText"),
+    timeMinuteSuffixText: timeT("timeMinuteSuffixText"),
+    timeSecondsSuffixText: timeT("timeSecondsSuffixText"),
+    timeSecondSuffixText: timeT("timeSecondSuffixText"),
+  };
 
   const matches = useMediaQuery("(min-width:650px)");
 
   const router = useRouter();
 
   const [expanded, setExpanded] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
@@ -83,7 +103,7 @@ export const PublicationCard = ({
 
   const isLoggedUser = user?.username === username;
 
-  const inputRef = useRef<HTMLInputElement>();
+  const commentSectionRef = useRef<CommentSectionHandle>(null);
 
   const { setPostId, removePostId } = useContext(PostContext);
 
@@ -98,15 +118,6 @@ export const PublicationCard = ({
     setIsModalOpen(false);
   };
 
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
-
-  const handleCommentClick = () => {
-    setExpanded(true);
-    inputRef.current?.focus();
-  };
-
   const handleCloseMediaViewer = () => {
     setMediaViewerOpen(false);
   };
@@ -116,39 +127,24 @@ export const PublicationCard = ({
     setMediaViewerOpen(true);
   };
 
+  const handleExpandClick = () => {
+    setExpanded(!expanded);
+  };
+
+  const handleCommentClick = () => {
+    commentSectionRef.current?.focus(() => setExpanded(true));
+  };
+
   const handleNavigateToProfile = (username: string) => {
     router.push(`/profile/${username}`);
   };
-
-  useEffect(() => {
-    const loadComments = async () => {
-      if (expanded && !loading) {
-        setLoading(true);
-        try {
-          const fetchedComments = await postService.getPostComments(id);
-          setComments(
-            Array.isArray(fetchedComments) ? fetchedComments : [fetchedComments]
-          );
-        } catch (error) {
-          console.error("Error cargando comentarios:", error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    if (expanded) {
-      loadComments();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expanded, id]);
 
   return (
     <>
       <Card
         sx={{
           width: "100%",
-          maxWidth: 530,
+          maxWidth: maxWidth ?? 530,
           height: "100%",
           transition: "width 0.5s ease, height 0.5s ease",
         }}
@@ -172,7 +168,7 @@ export const PublicationCard = ({
               {username}
             </Typography>
           }
-          subheader={formatTimeElapsed(new Date(createdAt))}
+          subheader={formatTimeElapsed(new Date(createdAt), timeTranslations)}
         />
         <CardContent sx={{ paddingBottom: 0 }}>
           <Typography variant="body2" color="text.secondary">
@@ -337,8 +333,8 @@ export const PublicationCard = ({
               )}
             </Box>
             {commentsQuantity > 0 && (
-              <Button variant="text">
-                <Typography>{commentsQuantity}</Typography>
+              <Button variant="text" onClick={() => setExpanded(true)}>
+                <Typography>{`${commentsQuantity} comments`}</Typography>
               </Button>
             )}
           </Box>
@@ -361,47 +357,11 @@ export const PublicationCard = ({
             <ExpandMoreIcon />
           </ExpandMore>
         </CardActions>
-        <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <Box
-            component={"div"}
-            sx={{
-              transition: "opacity 0.5s ease-out",
-              opacity: expanded ? 1 : 0,
-            }}
-          >
-            <Box component={"div"}>
-              {loading ? (
-                <CardContent>
-                  <Skeleton variant="text" width="10%" />
-                  <Skeleton variant="text" width="80%" />
-                  <Skeleton variant="text" width="30%" />
-                </CardContent>
-              ) : comments.length > 0 ? (
-                comments.map(({ id, comment, user, createdAt }) => (
-                  <CardContent key={id}>
-                    <Typography variant="subtitle2">{user}</Typography>
-                    <Typography variant="body2">{comment}</Typography>
-                    <Typography variant="caption" alignSelf={"end"}>
-                      {formatTimeElapsed(new Date(createdAt))}
-                    </Typography>
-                  </CardContent>
-                ))
-              ) : (
-                <>
-                  <Typography variant="subtitle2" align="center">
-                    No comments yet
-                  </Typography>
-                  <Typography variant="body2" align="center">
-                    Add a comment
-                  </Typography>
-                </>
-              )}
-            </Box>
-            <Box paddingX={2} paddingY={2} component={"div"}>
-              <Input fullWidth placeholder={t("comment")} inputRef={inputRef} />
-            </Box>
-          </Box>
-        </Collapse>
+        <CommentSection
+          expanded={expanded}
+          ref={commentSectionRef}
+          postId={id}
+        />
       </Card>
       <MediaViewerModal
         ariaLabel="Post media viewer"
