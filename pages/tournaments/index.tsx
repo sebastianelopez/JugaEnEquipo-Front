@@ -1,20 +1,13 @@
-import {
-  GetServerSideProps,
-  GetServerSidePropsContext,
-  GetStaticPropsContext,
-  NextPage,
-} from "next";
+import { GetServerSideProps, GetServerSidePropsContext, NextPage } from "next";
 import { useTranslations } from "next-intl";
-import { getUserByNickname } from "../../api";
+
 import { TournamentTable } from "../../components/organisms";
-import { User } from "../../interfaces";
 import { MainLayout } from "../../layouts";
 
 interface Props {
-  userFound: User;
 }
 
-const TournamentsPage: NextPage<Props> = ({ userFound }) => {
+const TournamentsPage: NextPage<Props> = ({}) => {
   const t = useTranslations("Tournaments");
 
   return (
@@ -33,6 +26,9 @@ const TournamentsPage: NextPage<Props> = ({ userFound }) => {
               game: { _id: "1231", name: "Overwatch", isVisible: true },
             },
           ]}
+          sx={{
+            mt: 12,
+          }}
         />
       </MainLayout>
     </>
