@@ -32,7 +32,6 @@ export { TournamentTable } from './tables/TournamentTable';
 export { CreatePublicationModal } from './modals/CreatePublicationModal';
 
 //Others
-export { UserOrGroupList } from './UserOrGroupList/UserOrGroupList';
 export { HomeNews } from './HomeNews/HomeNews';
 export { SliderText } from './sliderText/SliderText';
 
