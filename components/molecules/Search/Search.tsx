@@ -6,6 +6,8 @@ import {
   List,
   ListItem,
   ListItemText,
+  SxProps,
+  Theme,
 } from "@mui/material";
 import { SearchOutlined } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
@@ -13,7 +15,11 @@ import { useTranslations } from "next-intl";
 import { userService } from "../../../services/user.service";
 import { User } from "../../../interfaces";
 
-export const Search = () => {
+interface SearchProps {
+  sx?: SxProps<Theme>;
+}
+
+export const Search = ({ sx }: SearchProps) => {
   const t = useTranslations("Navbar");
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -106,7 +112,10 @@ export const Search = () => {
   return (
     <Box
       ref={searchContainerRef}
-      sx={{ position: "relative", display: "inline-block", zIndex: 1000 }}
+      sx={[
+        { position: "relative", display: "inline-block", zIndex: 1000 },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
       <Input
         placeholder={t("search")}
