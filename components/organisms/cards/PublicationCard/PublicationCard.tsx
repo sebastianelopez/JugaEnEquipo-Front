@@ -247,7 +247,6 @@ export const PublicationCard = ({
                     sx={{
                       width: "100%",
                       height: "100%",
-                      marginTop: 2,
                       display: "flex",
                       justifyContent: "center",
                       cursor: "pointer",
