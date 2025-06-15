@@ -130,6 +130,7 @@ export const Search = ({ sx }: SearchProps) => {
           maxWidth: isExpanded ? 300 : 0,
           boxShadow: "inset 2px 5px 10px rgba(0,0,0,0.3)",
           transition: "max-width 0.3s ease",
+          backgroundColor: "background.paper",
         }}
         onBlur={handleCollapse}
         endAdornment={
