@@ -64,10 +64,12 @@ export const SharedPostCard = ({
           title={username}
           subheader={formatTimeElapsed(new Date(createdAt), timeTranslations)}
         />
-        <CardContent>
-          <Typography variant="body2" color="text.secondary">
-            {body}
-          </Typography>
+        <CardContent sx={{ paddingY: 0 }}>
+          {body && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {body}
+            </Typography>
+          )}
 
           {
             resources && resources.length > 0 ? (
