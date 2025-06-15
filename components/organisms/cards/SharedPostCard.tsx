@@ -112,7 +112,6 @@ export const SharedPostCard = ({
                       width: "100%",
                       height: "100%",
                       transition: "width 0.5s ease, height 0.5s ease",
-                      marginTop: 5,
                       borderRadius: 5,
                     }}
                   />
