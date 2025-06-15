@@ -76,7 +76,9 @@ export const SettingsMenu = ({ postId }: SettingsMenuProps) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelDelete}>Cancelar</Button>
+          <Button onClick={handleCancelDelete} variant="outlined">
+            Cancelar
+          </Button>
           <Button onClick={handleConfirmDelete} color="error" autoFocus>
             Eliminar
           </Button>
