@@ -31,6 +31,7 @@ export const ProfileCard: FC<Props> = ({ user }) => {
       sx={{
         pb: 2,
         textAlign: "center",
+        width: "100%",
         maxWidth: { xs: 530, md: 400 },
         position: "relative",
       }}

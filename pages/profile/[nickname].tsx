@@ -144,6 +144,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
                   p: 2,
                   mt: 3,
                   top: 600,
+                  width: "100%",
                   maxWidth: { xs: 530, md: 400 },
                 }}
               >
