@@ -3,19 +3,17 @@ import {
   Box,
   Button,
   IconButton,
-  Input,
   Link,
   Toolbar,
   Typography,
 } from "@mui/material";
 import Image from "next/image";
 import NextLink from "next/link";
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect } from "react";
 import { UiContext } from "../../../context";
 import { gsap } from "gsap";
 import { useTranslations } from "next-intl";
 import HomeIcon from "@mui/icons-material/Home";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import MessageIcon from "@mui/icons-material/Message";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -41,7 +39,7 @@ export const MainNavbar = () => {
 
   return (
     <AppBar component="nav">
-      <Toolbar>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         <NextLink href={"/home"} passHref>
           <Link component="span">
             <Box
@@ -65,14 +63,6 @@ export const MainNavbar = () => {
             </Box>
           </Link>
         </NextLink>
-
-        <Box
-          component="div"
-          sx={{
-            minWidth: { xs: "5%", sm: "15%", md: "40%" },
-            transition: "min-width 0.5s ease",
-          }}
-        />
 
         <Box
           component="div"
@@ -113,9 +103,8 @@ export const MainNavbar = () => {
             }}
           />
         </Box>
-        <Box component="div" flex={1} />
 
-        <Button color="info" onClick={toggleSideMenu}>
+        <Button color="secondary" onClick={toggleSideMenu}>
           <MenuIcon />
         </Button>
       </Toolbar>
