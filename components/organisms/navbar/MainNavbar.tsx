@@ -104,7 +104,14 @@ export const MainNavbar = () => {
           </NextLink>
           <NotificationsButton notificationCount={3} />
 
-          <Search />
+          <Search
+            sx={{
+              display: "none",
+              "@media (min-width: 450px)": {
+                display: "inline-block",
+              },
+            }}
+          />
         </Box>
         <Box component="div" flex={1} />
 
