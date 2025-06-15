@@ -40,6 +40,18 @@ export const NotificationsButton = ({ notificationCount = 0 }: Props) => {
       message: "A usuario le ha gustado tu publicacion",
       read: false,
     },
+    {
+      id: "4",
+      avatar: "https://via.placeholder.com/40",
+      message: "A usuario le ha gustado tu publicacion",
+      read: true,
+    },
+    {
+      id: "5",
+      avatar: "https://via.placeholder.com/40",
+      message: "A usuario le ha gustado tu publicacion",
+      read: true,
+    },
   ]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
