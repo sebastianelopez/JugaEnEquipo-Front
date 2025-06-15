@@ -4,8 +4,7 @@ import { useTranslations } from "next-intl";
 import { TournamentTable } from "../../components/organisms";
 import { MainLayout } from "../../layouts";
 
-interface Props {
-}
+interface Props {}
 
 const TournamentsPage: NextPage<Props> = ({}) => {
   const t = useTranslations("Tournaments");
