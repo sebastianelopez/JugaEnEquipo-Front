@@ -39,7 +39,14 @@ export const MainNavbar = () => {
 
   return (
     <AppBar component="nav">
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+      <Toolbar
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          minHeight: "64px",
+          paddingInline: "24px",
+        }}
+      >
         <NextLink href={"/home"} passHref>
           <Link component="span">
             <Box
