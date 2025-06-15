@@ -95,7 +95,17 @@ export const NotificationsButton = ({ notificationCount = 0 }: Props) => {
         </Badge>
       </IconButton>
       <Menu
-        sx={{ width: 400, maxWidth: "100%" }}
+        sx={{
+          "& .MuiPaper-root": {
+            width: "auto",
+            minWidth: 280,
+            maxWidth: "min(95vw, 400px)",
+          },
+          "& .MuiMenu-list": {
+            paddingTop: 0,
+            paddingBottom: 0,
+          },
+        }}
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
