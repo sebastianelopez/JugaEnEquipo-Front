@@ -98,7 +98,7 @@ const HomePage = () => {
             marginX: { xs: 3, md: "none" },
           }}
         >
-          <PublicateCard />
+          <PublicateCard userProfileImage={user?.profileImage} />
           <PostList isLoading={isLoading} posts={posts} />
         </Grid>
         <Grid

@@ -13,12 +13,14 @@ import PermMediaIcon from "@mui/icons-material/PermMedia";
 import { CreatePublicationModal } from "../";
 import { PostContext } from "../../../context/post";
 import { v4 as uuidv4 } from "uuid";
+import { User } from "../../../interfaces";
 
 interface Props {
+  userProfileImage?: String;
   sx?: SxProps<Theme>;
 }
 
-export const PublicateCard = ({ sx = [] }: Props) => {
+export const PublicateCard = ({ userProfileImage, sx = [] }: Props) => {
   const t = useTranslations("Publication");
 
   const { setPostId, removePostId } = useContext(PostContext);
@@ -55,7 +57,7 @@ export const PublicateCard = ({ sx = [] }: Props) => {
             p: 1.5,
           }}
         >
-          <Avatar />
+          <Avatar src={userProfileImage} alt="user profile image" />
           <Input
             placeholder="Crear publicacion"
             fullWidth
