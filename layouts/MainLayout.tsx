@@ -64,10 +64,9 @@ export const MainLayout: FC<Props> = ({
         component="main"
         sx={{
           flexGrow: 1,
-          marginX: "auto ",
-          maxWidth: "1440px",
+          marginX: "auto",
           padding: "0 30px",
-          width: "100%",
+          width: "100vw",
         }}
       >
         {children}
