@@ -174,7 +174,10 @@ export const Search = ({ sx }: SearchProps) => {
                   color: "text.primary",
                 }}
               >
-                <ListItemText primary={user.username} secondary={`${user.firstname} ${user.lastname}`} />
+                <ListItemText
+                  primary={user.username}
+                  secondary={`${user.firstname} ${user.lastname}`}
+                />
               </ListItem>
             ))}
           </List>
