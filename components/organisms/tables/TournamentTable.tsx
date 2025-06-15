@@ -7,12 +7,14 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import { SxProps, Theme } from "@mui/material";
+import { Box, SxProps, Theme } from "@mui/material";
 import { FC } from "react";
 import { Game } from "../../../interfaces";
+import { generateManyTournaments } from "./mocks";
+import VerifiedIcon from "@mui/icons-material/Verified";
 
 interface Column {
-  id: "type" | "name" | "registeredTeams" | "game";
+  id: "type" | "name" | "registeredTeams" | "game" | "region";
   label?: string;
   minWidth?: number;
   align?: "right";
@@ -22,6 +24,7 @@ const columns: Column[] = [
   { id: "type", minWidth: 170 },
   { id: "name", label: "Name", minWidth: 170 },
   { id: "registeredTeams", label: "Teams", minWidth: 100 },
+  { id: "region", label: "Region", minWidth: 100 },
   {
     id: "game",
     label: "Game",
@@ -37,11 +40,14 @@ interface TournamentData {
     registeredTeams: number;
     maxTeams: number;
     game: Game;
+    region: string;
   }>;
   sx?: SxProps<Theme>;
 }
 
-export const TournamentTable: FC<TournamentData> = ({ tournaments, sx }) => {
+const MOCK_TOURNAMENTS = generateManyTournaments(100);
+
+export const TournamentTable: FC<TournamentData> = ({ sx }) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
@@ -56,25 +62,19 @@ export const TournamentTable: FC<TournamentData> = ({ tournaments, sx }) => {
     setPage(0);
   };
 
+  const tournaments = MOCK_TOURNAMENTS; // TODO: Replace with actual data source
+
   return (
     <Paper sx={{ width: "100%", ...(sx || {}) }}>
-      <TableContainer sx={{ maxHeight: 440 }}>
+      <TableContainer sx={{ maxHeight: 750 }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
-            <TableRow>
-              <TableCell align="center" colSpan={2}>
-                Country
-              </TableCell>
-              <TableCell align="center" colSpan={3}>
-                Details
-              </TableCell>
-            </TableRow>
             <TableRow>
               {columns.map((column) => (
                 <TableCell
                   key={column.id}
                   align={column.align}
-                  style={{ top: 57, minWidth: column.minWidth }}
+                  style={{ minWidth: column.minWidth }}
                 >
                   {column.label}
                 </TableCell>
@@ -96,7 +96,36 @@ export const TournamentTable: FC<TournamentData> = ({ tournaments, sx }) => {
                       const value = tournament[column.id];
                       return (
                         <TableCell key={column.id} align={column.align}>
-                          {value.toLocaleString()}
+                          {column.id === "type" && value === "Oficial" ? (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              {value.toLocaleString()}{" "}
+                              <VerifiedIcon color="primary" fontSize="small" />
+                            </Box>
+                          ) : column.id === "game" ? (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                                justifyContent: "flex-end",
+                              }}
+                            >
+                              <img
+                                src={(value as Game).image}
+                                alt={`${(value as Game).name} logo`}
+                                style={{ width: 24, height: 24 }}
+                              />
+                              {(value as Game).name}
+                            </Box>
+                          ) : (
+                            value.toLocaleString()
+                          )}
                         </TableCell>
                       );
                     })}
