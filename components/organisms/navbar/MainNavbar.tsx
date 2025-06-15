@@ -68,7 +68,8 @@ export const MainNavbar = () => {
           component="div"
           position="relative"
           sx={{
-            display: "block",
+            display: "flex",
+            gap: 1,
           }}
         >
           <NextLink href={"/home"} passHref>
