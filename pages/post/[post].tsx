@@ -28,7 +28,7 @@ const PostPage: NextPage<Props> = ({ post }) => {
           sx={{
             display: "flex",
             justifyContent: "center",
-            mt: { xs: 10, md: 14 },
+            mt: { xs: 2, md: 4 },
             mx: 2,
             transition: "margin 0.3s ease-in-out",
           }}

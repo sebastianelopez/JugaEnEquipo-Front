@@ -118,7 +118,7 @@ const MessagesPage: NextPage = (props) => {
       pageDescription={"Encuentra a tu equipo ideal"}
       fillViewport
     >
-      <Grid container sx={{ mt: 12, height: "calc(100vh - 120px)" }}>
+      <Grid container sx={{ height: "calc(100vh - 120px)" }}>
         {/* Panel de Conversaciones (oculto en móvil cuando hay selección) */}
         {(!isMobile || !selectedConversation) && (
           <ConversationsList

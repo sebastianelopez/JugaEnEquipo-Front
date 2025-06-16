@@ -25,9 +25,6 @@ const TournamentsPage: NextPage<Props> = ({}) => {
               game: { _id: "1231", name: "Overwatch", isVisible: true },
             },
           ]}
-          sx={{
-            mt: 12,
-          }}
         />
       </MainLayout>
     </>

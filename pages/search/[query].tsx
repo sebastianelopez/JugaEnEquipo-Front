@@ -140,7 +140,7 @@ const SearchPage: NextPage<Props> = ({
       title={"Juga en Equipo - Search"}
       pageDescription={"Encuentra a jugadores o a tu equipo"}
     >
-      <Box sx={{ padding: 3, paddingTop: 12 }}>
+      <Box sx={{ padding: 3, paddingTop: 2 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Resultados para: &quot;{query}&quot;
         </Typography>

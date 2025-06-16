@@ -67,6 +67,7 @@ export const MainLayout: FC<Props> = ({
           marginX: "auto",
           padding: "0 30px",
           width: "100vw",
+          marginTop: "75px",
         }}
       >
         {children}

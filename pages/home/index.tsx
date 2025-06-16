@@ -54,7 +54,6 @@ const HomePage = () => {
         container
         columns={12}
         sx={{
-          mt: 12,
           display: "flex",
           mx: "auto",
           width: "100%",
