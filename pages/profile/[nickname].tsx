@@ -8,7 +8,7 @@ import { MainLayout } from "../../layouts";
 import { userService } from "../../services/user.service";
 import { useContext, useEffect, useState } from "react";
 import { postService } from "../../services/post.service";
-import { PostList } from "../../components/molecules/PostList";
+import { PostList } from "../../components/molecules/Post/PostList";
 import { UserContext } from "../../context/user";
 import { BlizzardButton } from "../../components/atoms";
 
@@ -102,15 +102,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
         title={`${t("profile")} - ${userFound.firstname}`}
       >
         <Grid xs={12} sm={12} md={12} lg={12} container>
-          <Grid
-            xs={12}
-            sm={12}
-            md={12}
-            lg={12}
-            container
-            position="relative"
-            display={{ xs: "none", sm: "none", md: "inherit" }}
-          >
+          <Grid xs={12} sm={12} md={12} lg={12} container position="relative">
             <Image
               src="https://cdn.pixabay.com/photo/2018/08/14/13/23/ocean-3605547_1280.jpg"
               width={1500}
@@ -121,7 +113,8 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
             <Button
               sx={{
                 position: "absolute",
-                bottom: 25,
+                top: { xs: 85, md: 'unset' },
+                bottom: { xs: 'unset', md: 25 },
                 right: 25,
               }}
             >
@@ -136,7 +129,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
               flexDirection={"column"}
               justifyContent="start"
               alignItems="center"
-              mt={-20}
+              mt={{ xs: -10, md: -20 }}
             >
               <ProfileCard user={userFound} />
               <Paper
