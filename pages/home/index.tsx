@@ -7,17 +7,64 @@ import {
   PublicateCard,
 } from "../../components/organisms";
 import { MainLayout } from "../../layouts";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { UserContext } from "../../context/user";
 import { postService } from "../../services/post.service";
 import { Post } from "../../interfaces/post";
-import { PostList } from "../../components/molecules/PostList";
+import { PostList } from "../../components/molecules/Post/PostList";
+import { NewPostsAvailable } from "../../components/molecules/Post/NewPostsAvailable";
 
 const HomePage = () => {
   const { user } = useContext(UserContext);
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [newPostsAvailable, setNewPostsAvailable] = useState<{
+    hasNew: boolean;
+    count: number;
+    posts: Post[];
+  }>({ hasNew: false, count: 0, posts: [] });
+  const [isLoadingNewPosts, setIsLoadingNewPosts] = useState(false);
+  const lastUpdateTimestamp = useRef<number>(Date.now());
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const checkForNewPosts = async () => {
+    try {
+      const result = await postService.checkForNewPosts(
+        lastUpdateTimestamp.current
+      );
+
+      if (result.hasNewPosts) {
+        setNewPostsAvailable({
+          hasNew: true,
+          count: result.count,
+          posts: result.posts,
+        });
+      }
+    } catch (error) {
+      console.error("Error checking for new posts:", error);
+    }
+  };
+
+  const handleLoadNewPosts = async () => {
+    setIsLoadingNewPosts(true);
+    try {
+      // Simular delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Agregar nuevos posts al inicio de la lista
+      const updatedPosts = [...newPostsAvailable.posts, ...posts];
+      setPosts(updatedPosts);
+
+      // Resetear estado de nuevos posts
+      setNewPostsAvailable({ hasNew: false, count: 0, posts: [] });
+      lastUpdateTimestamp.current = Date.now();
+    } catch (error) {
+      console.error("Error loading new posts:", error);
+    } finally {
+      setIsLoadingNewPosts(false);
+    }
+  };
 
   useEffect(() => {
     const loadPosts = async () => {
@@ -46,6 +93,27 @@ const HomePage = () => {
     };
 
     loadPosts();
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading) {
+      // Verificar nuevos posts cada 30 segundos
+      intervalRef.current = setInterval(checkForNewPosts, 3000);
+
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+      };
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, []);
 
   return (
@@ -98,6 +166,13 @@ const HomePage = () => {
           }}
         >
           <PublicateCard userProfileImage={user?.profileImage} />
+          {newPostsAvailable.hasNew && (
+            <NewPostsAvailable
+              newPostsCount={newPostsAvailable.count}
+              onLoadNewPosts={handleLoadNewPosts}
+              isLoading={isLoadingNewPosts}
+            />
+          )}
           <PostList isLoading={isLoading} posts={posts} />
         </Grid>
         <Grid
