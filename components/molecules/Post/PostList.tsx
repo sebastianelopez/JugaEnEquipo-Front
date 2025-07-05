@@ -1,6 +1,6 @@
 import { Box, Typography, Skeleton } from "@mui/material";
-import { PublicationCard } from "../organisms";
-import { Post } from "../../interfaces";
+import { PublicationCard } from "../../organisms";
+import { Post } from "../../../interfaces";
 
 interface Props {
   posts: Post[];
