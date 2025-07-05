@@ -15,6 +15,7 @@ import {
   AccountCircleOutlined,
   LoginOutlined,
   SearchOutlined,
+  Settings
 } from "@mui/icons-material";
 
 import { UiContext } from "../../../context";
@@ -52,15 +53,17 @@ export const SideMenu = () => {
     <Drawer
       open={isMenuOpen}
       anchor="right"
-      sx={{ backdropFilter: "blur(4px)", transition: "all 0.5s ease-out",
-        '& .MuiDrawer-paper': { 
-          boxSizing: 'border-box',
+      sx={{
+        backdropFilter: "blur(4px)",
+        transition: "all 0.5s ease-out",
+        "& .MuiDrawer-paper": {
+          boxSizing: "border-box",
           width: 250,
         },
-        '& .MuiBackdrop-root': {
-          backgroundColor: 'rgba(0, 0, 0, 0.2)',
-        }
-       }}
+        "& .MuiBackdrop-root": {
+          backgroundColor: "rgba(0, 0, 0, 0.2)",
+        },
+      }}
       variant="temporary"
       ModalProps={{
         keepMounted: true,
@@ -88,6 +91,9 @@ export const SideMenu = () => {
           </ListItem>
 
           <>
+            <ListItem>
+              <SelectCountry fullWidth />
+            </ListItem>
             <ListItem
               button
               onClick={() => navigateTo(`/profile/${user?.username}`)}
@@ -97,8 +103,14 @@ export const SideMenu = () => {
               </ListItemIcon>
               <ListItemText primary={t("profile")} />
             </ListItem>
-            <ListItem>
-              <SelectCountry fullWidth />
+            <ListItem
+              button
+              onClick={() => navigateTo(`/settings`)}
+            >
+              <ListItemIcon>
+                <Settings />
+              </ListItemIcon>
+              <ListItemText primary={t("settings")} />
             </ListItem>
           </>
 

@@ -44,7 +44,8 @@
     },
     "SideMenu":{
         "profile": "Profile",
-        "logOut": "Log out"              
+        "logOut": "Log out",
+        "settings": "Settings"              
     },
     "Global":{
         "selectLanguage": "Select language",

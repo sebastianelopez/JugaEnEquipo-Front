@@ -44,7 +44,8 @@
     },
     "SideMenu":{
         "profile": "Perfil",
-        "logOut": "Sair"              
+        "logOut": "Sair",
+        "settings": "Configurações"              
     },
     "Global":{
         "selectLanguage": "Selecione o idioma",
