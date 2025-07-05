@@ -34,12 +34,19 @@ export const ProfileCard: FC<Props> = ({ user }) => {
         width: "100%",
         maxWidth: { xs: 530, md: 400 },
         position: "relative",
+        borderRadius: "20px 20px 0px 0px",
       }}
     >
       <Avatar
         alt="Profile Picture"
         src={user.profileImage}
-        sx={{ width: "100%", height: 400, m: "auto" }}
+        sx={{
+          width: "100%",
+          height: 400,
+          m: "auto",
+          borderTopLeftRadius: "20px",
+          borderTopRightRadius: "20px",
+        }}
         variant="square"
       />
       <Button
@@ -51,7 +58,7 @@ export const ProfileCard: FC<Props> = ({ user }) => {
       >
         {isLoggedUser ? t("editProfilePicture") : t("followUser")}
       </Button>
-      <Typography variant="h4" fontWeight="bold">
+      <Typography variant="h4" fontWeight="bold" sx={{ mt: 2 }}>
         {user.username}
       </Typography>
       <Typography variant="subtitle1">{`${user.firstname} ${user.lastname}`}</Typography>
