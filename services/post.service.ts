@@ -74,6 +74,47 @@ export const postService = {
     }
   },
 
+  checkForNewPosts: async (
+    lastTimestamp: number
+  ): Promise<{ hasNewPosts: boolean; count: number; posts: Post[] }> => {
+    // Simular delay de red
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Mock: generar nuevos posts aleatorios
+    const shouldHaveNewPosts = Math.random() > 0.7; // 30% de probabilidad
+
+    if (shouldHaveNewPosts) {
+      const newPostsCount = Math.floor(Math.random() * 3) + 1; // 1-3 nuevos posts
+      const mockNewPosts: Post[] = Array.from(
+        { length: newPostsCount },
+        (_, index) => ({
+          id: `new-${Date.now()}-${index}`,
+          body: `Nuevo post ${index + 1} - ${new Date().toLocaleString()}`,
+          username: `user${Math.floor(Math.random() * 100)}`,
+          createdAt: new Date().toISOString(),
+          likesQuantity: Math.floor(Math.random() * 50),
+          sharesQuantity: Math.floor(Math.random() * 10),
+          commentsQuantity: Math.floor(Math.random() * 20),
+          urlProfileImage: `https://picsum.photos/40/40?random=${index}`,
+          resources: [],
+          sharedPost: null,
+        })
+      );
+
+      return {
+        hasNewPosts: true,
+        count: newPostsCount,
+        posts: mockNewPosts,
+      };
+    }
+
+    return {
+      hasNewPosts: false,
+      count: 0,
+      posts: [],
+    };
+  },
+
   searchPosts: (query: string) =>
     api.get<Post[]>(`/posts`, {
       params: { q: query },
