@@ -21,6 +21,7 @@ const TournamentsPage: NextPage<Props> = ({}) => {
               type: "Oficial",
               name: "El torneo mas piola",
               registeredTeams: 47,
+              region: "Latam",
               maxTeams: 50,
               game: { _id: "1231", name: "Overwatch", isVisible: true },
             },
