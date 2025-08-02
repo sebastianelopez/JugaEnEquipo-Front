@@ -13,6 +13,10 @@ export type ConversationIdResponse = {
   };
 };
 
+export type MessagesResponse = {
+  data: Message[];
+};
+
 export const chatService = {
   // Create an SSE connection to listen for messages using Mercure
   connectToChat: (conversationId: string) => {
@@ -47,12 +51,12 @@ export const chatService = {
   ): Promise<Message[]> => {
     const token = await getToken();
 
-    const data: any = await api.get(
+    const response = await api.get<MessagesResponse>(
       `/conversation/${conversationId}/messages`,
       undefined,
       token
     );
-    return data.data || [];
+    return response.data || [];
   },
 
   // Find conversation by other user ID
