@@ -192,7 +192,7 @@ export const ConversationsList = forwardRef<
                 const key =
                   result.type === "conversation"
                     ? `conversation-${(result.data as Conversation).id}`
-                    : `user-${(result.data as User)._id}`;
+                    : `user-${(result.data as User).id}`;
 
                 return (
                   <Box key={key}>
@@ -292,7 +292,7 @@ export const ConversationsList = forwardRef<
                         button
                         alignItems="flex-start"
                         onClick={() =>
-                          handleCreateConversation((result.data as User)._id)
+                          handleCreateConversation((result.data as User).id)
                         }
                       >
                         <ListItemAvatar>
