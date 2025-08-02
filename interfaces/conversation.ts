@@ -4,4 +4,12 @@ export interface Conversation {
   lastMessage: string;
   unread: number;
   createdAt: string;
+  otherUserId?: string;
+  otherUser?: {
+    id: string;
+    username: string;
+    firstname?: string;
+    lastname?: string;
+    profileImage?: string;
+  };
 }

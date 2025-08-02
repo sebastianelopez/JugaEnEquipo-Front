@@ -1,24 +1,41 @@
 import { getToken } from "./auth.service";
+import { userService } from "./user.service";
+import { Conversation } from "../interfaces/conversation";
+import { Message } from "../interfaces/message";
+import { User } from "../interfaces/user";
+import { api } from "../lib/api"; // Asegúrate de importar la instancia de axios
+
+const MERCURE_URL = "https://mercure.jugaenequipo.com";
+
+export type ConversationIdResponse = {
+  data: {
+    id: string;
+  };
+};
 
 export const chatService = {
-  // Create an SSE connection to listen for messages
-  connectToChat: (chatId: string) => {
+  // Create an SSE connection to listen for messages using Mercure
+  connectToChat: (conversationId: string) => {
     const eventSource = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_URL}/chat/${chatId}/events`,
-      { withCredentials: true }
+      `${MERCURE_URL}/.well-known/mercure?topic=${process.env.NEXT_PUBLIC_API_URL}/conversation/${conversationId}`,
+      { withCredentials: false }
     );
 
     return eventSource;
   },
 
-  // Send a new message (regular HTTP request)
-  sendMessage: async (chatId: string, content: string) => {
+  // Send a new message
+  sendMessage: async (
+    conversationId: string,
+    messageId: string,
+    content: string
+  ) => {
     const token = await getToken();
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/chat/${chatId}/messages`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/conversation/${conversationId}/message/${messageId}`,
       {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -27,32 +44,22 @@ export const chatService = {
       }
     );
 
-    return response.json();
-  },
-
-  // Get chat history
-  getChatHistory: async (chatId: string) => {
-    const token = await getToken();
-
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/chat/${chatId}/messages`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    if (!response.ok) {
+      throw new Error("Failed to send message");
+    }
 
     return response.json();
   },
 
-  getOrCreateChatWithUser: async (username: string) => {
+  // Get conversation messages
+  getConversationMessages: async (
+    conversationId: string
+  ): Promise<Message[]> => {
     const token = await getToken();
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/chat/with/${username}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/conversation/${conversationId}/messages`,
       {
-        method: "POST", // Using POST to create if it doesn't exist
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -60,9 +67,35 @@ export const chatService = {
     );
 
     if (!response.ok) {
-      throw new Error("Failed to initialize chat");
+      throw new Error("Failed to get messages");
     }
 
-    return response.json();
+    const data = await response.json();
+    return data.data || [];
+  },
+
+  // Find conversation by other user ID
+  findConversationByUserId: async (userId: string): Promise<string | null> => {
+    const token = await getToken();
+    try {
+      // Usar el proxy local y la instancia de axios (api)
+      const response = await api.get<ConversationIdResponse>(
+        `/conversation/by-other-user/${userId}`,
+        {},
+        token
+      );
+      return response.data.id;
+    } catch (error: any) {
+      if (error.response && error.response.status === 404) {
+        return null; // No conversation exists
+      }
+      console.error("Error finding conversation:", error);
+      return null;
+    }
+  },
+
+  // Search users that the current user follows (delegated to userService)
+  searchFollowingUsers: async (searchTerm: string): Promise<User[]> => {
+    return userService.searchFollowingUsers(searchTerm);
   },
 };
