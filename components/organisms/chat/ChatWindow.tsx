@@ -18,7 +18,7 @@ import {
 } from "@mui/icons-material";
 import React, { useEffect, useState, useRef, useContext } from "react";
 import { Conversation } from "../../../interfaces/conversation";
-import { Message, SSEMessageData } from "../../../interfaces/message";
+import { Message } from "../../../interfaces/message";
 import { chatService } from "../../../services/chat.service";
 import { UserContext } from "../../../context/user/UserContext";
 import { useTimeTranslations } from "../../../hooks/useTimeTranslations";
@@ -80,34 +80,22 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       // Listen for new messages
       newEventSource.onmessage = (event) => {
         try {
-          const messageData: SSEMessageData = JSON.parse(event.data);
+          const messageData: Message = JSON.parse(event.data);
           console.log("Nuevo mensaje recibido via SSE:", messageData);
-
-          // Transform backend message format to app format
-          const newMessage: Message = {
-            id: messageData.id,
-            body: messageData.content,
-            createdAt: messageData.createdAt,
-            senderId: messageData.mine
-              ? user.id
-              : conversation.otherUserId || "",
-            senderUsername: messageData.username,
-            conversationId: conversation.id,
-          };
 
           setMessages((prev) => {
             if (messageData.mine) {
               // If it's our message, replace the temporary message with the real one
               const tempMessageIndex = prev.findIndex(
                 (msg) =>
-                  msg.senderId === user.id &&
-                  msg.body === messageData.content &&
+                  msg.id === user.id &&
+                  msg.content === messageData.content &&
                   msg.id.startsWith("temp-")
               );
 
               if (tempMessageIndex !== -1) {
                 const newMessages = [...prev];
-                newMessages[tempMessageIndex] = newMessage;
+                newMessages[tempMessageIndex] = messageData;
                 return newMessages;
               }
               // If no temp message found, it might be from another session, add it
@@ -186,21 +174,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       // Optimistic message
       const optimisticMessage: Message = {
         id: messageId,
-        body: messageContent,
+        content: messageContent,
         createdAt: new Date().toISOString(),
-        senderId: user.id,
-        senderUsername: user.username,
-        conversationId: conversation.id,
+        mine: true,
+        username: user.username,
       };
 
       setMessages((prev) => [...prev, optimisticMessage]);
 
       // Send message to server
-      await chatService.sendMessage(
-        conversation.id,
-        messageId,
-        messageContent
-      );
+      await chatService.sendMessage(conversation.id, messageId, messageContent);
 
       // The real message will come through SSE and replace the optimistic one
     } catch (error) {
@@ -299,7 +282,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           ) : (
             <List sx={{ py: 1 }}>
               {messages.map((message, index) => {
-                const isOwnMessage = message.senderId === user?.id;
+                const isOwnMessage = message.mine;
                 const isOptimistic = message.id.startsWith("temp-");
                 const showDivider = index < messages.length - 1;
 
@@ -328,7 +311,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                         }}
                       >
                         <Typography variant="body1" sx={{ mb: 0.5 }}>
-                          {message.body}
+                          {message.content}
                         </Typography>
                         <Typography
                           variant="caption"
