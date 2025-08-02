@@ -15,6 +15,22 @@ interface SearchUsersResponse {
   };
 }
 
+interface SearchFollowingUsersResponse {
+  data: {
+    data: User[];
+    metadata: {
+      quantity: number;
+      hasMore: boolean;
+    };
+  };
+}
+
+interface SearchFollowingUsersParams {
+  query: string;
+  offset?: number;
+  limit?: number;
+}
+
 export const userService = {
   getUserById: async (id: string) => {
     const token = await getToken();
@@ -133,5 +149,44 @@ export const userService = {
         token
       )
     ).data;
+  },
+
+  searchFollowingUsers: async ({
+    query,
+    offset = 0,
+    limit = 20,
+  }: SearchFollowingUsersParams): Promise<{
+    users: User[];
+    hasMore: boolean;
+    nextOffset: number;
+  }> => {
+    const token = await getToken();
+    try {
+      const response = await api.get<SearchFollowingUsersResponse>(
+        `/user/following/search`,
+        {
+          q: query,
+          offset: offset.toString(),
+          limit: limit.toString(),
+        },
+        token
+      );
+
+      const users = response.data.data || [];
+      const hasMore = response.data.metadata?.hasMore || users.length === limit;
+
+      return {
+        users,
+        hasMore,
+        nextOffset: offset + users.length,
+      };
+    } catch (error) {
+      console.error("Error searching following users:", error);
+      return {
+        users: [],
+        hasMore: false,
+        nextOffset: offset,
+      };
+    }
   },
 };
