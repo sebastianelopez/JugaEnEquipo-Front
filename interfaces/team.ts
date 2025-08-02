@@ -1,9 +1,9 @@
 import { User } from "./user";
 
-export interface Team{
-    _id: string;
-    name: string;
-    users: User[];
-    achievements?: string[];
-    profileImage?: string;
+export interface Team {
+  id: string;
+  name: string;
+  users: User[];
+  achievements?: string[];
+  profileImage?: string;
 }

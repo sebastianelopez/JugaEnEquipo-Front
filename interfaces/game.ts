@@ -1,6 +1,6 @@
-export interface Game{
-    _id: string;
-    name: string;
-    isVisible: boolean;
-    image?: string;
+export interface Game {
+  id: string;
+  name: string;
+  isVisible: boolean;
+  image?: string;
 }

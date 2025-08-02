@@ -3,7 +3,7 @@ import { Team, User } from "../../interfaces";
 export const mockSearchResults = {
   users: [
     {
-      _id: "user1",
+      id: "user1",
       username: "gamer123",
       profileImage: "/images/avatars/avatar1.jpg",
       games: [
@@ -12,7 +12,7 @@ export const mockSearchResults = {
       ],
     },
     {
-      _id: "user2",
+      id: "user2",
       username: "proGamer",
       profileImage: "/images/avatars/avatar2.jpg",
       games: [
@@ -21,7 +21,7 @@ export const mockSearchResults = {
       ],
     },
     {
-      _id: "user3",
+      id: "user3",
       username: "casualPlayer",
       profileImage: "/images/avatars/avatar3.jpg",
       games: [
@@ -30,7 +30,7 @@ export const mockSearchResults = {
       ],
     },
     {
-      _id: "user4",
+      id: "user4",
       username: "midRanker",
       profileImage: "/images/avatars/avatar4.jpg",
       games: [
@@ -39,7 +39,7 @@ export const mockSearchResults = {
       ],
     },
     {
-      _id: "user5",
+      id: "user5",
       username: "topPlayer",
       profileImage: "/images/avatars/avatar5.jpg",
       games: [
@@ -48,7 +48,7 @@ export const mockSearchResults = {
       ],
     },
     {
-      _id: "user6",
+      id: "user6",
       username: "newbieGamer",
       profileImage: "/images/avatars/avatar6.jpg",
       games: [
@@ -60,37 +60,37 @@ export const mockSearchResults = {
 
   teams: [
     {
-      _id: "team1",
+      id: "team1",
       name: "Pro Gamers",
       profileImage: "/images/teams/logo1.jpg",
       users: [],
     },
     {
-      _id: "team2",
+      id: "team2",
       name: "Casual Squad",
       profileImage: "/images/teams/logo2.jpg",
       users: [],
     },
     {
-      _id: "team3",
+      id: "team3",
       name: "Competitive Crew",
       profileImage: "/images/teams/logo3.jpg",
       users: [],
     },
     {
-      _id: "team4",
+      id: "team4",
       name: "Weekend Warriors",
       profileImage: "/images/teams/logo4.jpg",
       users: [],
     },
     {
-      _id: "team5",
+      id: "team5",
       name: "Elite Squad",
       profileImage: "/images/teams/logo5.jpg",
       users: [],
     },
     {
-      _id: "team6",
+      id: "team6",
       name: "Newbie Friendly",
       profileImage: "/images/teams/logo6.jpg",
       users: [],
