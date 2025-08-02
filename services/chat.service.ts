@@ -32,23 +32,13 @@ export const chatService = {
   ) => {
     const token = await getToken();
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/conversation/${conversationId}/message/${messageId}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content }),
-      }
+    const response = await api.put(
+      `/conversation/${conversationId}/message/${messageId}`,
+      { content },
+      token
     );
 
-    if (!response.ok) {
-      throw new Error("Failed to send message");
-    }
-
-    return response.json();
+    return response;
   },
 
   // Get conversation messages
@@ -57,20 +47,11 @@ export const chatService = {
   ): Promise<Message[]> => {
     const token = await getToken();
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/conversation/${conversationId}/messages`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+    const data: any = await api.get(
+      `/conversation/${conversationId}/messages`,
+      undefined,
+      token
     );
-
-    if (!response.ok) {
-      throw new Error("Failed to get messages");
-    }
-
-    const data = await response.json();
     return data.data || [];
   },
 

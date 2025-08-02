@@ -22,8 +22,8 @@ import { Conversation } from "../../../interfaces/conversation";
 import { Message, SSEMessageData } from "../../../interfaces/message";
 import { chatService } from "../../../services/chat.service";
 import { UserContext } from "../../../context/user/UserContext";
-import { formatTimeElapsed } from "../../../utils/formatTimeElapsed";
 import { useTimeTranslations } from "../../../hooks/useTimeTranslations";
+import { v4 as uuidv4 } from "uuid";
 
 interface ChatWindowProps {
   conversation: Conversation | null;
@@ -178,14 +178,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     if (!newMessage.trim() || !conversation || !user || isSending) return;
 
     const messageContent = newMessage.trim();
-    const tempMessageId = chatService.generateTempMessageId();
+    const messageId = uuidv4();
+
     setNewMessage("");
     setIsSending(true);
 
     try {
       // Optimistic message
       const optimisticMessage: Message = {
-        id: tempMessageId,
+        id: messageId,
         body: messageContent,
         createdAt: new Date().toISOString(),
         senderId: user.id,
@@ -198,7 +199,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       // Send message to server
       await chatService.sendMessage(
         conversation.id,
-        tempMessageId,
+        messageId,
         messageContent
       );
 
@@ -206,7 +207,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     } catch (error) {
       console.error("Error sending message:", error);
       // Remove optimistic message on error
-      setMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId));
+      setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
       setNewMessage(messageContent); // Restore message in input
     } finally {
       setIsSending(false);
