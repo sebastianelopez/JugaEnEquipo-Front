@@ -160,7 +160,7 @@ export const Search = ({ sx }: SearchProps) => {
           <List sx={{ py: 0 }}>
             {searchResults.map((user, index) => (
               <ListItem
-                key={user._id || index}
+                key={user.id || index}
                 button
                 onClick={() => handleResultClick(user)}
                 sx={{
