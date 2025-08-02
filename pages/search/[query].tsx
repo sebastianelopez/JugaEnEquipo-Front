@@ -163,11 +163,7 @@ const SearchPage: NextPage<Props> = ({
                   mb: 3,
                 }}
               >
-                <FormControl
-                  fullWidth
-                  size="small"
-              
-                >
+                <FormControl fullWidth size="small">
                   <InputLabel>Juego</InputLabel>
                   <Select
                     value={selectedGame}
@@ -187,7 +183,6 @@ const SearchPage: NextPage<Props> = ({
                   fullWidth
                   size="small"
                   disabled={selectedGame === "all"}
-                  
                 >
                   <InputLabel>Ranking</InputLabel>
                   <Select
@@ -207,7 +202,7 @@ const SearchPage: NextPage<Props> = ({
               {displayedUsers.length > 0 ? (
                 <List>
                   {displayedUsers.map((user) => (
-                    <ListItem key={user._id}>
+                    <ListItem key={user.id}>
                       <ListItemButton>
                         <ListItemAvatar>
                           <Avatar
@@ -215,7 +210,7 @@ const SearchPage: NextPage<Props> = ({
                             src={user.profileImage}
                           />
                         </ListItemAvatar>
-                        <ListItemText id={user._id} primary={user.username} />
+                        <ListItemText id={user.id} primary={user.username} />
                       </ListItemButton>
                     </ListItem>
                   ))}
