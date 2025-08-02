@@ -24,64 +24,53 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const router = useRouter();
 
   useEffect(() => {
-    const fetchConversation = async () => {
+    const handleUserIdFromQuery = async () => {
       const { userId } = router.query;
-      if (!user && !userId) return;
+      if (!user || !userId || typeof userId !== "string") return;
 
-      if (userId && typeof userId === "string") {
-        // Buscar o crear conversación con ese usuario
+      try {
+        // 1. Buscar conversación existente por userId
         const conversationId = await chatService.findConversationByUserId(
           userId
         );
-        console.log("Conversation ID:", conversationId);
-        if (conversationId) chatService.connectToChat(conversationId);
-        //   chatService.getOrCreateConversationWithUser(userId).then((conv) => {
-        //     setConversations((prev) => {
-        //       const exists = prev.some((c) => c.id === conv.id);
-        //       if (exists) return prev;
-        //       return [conv, ...prev];
-        //     });
-        //     setSelectedConversation(conv);
-        //   });
+
+        if (conversationId) {
+          // 2. Si existe, buscar en las conversaciones cargadas
+          const existingConversation = conversations.find(
+            (conv) => conv.id === conversationId
+          );
+
+          if (existingConversation) {
+            // 3. Si ya está en la lista, seleccionarla
+            setSelectedConversation(existingConversation);
+          } else {
+            // 4. Si no está en la lista, crear objeto de conversación temporal
+            // (normalmente esto vendría de un endpoint dedicado)
+            const tempConversation: Conversation = {
+              id: conversationId,
+              username: "Usuario", // Esto debería venir del API
+              lastMessage: "",
+              unread: 0,
+              createdAt: new Date().toISOString(),
+              otherUserId: userId,
+            };
+
+            // Agregar a la lista y seleccionar
+            setConversations((prev) => [tempConversation, ...prev]);
+            setSelectedConversation(tempConversation);
+          }
+        }
+        // Si no existe conversación, no hacemos nada (el usuario debe crearla manualmente)
+      } catch (error) {
+        console.error("Error handling userId from query:", error);
       }
     };
-    fetchConversation();
-    // eslint-disable-next-line
-  }, [router.query, user]);
+
+    handleUserIdFromQuery();
+  }, [router.query, user, conversations]);
 
   const handleSelectConversation = (conversation: Conversation | null) => {
     setSelectedConversation(conversation);
-  };
-
-  const handleCreateConversation = async (userId: string) => {
-    if (!user) return;
-
-    setIsLoading(true);
-    try {
-      // Get or create conversation with the user
-      const conversation = await chatService.getOrCreateConversationWithUser(
-        userId
-      );
-
-      // Add to conversations list if it's new
-      setConversations((prev) => {
-        const exists = prev.some((conv) => conv.id === conversation.id);
-        if (exists) return prev;
-        return [conversation, ...prev];
-      });
-
-      // Select the conversation
-      setSelectedConversation(conversation);
-
-      // Update the conversations list to show it as selected
-      if (conversationsListRef.current) {
-        conversationsListRef.current.selectConversation(conversation);
-      }
-    } catch (error) {
-      console.error("Error creating conversation:", error);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleBack = () => {
@@ -95,7 +84,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           ref={conversationsListRef}
           conversations={conversations}
           onSelectConversation={handleSelectConversation}
-          onCreateConversation={handleCreateConversation}
         />
         <ChatWindow conversation={selectedConversation} onBack={handleBack} />
       </Grid>

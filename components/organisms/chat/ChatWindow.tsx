@@ -10,14 +10,16 @@ import {
   Avatar,
   Paper,
   InputAdornment,
+  CircularProgress,
+  Divider,
 } from "@mui/material";
 import {
   Send as SendIcon,
   ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
-import { useEffect, useState, useRef, useContext } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { Conversation } from "../../../interfaces/conversation";
-import { Message } from "../../../interfaces/message";
+import { Message, SSEMessageData } from "../../../interfaces/message";
 import { chatService } from "../../../services/chat.service";
 import { UserContext } from "../../../context/user/UserContext";
 import { formatTimeElapsed } from "../../../utils/formatTimeElapsed";
@@ -35,6 +37,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useContext(UserContext);
@@ -49,7 +52,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   }, [messages]);
 
   useEffect(() => {
-    if (!conversation) {
+    if (!conversation || !user) {
       return;
     }
 
@@ -68,33 +71,87 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     };
 
     const setupSSE = () => {
+      // Close existing connection
       if (eventSource) {
         eventSource.close();
       }
 
       const newEventSource = chatService.connectToChat(conversation.id);
 
+      // Listen for new messages
       newEventSource.onmessage = (event) => {
         try {
-          const messageData = JSON.parse(event.data);
+          const messageData: SSEMessageData = JSON.parse(event.data);
+          console.log("Nuevo mensaje recibido via SSE:", messageData);
 
-          // Add new message if it's not from the current user
-          if (messageData.senderId !== user?._id) {
-            setMessages((prev) => {
-              // Check if message already exists to avoid duplicates
+          // Transform backend message format to app format
+          const newMessage: Message = {
+            id: messageData.id,
+            body: messageData.content,
+            createdAt: messageData.createdAt,
+            senderId: messageData.mine
+              ? user.id
+              : conversation.otherUserId || "",
+            senderUsername: messageData.username,
+            conversationId: conversation.id,
+          };
+
+          setMessages((prev) => {
+            if (messageData.mine) {
+              // If it's our message, replace the temporary message with the real one
+              const tempMessageIndex = prev.findIndex(
+                (msg) =>
+                  msg.senderId === user.id &&
+                  msg.body === messageData.content &&
+                  msg.id.startsWith("temp-")
+              );
+
+              if (tempMessageIndex !== -1) {
+                const newMessages = [...prev];
+                newMessages[tempMessageIndex] = newMessage;
+                return newMessages;
+              }
+              // If no temp message found, it might be from another session, add it
+              const exists = prev.some((msg) => msg.id === messageData.id);
+              if (!exists) {
+                return [...prev, newMessage];
+              }
+              return prev;
+            } else {
+              // If it's not our message, add it if it doesn't exist
               const exists = prev.some((msg) => msg.id === messageData.id);
               if (exists) return prev;
-
-              return [...prev, messageData];
-            });
-          }
+              return [...prev, newMessage];
+            }
+          });
         } catch (error) {
           console.error("Error parsing SSE message:", error);
         }
       };
 
+      // Handle connection opened
+      newEventSource.onopen = () => {
+        console.log(
+          "Conexión SSE establecida para conversación:",
+          conversation.id
+        );
+      };
+
+      // Handle connection errors
       newEventSource.onerror = (error) => {
         console.error("SSE Error:", error);
+
+        // Implement automatic reconnection
+        if (newEventSource.readyState === EventSource.CLOSED) {
+          console.log(
+            "Conexión SSE cerrada, intentando reconectar en 5 segundos..."
+          );
+          setTimeout(() => {
+            if (conversation && user) {
+              setupSSE();
+            }
+          }, 5000);
+        }
       };
 
       setEventSource(newEventSource);
@@ -103,26 +160,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     loadMessages();
     setupSSE();
 
+    // Cleanup: close connection when component unmounts or conversation changes
     return () => {
       if (eventSource) {
+        console.log(
+          "Cerrando conexión SSE para conversación:",
+          conversation.id
+        );
         eventSource.close();
+        setEventSource(null);
       }
     };
-  }, [conversation?.id]);
+  }, [conversation?.id, user?.id]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!newMessage.trim() || !conversation || !user) return;
+    if (!newMessage.trim() || !conversation || !user || isSending) return;
 
     const messageContent = newMessage.trim();
+    const tempMessageId = chatService.generateTempMessageId();
     setNewMessage("");
+    setIsSending(true);
 
     try {
-      // Generate a temporary ID for the message
-      const tempMessageId = `temp-${Date.now()}`;
-
-      // Optimistically add message to UI
+      // Optimistic message
       const optimisticMessage: Message = {
         id: tempMessageId,
         body: messageContent,
@@ -140,14 +201,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         tempMessageId,
         messageContent
       );
+
+      // The real message will come through SSE and replace the optimistic one
     } catch (error) {
       console.error("Error sending message:", error);
       // Remove optimistic message on error
-      setMessages((prev) =>
-        prev.filter((msg) => msg.id !== `temp-${Date.now()}`)
-      );
-      setNewMessage(messageContent); // Restore the message in input
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId));
+      setNewMessage(messageContent); // Restore message in input
+    } finally {
+      setIsSending(false);
     }
+  };
+
+  const formatMessageTime = (createdAt: string) => {
+    const date = new Date(createdAt);
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   if (!conversation) {
@@ -231,61 +299,52 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           ) : (
             <List sx={{ py: 1 }}>
               {messages.map((message, index) => {
-                const isOwnMessage = message.senderId === user?._id;
-                const showTimestamp =
-                  index === 0 ||
-                  new Date(message.createdAt).getTime() -
-                    new Date(messages[index - 1].createdAt).getTime() >
-                    300000; // 5 minutes
+                const isOwnMessage = message.senderId === user?.id;
+                const isOptimistic = message.id.startsWith("temp-");
+                const showDivider = index < messages.length - 1;
 
                 return (
-                  <ListItem
-                    key={message.id}
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: isOwnMessage ? "flex-end" : "flex-start",
-                      py: 0.5,
-                    }}
-                  >
-                    {showTimestamp && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ mb: 0.5, textAlign: "center", width: "100%" }}
-                      >
-                        {formatTimeElapsed(
-                          new Date(message.createdAt),
-                          timeTranslations
-                        )}
-                      </Typography>
-                    )}
-                    <Paper
-                      elevation={1}
+                  <React.Fragment key={message.id}>
+                    <ListItem
                       sx={{
-                        padding: 1.5,
-                        maxWidth: "70%",
-                        backgroundColor: isOwnMessage ? "#1976d2" : "#e0e0e0",
-                        color: isOwnMessage ? "white" : "text.primary",
-                        borderRadius: 2,
-                        ...(isOwnMessage
-                          ? {
-                              borderBottomRightRadius: 4,
-                            }
-                          : {
-                              borderBottomLeftRadius: 4,
-                            }),
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: isOwnMessage ? "flex-end" : "flex-start",
+                        py: 1,
                       }}
                     >
-                      <ListItemText
-                        primary={message.body}
-                        primaryTypographyProps={{
-                          variant: "body2",
-                          sx: { wordBreak: "break-word" },
+                      <Paper
+                        elevation={1}
+                        sx={{
+                          p: 2,
+                          maxWidth: "70%",
+                          bgcolor: isOwnMessage ? "primary.main" : "grey.100",
+                          color: isOwnMessage
+                            ? "primary.contrastText"
+                            : "text.primary",
+                          borderRadius: 2,
+                          opacity: isOptimistic ? 0.7 : 1,
+                          transition: "opacity 0.3s ease",
                         }}
-                      />
-                    </Paper>
-                  </ListItem>
+                      >
+                        <Typography variant="body1" sx={{ mb: 0.5 }}>
+                          {message.body}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            opacity: 0.7,
+                            display: "block",
+                            textAlign: isOwnMessage ? "right" : "left",
+                          }}
+                        >
+                          {formatMessageTime(message.createdAt)}
+                          {isOptimistic && " (enviando...)"}
+                        </Typography>
+                      </Paper>
+                    </ListItem>
+                    {showDivider && <Divider variant="middle" />}
+                  </React.Fragment>
                 );
               })}
               <div ref={messagesEndRef} />
@@ -310,17 +369,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             placeholder="Escribe un mensaje..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
+            disabled={isSending}
             multiline
-            maxRows={3}
+            maxRows={4}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
                     type="submit"
-                    disabled={!newMessage.trim()}
+                    disabled={!newMessage.trim() || isSending}
                     color="primary"
                   >
-                    <SendIcon />
+                    {isSending ? <CircularProgress size={24} /> : <SendIcon />}
                   </IconButton>
                 </InputAdornment>
               ),

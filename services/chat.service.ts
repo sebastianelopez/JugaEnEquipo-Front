@@ -96,6 +96,14 @@ export const chatService = {
 
   // Search users that the current user follows (delegated to userService)
   searchFollowingUsers: async (searchTerm: string): Promise<User[]> => {
-    return userService.searchFollowingUsers(searchTerm);
+    const result = await userService.searchFollowingUsers({
+      query: searchTerm,
+    });
+    return result.users;
+  },
+
+  // Generate temporary message ID
+  generateTempMessageId: (): string => {
+    return `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   },
 };
