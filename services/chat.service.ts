@@ -82,9 +82,4 @@ export const chatService = {
     });
     return result.users;
   },
-
-  // Generate temporary message ID
-  generateTempMessageId: (): string => {
-    return `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  },
 };
