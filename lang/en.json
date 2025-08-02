@@ -39,6 +39,7 @@
         "profile": "Profile",
         "editProfilePicture": "Update photo",
         "followUser": "Follow",
+        "sendMessage": "Send message",
         "editProfileBackground": "Update background",
         "shareProfile": "Share profile"              
     },

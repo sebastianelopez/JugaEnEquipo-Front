@@ -15,6 +15,8 @@ import { useTranslations } from "next-intl";
 import { FC, useContext } from "react";
 import { User } from "../../../interfaces";
 import { UserContext } from "../../../context/user";
+import { useRouter } from "next/router";
+import { chatService } from "../../../services/chat.service";
 
 interface Props {
   user: User;
@@ -26,6 +28,18 @@ export const ProfileCard: FC<Props> = ({ user }) => {
   const { user: loggedUser } = useContext(UserContext);
 
   const isLoggedUser = loggedUser?.username === user.username;
+  const router = useRouter();
+
+  const handleSendMessage = async () => {
+    if (isLoggedUser) return;
+
+    // Redirige a /messages con query para buscar la conversación
+    router.push({
+      pathname: "/messages",
+      query: { userId: user.id },
+    });
+  };
+
   return (
     <Paper
       sx={{
@@ -57,6 +71,17 @@ export const ProfileCard: FC<Props> = ({ user }) => {
         }}
       >
         {isLoggedUser ? t("editProfilePicture") : t("followUser")}
+      </Button>
+
+      <Button
+        sx={{
+          position: "absolute",
+          top: 350,
+          left: 105,
+        }}
+        onClick={handleSendMessage}
+      >
+        {!isLoggedUser ? t("sendMessage") : null}
       </Button>
       <Typography variant="h4" fontWeight="bold" sx={{ mt: 2 }}>
         {user.username}
