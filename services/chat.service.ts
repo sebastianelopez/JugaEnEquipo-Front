@@ -1,6 +1,5 @@
 import { getToken } from "./auth.service";
 import { userService } from "./user.service";
-import { Conversation } from "../interfaces/conversation";
 import { Message } from "../interfaces/message";
 import { User } from "../interfaces/user";
 import { api } from "../lib/api"; // Asegúrate de importar la instancia de axios
@@ -20,10 +19,14 @@ export type MessagesResponse = {
 export const chatService = {
   // Create an SSE connection to listen for messages using Mercure
   connectToChat: (conversationId: string) => {
-    const eventSource = new EventSource(
-      `${MERCURE_URL}/.well-known/mercure?topic=${process.env.NEXT_PUBLIC_API_URL}/conversation/${conversationId}`,
-      { withCredentials: false }
-    );
+    // Use the working format: Full URL without double /api
+    const topicUrl = `https://api.jugaenequipo.com/conversation/${conversationId}`;
+    const encodedTopic = encodeURIComponent(topicUrl);
+    const url = `${MERCURE_URL}/.well-known/mercure?topic=${encodedTopic}`;
+    
+    const eventSource = new EventSource(url, { 
+      withCredentials: false 
+    });
 
     return eventSource;
   },
