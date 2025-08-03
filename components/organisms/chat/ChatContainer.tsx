@@ -18,7 +18,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     useState<Conversation[]>(initialConversations);
   const [selectedConversation, setSelectedConversation] =
     useState<Conversation | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const conversationsListRef = useRef<ConversationsListHandle>(null);
   const { user } = useContext(UserContext);
   const router = useRouter();
