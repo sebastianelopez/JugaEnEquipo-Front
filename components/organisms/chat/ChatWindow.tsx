@@ -84,11 +84,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           console.log("Nuevo mensaje recibido via SSE:", messageData);
 
           setMessages((prev) => {
-            if (messageData.mine) {
+            // Determine if this message is from the current user
+            const isMyMessage = messageData.username === user?.username;
+            
+            if (isMyMessage) {
               // If it's our message, replace the temporary message with the real one
               const tempMessageIndex = prev.findIndex(
                 (msg) =>
-                  msg.id === user.id &&
+                  msg.username === user?.username &&
                   msg.content === messageData.content &&
                   msg.id.startsWith("temp-")
               );
@@ -101,14 +104,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               // If no temp message found, it might be from another session, add it
               const exists = prev.some((msg) => msg.id === messageData.id);
               if (!exists) {
-                return [...prev, newMessage];
+                return [...prev, messageData];
               }
               return prev;
             } else {
               // If it's not our message, add it if it doesn't exist
               const exists = prev.some((msg) => msg.id === messageData.id);
               if (exists) return prev;
-              return [...prev, newMessage];
+              return [...prev, messageData];
             }
           });
         } catch (error) {
@@ -282,7 +285,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           ) : (
             <List sx={{ py: 1 }}>
               {messages.map((message, index) => {
-                const isOwnMessage = message.mine;
+                const isOwnMessage = message.username === user?.username;
                 const isOptimistic = message.id.startsWith("temp-");
                 const showDivider = index < messages.length - 1;
 
