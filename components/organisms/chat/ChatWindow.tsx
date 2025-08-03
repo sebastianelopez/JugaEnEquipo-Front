@@ -42,6 +42,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const { user } = useContext(UserContext);
   const timeTranslations = useTimeTranslations();
 
+  // Helper function to sort messages by creation date (oldest first)
+  const sortMessagesByDate = (messages: Message[]) => {
+    return [...messages].sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateA - dateB; // Ascending order (oldest first)
+    });
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -61,7 +70,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         const conversationMessages = await chatService.getConversationMessages(
           conversation.id
         );
-        setMessages(conversationMessages);
+        // Sort messages by date (oldest first)
+        const sortedMessages = sortMessagesByDate(conversationMessages);
+        setMessages(sortedMessages);
       } catch (error) {
         console.error("Error loading messages:", error);
       } finally {
@@ -99,19 +110,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               if (tempMessageIndex !== -1) {
                 const newMessages = [...prev];
                 newMessages[tempMessageIndex] = messageData;
-                return newMessages;
+                return sortMessagesByDate(newMessages);
               }
               // If no temp message found, it might be from another session, add it
               const exists = prev.some((msg) => msg.id === messageData.id);
               if (!exists) {
-                return [...prev, messageData];
+                const newMessages = [...prev, messageData];
+                return sortMessagesByDate(newMessages);
               }
               return prev;
             } else {
               // If it's not our message, add it if it doesn't exist
               const exists = prev.some((msg) => msg.id === messageData.id);
               if (exists) return prev;
-              return [...prev, messageData];
+              const newMessages = [...prev, messageData];
+              return sortMessagesByDate(newMessages);
             }
           });
         } catch (error) {
@@ -176,14 +189,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     try {
       // Optimistic message
       const optimisticMessage: Message = {
-        id: messageId,
+        id: `temp-${messageId}`,
         content: messageContent,
         createdAt: new Date().toISOString(),
         mine: true,
         username: user.username,
       };
 
-      setMessages((prev) => [...prev, optimisticMessage]);
+      setMessages((prev) => {
+        const newMessages = [...prev, optimisticMessage];
+        return sortMessagesByDate(newMessages);
+      });
 
       // Send message to server
       await chatService.sendMessage(conversation.id, messageId, messageContent);
@@ -192,7 +208,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     } catch (error) {
       console.error("Error sending message:", error);
       // Remove optimistic message on error
-      setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+      setMessages((prev) => prev.filter((msg) => msg.id !== `temp-${messageId}`));
       setNewMessage(messageContent); // Restore message in input
     } finally {
       setIsSending(false);
