@@ -73,16 +73,19 @@ export const ProfileCard: FC<Props> = ({ user }) => {
         {isLoggedUser ? t("editProfilePicture") : t("followUser")}
       </Button>
 
-      <Button
-        sx={{
-          position: "absolute",
-          top: 350,
-          left: 105,
-        }}
-        onClick={handleSendMessage}
-      >
-        {!isLoggedUser ? t("sendMessage") : null}
-      </Button>
+      {!isLoggedUser ? (
+        <Button
+          sx={{
+            position: "absolute",
+            top: 350,
+            left: 105,
+          }}
+          onClick={handleSendMessage}
+        >
+          {!isLoggedUser ? t("sendMessage") : null}
+        </Button>
+      ) : null}
+
       <Typography variant="h4" fontWeight="bold" sx={{ mt: 2 }}>
         {user.username}
       </Typography>
