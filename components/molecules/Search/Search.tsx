@@ -1,10 +1,12 @@
 import {
+  Avatar,
   Box,
   CircularProgress,
   IconButton,
   Input,
   List,
   ListItem,
+  ListItemAvatar,
   ListItemText,
   SxProps,
   Theme,
@@ -12,6 +14,7 @@ import {
 import { SearchOutlined } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/router";
 import { userService } from "../../../services/user.service";
 import { User } from "../../../interfaces";
 
@@ -21,6 +24,7 @@ interface SearchProps {
 
 export const Search = ({ sx }: SearchProps) => {
   const t = useTranslations("Navbar");
+  const router = useRouter();
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,8 +37,10 @@ export const Search = ({ sx }: SearchProps) => {
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const handleResultClick = (user: User) => {
-    console.log("Selected user:", user);
+    router.push(`/profile/${user.username}`);
     setShowResults(false);
+    setIsExpanded(false);
+    setSearchTerm("");
   };
 
   const handleExpand = () => {
@@ -175,6 +181,16 @@ export const Search = ({ sx }: SearchProps) => {
                   color: "text.primary",
                 }}
               >
+                <ListItemAvatar>
+                  <Avatar
+                    alt={`Avatar de ${user.username}`}
+                    src={user.profileImage}
+                    sx={{ width: 40, height: 40 }}
+                  >
+                    {!user.profileImage &&
+                      user.username.charAt(0).toUpperCase()}
+                  </Avatar>
+                </ListItemAvatar>
                 <ListItemText
                   primary={user.username}
                   secondary={`${user.firstname} ${user.lastname}`}
