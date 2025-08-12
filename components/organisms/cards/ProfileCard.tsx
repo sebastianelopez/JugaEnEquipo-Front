@@ -110,10 +110,70 @@ export const ProfileCard: FC<Props> = ({ user }) => {
         >
           <ListItem>
             <ListItemText
-              primary="Contactos"
-              primaryTypographyProps={{
-                fontWeight: "bold",
-                color: "gray",
+              primary="Seguidores"
+              slotProps={{
+                primary: {
+                  typographyProps: { fontWeight: "bold", color: "gray" },
+                },
+              }}
+            />
+            <ListItemAvatar
+              children={
+                <Avatar
+                  alt="Profile Picture"
+                  src={
+                    "https://thumbs.dreamstime.com/b/jugador-profesional-jugando-torneos-en-l%C3%ADnea-videojuegos-ordenador-con-auriculares-rojo-y-azul-195050715.jpg"
+                  }
+                />
+              }
+              sx={{
+                position: "absolute",
+                right: 0,
+                cursor: "pointer",
+              }}
+            />
+            <ListItemAvatar
+              children={
+                <Avatar
+                  alt="Profile Picture"
+                  src={
+                    "https://estaticos-cdn.epe.es/clip/71532b63-7814-4884-887e-e7075eab4198_alta-libre-aspect-ratio_default_0.jpg"
+                  }
+                />
+              }
+              sx={{
+                position: "absolute",
+                right: 20,
+                cursor: "pointer",
+              }}
+            />
+            <ListItemAvatar
+              children={
+                <Avatar
+                  alt="Profile Picture"
+                  src={
+                    "https://thumbs.dreamstime.com/b/captura-de-retrato-un-jugador-profesional-videojuegos-enfocado-en-joven-negro-foto-alta-calidad-200195882.jpg"
+                  }
+                />
+              }
+              sx={{
+                position: "absolute",
+                right: 40,
+                cursor: "pointer",
+              }}
+            />
+            <ListItemText
+              secondary="230"
+              secondaryTypographyProps={{ fontWeight: "bold" }}
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemText
+              primary="Seguidos"
+              slotProps={{
+                primary: {
+                  typographyProps: { fontWeight: "bold", color: "gray" },
+                },
               }}
             />
             <ListItemAvatar
@@ -169,9 +229,10 @@ export const ProfileCard: FC<Props> = ({ user }) => {
           <ListItem>
             <ListItemText
               primary="Teams"
-              primaryTypographyProps={{
-                fontWeight: "bold",
-                color: "gray",
+              slotProps={{
+                primary: {
+                  typographyProps: { fontWeight: "bold", color: "gray" },
+                },
               }}
             />
             <ListItemAvatar
