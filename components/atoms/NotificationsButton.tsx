@@ -128,7 +128,7 @@ export const NotificationsButton = ({ notificationCount = 0 }: Props) => {
               sx={{
                 backgroundColor: notification.read
                   ? "inherit"
-                  : "rgba(255, 0, 0, 0.1)",
+                  : "rgba(185, 117, 224, 0.71)",
                 whiteSpace: "normal",
                 width: "100%",
                 display: "flex",
