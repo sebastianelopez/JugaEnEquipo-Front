@@ -10,12 +10,20 @@ const baseURL = isServer
   ? "/api/proxy"
   : process.env.NEXT_PUBLIC_API_URL || "https://api.jugaenequipo.com/api";
 
+// Create HTTPS agent for server-side requests
+const httpsAgent = isServer
+  ? new https.Agent({
+      rejectUnauthorized: process.env.NODE_ENV === "production",
+    })
+  : undefined;
+
 const axiosInstance = axios.create({
   baseURL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
+  ...(httpsAgent && { httpsAgent }), // Only add httpsAgent for server-side requests
 });
 
 // Request interceptor to add auth token
