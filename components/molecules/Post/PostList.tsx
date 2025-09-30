@@ -1,4 +1,4 @@
-import { Box, Typography, Skeleton, Button } from "@mui/material";
+import { Box, Typography, Skeleton } from "@mui/material";
 import { PublicationCard } from "../../organisms";
 import { Post } from "../../../interfaces";
 import { useTranslations } from "next-intl";
