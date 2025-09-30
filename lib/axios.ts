@@ -1,5 +1,7 @@
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
+import https from "https";
+
 // Determine if we're running on server or client
 const isServer = typeof window === "undefined";
 
