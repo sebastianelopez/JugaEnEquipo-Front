@@ -20,7 +20,8 @@ export const Footer = () => {
             display="flex"
             alignItems="center"
             flexDirection="column"
-            size={{ md: 4 }}
+            item
+            md={4}
           >
             <NextLink href={"/"} passHref>
               <Link component="span">
@@ -50,13 +51,15 @@ export const Footer = () => {
             display="flex"
             alignItems="center"
             flexDirection="column"
-            size={{ md: 4 }}
+            item
+            md={4}
           ></Grid>
           <Grid
             display="flex"
             alignItems="center"
             flexDirection="column"
-            size={{ md: 4 }}
+            item
+            md={4}
           ></Grid>
         </Grid>
         <Grid

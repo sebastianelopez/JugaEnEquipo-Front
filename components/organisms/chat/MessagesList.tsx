@@ -83,7 +83,7 @@ export const ConversationsList = forwardRef<
   }, [searchTerm, conversations]);
 
   return (
-    <Grid size={{ xs: 12, md: 5 }} sx={{ height: "100%" }}>
+    <Grid item xs={12} md={5} sx={{ height: "100%" }}>
       <Box
         sx={{
           padding: 2,

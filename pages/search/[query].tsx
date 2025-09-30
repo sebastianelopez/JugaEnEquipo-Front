@@ -147,7 +147,7 @@ const SearchPage: NextPage<Props> = ({
 
         <Grid container spacing={3}>
           {/* Users Section */}
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid item xs={12} md={6}>
             <Paper sx={{ p: 2, mb: 2 }}>
               <Typography variant="h5" component="h2" gutterBottom>
                 Usuarios
@@ -235,7 +235,7 @@ const SearchPage: NextPage<Props> = ({
           </Grid>
 
           {/* Groups Section */}
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid item xs={12} md={6}>
             <Paper sx={{ p: 2, mb: 2 }}>
               <Typography variant="h5" component="h2" gutterBottom>
                 Grupos
@@ -246,7 +246,7 @@ const SearchPage: NextPage<Props> = ({
               {displayedTeams.length > 0 ? (
                 <Box>
                   {displayedTeams.map((team) => (
-                    <Box key={team._id} sx={{ mb: 2 }}>
+                    <Box key={team.id} sx={{ mb: 2 }}>
                       <ListItem>
                         <ListItemButton>
                           <ListItemAvatar>
@@ -257,7 +257,7 @@ const SearchPage: NextPage<Props> = ({
                               }
                             />
                           </ListItemAvatar>
-                          <ListItemText id={team._id} primary={team.name} />
+                          <ListItemText id={team.id} primary={team.name} />
                         </ListItemButton>
                       </ListItem>
                     </Box>
