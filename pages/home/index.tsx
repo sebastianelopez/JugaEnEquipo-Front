@@ -5,6 +5,7 @@ import {
   IdentityCard,
   HashtagsCard,
   PublicateCard,
+  UpcomingEventsCard,
 } from "../../components/organisms";
 import { MainLayout } from "../../layouts";
 import { useContext, useEffect, useRef, useState } from "react";
@@ -196,7 +197,7 @@ const HomePage = () => {
             display: { xs: "none", md: "flex" },
           }}
         >
-          {user && <IdentityCard user={user} />}
+          <UpcomingEventsCard />
         </Grid>
       </Grid>
     </MainLayout>
