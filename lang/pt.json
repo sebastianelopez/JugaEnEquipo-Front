@@ -54,6 +54,12 @@
         "english": "Inglês",
         "portuguese": "Português"
     },
+    "Feed": {
+        "loadErrorTitle": "Não foi possível carregar as publicações",
+        "loadErrorMessage": "Pode ser um problema temporário do servidor. Tente novamente em alguns segundos.",
+        "retry": "Tentar novamente",
+        "noPosts": "Não há publicações para mostrar"
+    },
     "Time":{
         "timePrefixText": "",
         "timeYearSuffixText": "ano atras",
@@ -70,5 +76,9 @@
         "timeMinutesSuffixText": "minutos atras",
         "timeSecondSuffixText": "segundo atras",
         "timeSecondsSuffixText": "segundos atras"
+    },
+    "Events": {
+        "upcomingEvents": "Próximos eventos",
+        "seeAll": "Ver todos"
     }
 }

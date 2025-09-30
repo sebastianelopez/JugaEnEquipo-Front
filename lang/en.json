@@ -54,6 +54,12 @@
         "english": "English",
         "portuguese": "Portuguese"
     },
+    "Feed": {
+        "loadErrorTitle": "We couldn't load the posts",
+        "loadErrorMessage": "It might be a temporary server issue. Please try again in a few seconds.",
+        "retry": "Retry",
+        "noPosts": "There are no posts to show"
+    },
     "Time":{
         "timePrefixText": "",
         "timeYearSuffixText": "year ago",
@@ -70,5 +76,9 @@
         "timeMinutesSuffixText": "minutes ago",
         "timeSecondSuffixText": "second ago",
         "timeSecondsSuffixText": "seconds ago"
+    },
+    "Events": {
+        "upcomingEvents": "Upcoming events",
+        "seeAll": "See all"
     }
 }
