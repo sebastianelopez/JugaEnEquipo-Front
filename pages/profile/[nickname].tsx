@@ -31,6 +31,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [tab, setTab] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -64,34 +65,39 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
     };
   };
 
-  useEffect(() => {
-    const loadPosts = async () => {
-      try {
-        setIsLoading(true);
-        const fetchedPosts = await postService.getPostsByUsername(
-          userFound.username
-        );
-        const postsArray = Array.isArray(fetchedPosts)
-          ? fetchedPosts
-          : [fetchedPosts];
-
-        const postsWithTimestamps = postsArray.map((post) => ({
-          ...post,
-          timestamp: new Date(post.createdAt).getTime(),
-        }));
-
-        postsWithTimestamps.sort((a, b) => b.timestamp - a.timestamp);
-        const sortedPosts = postsWithTimestamps;
-
-        setPosts(sortedPosts);
-      } catch (error) {
-        console.error("Error loading posts:", error);
+  const loadPosts = async () => {
+    try {
+      setHasError(false);
+      setIsLoading(true);
+      const result = await await postService.getPostsByUsername(
+        userFound.username
+      );
+      if (result.error || !result.data) {
+        setHasError(true);
         setPosts([]);
-      } finally {
-        setIsLoading(false);
+        return;
       }
-    };
+      const postsArray = result.data;
 
+      const postsWithTimestamps = postsArray.map((post) => ({
+        ...post,
+        timestamp: new Date(post.createdAt).getTime(),
+      }));
+
+      postsWithTimestamps.sort((a, b) => b.timestamp - a.timestamp);
+      const sortedPosts = postsWithTimestamps;
+
+      setPosts(sortedPosts);
+    } catch (error) {
+      console.error("Error loading posts:", error);
+      setHasError(true);
+      setPosts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadPosts();
   }, []);
 
@@ -187,7 +193,12 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
                 </Tabs>
               </Box>
               <CustomTabPanel value={tab} index={0}>
-                <PostList isLoading={isLoading} posts={posts} />
+                <PostList
+                  isLoading={isLoading}
+                  posts={posts}
+                  error={hasError}
+                  onRetry={loadPosts}
+                />
               </CustomTabPanel>
               <CustomTabPanel value={tab} index={1}>
                 <BlizzardButton />
