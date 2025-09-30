@@ -68,7 +68,10 @@ export const ProfileCard: FC<Props> = ({ user }) => {
           position: "absolute",
           top: 350,
           left: 25,
+          height: 40,
         }}
+        variant="contained"
+        color="primary"
       >
         {isLoggedUser ? t("editProfilePicture") : t("followUser")}
       </Button>

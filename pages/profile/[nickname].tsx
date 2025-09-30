@@ -117,6 +117,8 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
                 bottom: { xs: 'unset', md: 25 },
                 right: 25,
               }}
+              variant="contained"
+              color="primary"
             >
               {isLoggedUser ? t("editProfileBackground") : t("shareProfile")}
             </Button>
