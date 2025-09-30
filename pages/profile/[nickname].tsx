@@ -113,8 +113,8 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
             <Button
               sx={{
                 position: "absolute",
-                top: { xs: 85, md: 'unset' },
-                bottom: { xs: 'unset', md: 25 },
+                top: { xs: 85, md: "unset" },
+                bottom: { xs: "unset", md: 25 },
                 right: 25,
               }}
               variant="contained"
@@ -123,9 +123,11 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
               {isLoggedUser ? t("editProfileBackground") : t("shareProfile")}
             </Button>
           </Grid>
-          <Grid size={12} container spacing={3}>
+          <Grid container spacing={3} sx={{ width: "100%", justifyContent: 'space-around' }}>
             <Grid
-              size={{ xs: 12, md: 5 }}
+              item
+              xs={12}
+              md={5}
               position="relative"
               display="flex"
               flexDirection={"column"}
@@ -161,7 +163,9 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
               </Paper>
             </Grid>
             <Grid
-              size={{ xs: 12, md: 7 }}
+              item
+              xs={12}
+              md={7}
               sx={{
                 display: "flex",
                 flexDirection: "column",
