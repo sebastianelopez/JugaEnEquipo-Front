@@ -25,6 +25,7 @@ const HomePage = () => {
     posts: Post[];
   }>({ hasNew: false, count: 0, posts: [] });
   const [isLoadingNewPosts, setIsLoadingNewPosts] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const lastUpdateTimestamp = useRef<number>(Date.now());
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -66,32 +67,37 @@ const HomePage = () => {
     }
   };
 
-  useEffect(() => {
-    const loadPosts = async () => {
-      try {
-        setIsLoading(true);
-        const fetchedPosts = await postService.getMyFeed();
-        const postsArray = Array.isArray(fetchedPosts)
-          ? fetchedPosts
-          : [fetchedPosts];
-
-        const postsWithTimestamps = postsArray.map((post) => ({
-          ...post,
-          timestamp: new Date(post.createdAt).getTime(),
-        }));
-
-        postsWithTimestamps.sort((a, b) => b.timestamp - a.timestamp);
-        const sortedPosts = postsWithTimestamps;
-
-        setPosts(sortedPosts);
-      } catch (error) {
-        console.error("Error loading posts:", error);
+  const loadPosts = async () => {
+    try {
+      setHasError(false);
+      setIsLoading(true);
+      const result = await postService.getMyFeed();
+      if (result.error || !result.data) {
+        setHasError(true);
         setPosts([]);
-      } finally {
-        setIsLoading(false);
+        return;
       }
-    };
+      const postsArray = result.data;
 
+      const postsWithTimestamps = postsArray.map((post) => ({
+        ...post,
+        timestamp: new Date(post.createdAt).getTime(),
+      }));
+
+      postsWithTimestamps.sort((a, b) => b.timestamp - a.timestamp);
+      const sortedPosts = postsWithTimestamps;
+
+      setPosts(sortedPosts);
+    } catch (error) {
+      console.error("Error loading posts:", error);
+      setHasError(true);
+      setPosts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadPosts();
   }, []);
 
@@ -173,7 +179,12 @@ const HomePage = () => {
               isLoading={isLoadingNewPosts}
             />
           )}
-          <PostList isLoading={isLoading} posts={posts} />
+          <PostList
+            isLoading={isLoading}
+            posts={posts}
+            error={hasError}
+            onRetry={loadPosts}
+          />
         </Grid>
         <Grid
           md={3}
