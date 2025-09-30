@@ -12,6 +12,11 @@ interface PostResponse {
   data: Post | Post[];
 }
 
+type Result<T> = {
+  data: T | null;
+  error: { message: string; status?: number } | null;
+};
+
 interface CommentResponse {
   data: Comment | Comment[];
 }
@@ -24,7 +29,15 @@ export const postService = {
       resources?: string[];
       sharedPostId?: string | null;
     }
-  ) => await api.put<PostResponse>(`/post/${postId}`, postData),
+  ) => {
+    try {
+      const result = await api.put<PostResponse>(`/post/${postId}`, postData);
+      return result;
+    } catch (error) {
+      console.error("❌ createPost - Error:", error);
+      throw error;
+    }
+  },
 
   addResource: async (
     postId: string,
@@ -41,11 +54,33 @@ export const postService = {
     formData.append("resource", resourceData.resource);
     formData.append("type", resourceData.type);
 
-    return await api.post<Resource>(`/post/${postId}/resource`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+    // Log FormData contents (using Array.from for compatibility)
+    const formDataEntries = Array.from(formData.entries());
+    formDataEntries.forEach(([key, value]) => {
+      if (value instanceof File) {
+        console.log(
+          `  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`
+        );
+      } else {
+        console.log(`  ${key}: ${value}`);
+      }
     });
+
+    try {
+      const result = await api.post<Resource>(
+        `/post/${postId}/resource`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return result;
+    } catch (error) {
+      console.error("❌ addResource - Error:", error);
+      throw error;
+    }
   },
 
   likePost: async (postId: string) =>
@@ -120,12 +155,21 @@ export const postService = {
       params: { q: query },
     }),
 
-  getPostsByUsername: async (username: string) =>
-    (
-      await api.get<PostResponse>(`/posts`, {
+  getPostsByUsername: async (username: string): Promise<Result<Post[]>> => {
+    try {
+      const res = await api.get<PostResponse>(`/posts`, {
         q: `username:${username}`,
-      })
-    ).data,
+      });
+      const posts = Array.isArray(res.data) ? res.data : [res.data];
+      return { data: posts, error: null };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || "Unknown error";
+      const status = error?.response?.status;
+      console.error("getPostsByUsername - API error:", { message, status });
+      return { data: null, error: { message, status } };
+    }
+  },
 
   addComment: async (
     postId: string,
@@ -135,8 +179,18 @@ export const postService = {
   getPostComments: async (postId: string) =>
     (await api.get<CommentResponse>(`/post/${postId}/comments`)).data,
 
-  getMyFeed: async () => {
-    const token = await getToken();
-    return (await api.get<PostResponse>(`/my-feed`, {}, token)).data;
+  getMyFeed: async (): Promise<Result<Post[]>> => {
+    try {
+      const token = await getToken();
+      const res = await api.get<PostResponse>(`/my-feed`, {}, token);
+      const posts = Array.isArray(res.data) ? res.data : [res.data];
+      return { data: posts, error: null };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || "Unknown error";
+      const status = error?.response?.status;
+      console.error("getMyFeed - API error:", { message, status });
+      return { data: null, error: { message, status } };
+    }
   },
 };

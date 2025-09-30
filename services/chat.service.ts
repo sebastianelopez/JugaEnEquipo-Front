@@ -16,6 +16,20 @@ export type MessagesResponse = {
   data: Message[];
 };
 
+type Result<T> = {
+  data: T | null;
+  error: { message: string; status?: number } | null;
+};
+
+const toErrorMessage = (input: unknown): string => {
+  if (typeof input === "string") return input;
+  try {
+    return JSON.stringify(input);
+  } catch {
+    return "Unknown error";
+  }
+};
+
 export const chatService = {
   // Create an SSE connection to listen for messages using Mercure
   connectToChat: (conversationId: string) => {
@@ -23,9 +37,9 @@ export const chatService = {
     const topicUrl = `https://api.jugaenequipo.com/conversation/${conversationId}`;
     const encodedTopic = encodeURIComponent(topicUrl);
     const url = `${MERCURE_URL}/.well-known/mercure?topic=${encodedTopic}`;
-    
-    const eventSource = new EventSource(url, { 
-      withCredentials: false 
+
+    const eventSource = new EventSource(url, {
+      withCredentials: false,
     });
 
     return eventSource;
@@ -36,49 +50,66 @@ export const chatService = {
     conversationId: string,
     messageId: string,
     content: string
-  ) => {
-    const token = await getToken();
-
-    const response = await api.put(
-      `/conversation/${conversationId}/message/${messageId}`,
-      { content },
-      token
-    );
-
-    return response;
+  ): Promise<Result<unknown>> => {
+    try {
+      const token = await getToken();
+      const response = await api.put(
+        `/conversation/${conversationId}/message/${messageId}`,
+        { content },
+        token
+      );
+      return { data: response, error: null };
+    } catch (error: any) {
+      const message = toErrorMessage(
+        error?.response?.data?.message || error?.message || "Unknown error"
+      );
+      const status = error?.response?.status;
+      return { data: null, error: { message, status } };
+    }
   },
 
   // Get conversation messages
   getConversationMessages: async (
     conversationId: string
-  ): Promise<Message[]> => {
-    const token = await getToken();
-
-    const response = await api.get<MessagesResponse>(
-      `/conversation/${conversationId}/messages`,
-      undefined,
-      token
-    );
-    return response.data || [];
+  ): Promise<Result<Message[]>> => {
+    try {
+      const token = await getToken();
+      const response = await api.get<MessagesResponse>(
+        `/conversation/${conversationId}/messages`,
+        undefined,
+        token
+      );
+      return { data: response.data || [], error: null };
+    } catch (error: any) {
+      const message = toErrorMessage(
+        error?.response?.data?.message || error?.message || "Unknown error"
+      );
+      const status = error?.response?.status;
+      return { data: null, error: { message, status } };
+    }
   },
 
   // Find conversation by other user ID
-  findConversationByUserId: async (userId: string): Promise<string | null> => {
-    const token = await getToken();
+  findConversationByUserId: async (
+    userId: string
+  ): Promise<Result<string | null>> => {
     try {
-      // Usar el proxy local y la instancia de axios (api)
+      const token = await getToken();
       const response = await api.get<ConversationIdResponse>(
         `/conversation/by-other-user/${userId}`,
         {},
         token
       );
-      return response.data.id;
+      return { data: response.data.id, error: null };
     } catch (error: any) {
-      if (error.response && error.response.status === 404) {
-        return null; // No conversation exists
+      if (error?.response?.status === 404) {
+        return { data: null, error: { message: "Not found", status: 404 } };
       }
-      console.error("Error finding conversation:", error);
-      return null;
+      const message = toErrorMessage(
+        error?.response?.data?.message || error?.message || "Unknown error"
+      );
+      const status = error?.response?.status;
+      return { data: null, error: { message, status } };
     }
   },
 
