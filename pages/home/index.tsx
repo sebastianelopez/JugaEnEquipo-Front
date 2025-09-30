@@ -1,7 +1,6 @@
-import { Box, Grid, Skeleton, Typography } from "@mui/material";
+import { Grid } from "@mui/material";
 import { GetStaticPropsContext } from "next";
 import {
-  PublicationCard,
   IdentityCard,
   HashtagsCard,
   PublicateCard,
