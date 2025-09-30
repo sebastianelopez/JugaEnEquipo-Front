@@ -1,13 +1,18 @@
-import { Box, Typography, Skeleton } from "@mui/material";
+import { Box, Typography, Skeleton, Button } from "@mui/material";
 import { PublicationCard } from "../../organisms";
 import { Post } from "../../../interfaces";
+import { useTranslations } from "next-intl";
+import { ErrorState } from "../Feedback/ErrorState";
 
 interface Props {
   posts: Post[];
   isLoading: boolean;
+  error?: boolean;
+  onRetry?: () => void;
 }
 
-export const PostList = ({ posts, isLoading }: Props) => {
+export const PostList = ({ posts, isLoading, error, onRetry }: Props) => {
+  const t = useTranslations("Feed");
   return (
     <>
       {isLoading && (
@@ -34,8 +39,18 @@ export const PostList = ({ posts, isLoading }: Props) => {
         </>
       )}
 
+      {/* Error State */}
+      {!isLoading && error && (
+        <ErrorState
+          title={t("loadErrorTitle")}
+          message={t("loadErrorMessage")}
+          actionLabel={t("retry")}
+          onRetry={onRetry}
+        />
+      )}
+
       {/* No Posts State */}
-      {!isLoading && posts.length === 0 && (
+      {!isLoading && !error && posts.length === 0 && (
         <Box
           display="flex"
           alignItems="center"
@@ -50,13 +65,14 @@ export const PostList = ({ posts, isLoading }: Props) => {
           }}
         >
           <Typography variant="h6" color="text.secondary">
-            No hay publicaciones para mostrar
+            {t("noPosts")}
           </Typography>
         </Box>
       )}
 
       {/* Posts Exist State */}
       {!isLoading &&
+        !error &&
         posts.length > 0 &&
         posts.map((post, index) => (
           <Box
