@@ -3,8 +3,9 @@ import "/node_modules/flag-icons/css/flag-icons.min.css";
 
 import type { AppProps } from "next/app";
 import { UiProvider } from "../context";
+import { UiContext } from "../context";
 import { CssBaseline, ThemeProvider } from "@mui/material";
-import { lightTheme } from "../themes";
+import { lightTheme, darkTheme } from "../themes";
 import { NextIntlClientProvider } from "next-intl";
 
 import type { NextPageContext } from "next";
@@ -20,7 +21,7 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
   const router = useRouter();
   return (
     <UiProvider>
-      <ThemeProvider theme={lightTheme}>
+      <ThemeProviderSelector>
         <UserProvider>
           <PostProvider>
             <NextIntlClientProvider
@@ -32,9 +33,18 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
             </NextIntlClientProvider>
           </PostProvider>
         </UserProvider>
-      </ThemeProvider>
+      </ThemeProviderSelector>
     </UiProvider>
   );
 }
 
 export default MyApp;
+
+// Local helper to choose theme based on context
+import { PropsWithChildren, useContext, useEffect } from "react";
+
+function ThemeProviderSelector({ children }: PropsWithChildren) {
+  const { themeMode } = useContext(UiContext);
+  const theme = themeMode === "dark" ? darkTheme : lightTheme;
+  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+}

@@ -17,13 +17,15 @@ import HomeIcon from "@mui/icons-material/Home";
 import MessageIcon from "@mui/icons-material/Message";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import MenuIcon from "@mui/icons-material/Menu";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LightModeIcon from "@mui/icons-material/LightMode";
 import { Search } from "../../molecules/Search/Search";
 
 import logo from "./../../../assets/logo.png";
 import { NotificationsButton } from "../../atoms/NotificationsButton";
 
 export const MainNavbar = () => {
-  const { toggleSideMenu } = useContext(UiContext);
+  const { toggleSideMenu, themeMode, toggleTheme } = useContext(UiContext);
 
   const t = useTranslations("Navbar");
 
@@ -101,6 +103,10 @@ export const MainNavbar = () => {
             </Link>
           </NextLink>
           <NotificationsButton notificationCount={3} />
+
+          <IconButton onClick={toggleTheme} aria-label="toggle theme">
+            {themeMode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+          </IconButton>
 
           <Search
             sx={{
