@@ -14,7 +14,18 @@
         "mediaButton": "Foto / Video",
         "createPost": "Crear publicacion",
         "sharePost": "Compartir publicacion",
-        "writeSomething": "Escribe algo..."
+        "writeSomething": "Escribe algo...",
+        "deletePost": "Eliminar publicación",
+        "deletePostTitle": "¿Eliminar publicación?",
+        "deletePostConfirmation": "¿Estás seguro que deseas eliminar esta publicación? Esta acción no se puede deshacer.",
+        "cancel": "Cancelar",
+        "delete": "Eliminar",
+        "deletePostErrorTitle": "No se pudo eliminar la publicación",
+        "deletePostErrorMessage": "Ocurrió un error al intentar eliminar la publicación. Por favor, intenta nuevamente.",
+        "retry": "Reintentar",
+        "close": "Cerrar",
+        "deletePostSuccessTitle": "Publicación eliminada",
+        "deletePostSuccessMessage": "La publicación se eliminó correctamente."
     },
     "Register":{
         "name": "Nombre",
