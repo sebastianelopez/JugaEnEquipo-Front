@@ -80,20 +80,19 @@ export const SettingsMenu = ({ postId }: SettingsMenuProps) => {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"¿Eliminar publicación?"}
+          {t("deletePostTitle")}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            ¿Estás seguro que deseas eliminar esta publicación? Esta acción no
-            se puede deshacer.
+            {t("deletePostConfirmation")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancelDelete} variant="outlined">
-            Cancelar
+            {t("cancel")}
           </Button>
           <Button onClick={handleConfirmDelete} color="error" autoFocus>
-            Eliminar
+            {t("delete")}
           </Button>
         </DialogActions>
       </Dialog>
