@@ -1,4 +1,6 @@
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -14,6 +16,9 @@ interface Props {
   message?: string;
   onClose: () => void;
   closeLabel?: string;
+  lottieSrc?: string;
+  lottieLoop?: boolean;
+  lottieAutoplay?: boolean;
 }
 
 export const SuccessDialog: FC<Props> = ({
@@ -22,10 +27,34 @@ export const SuccessDialog: FC<Props> = ({
   message = "La acción se completó correctamente.",
   onClose,
   closeLabel = "Cerrar",
+  lottieSrc = "/assets/lotties/success-animation.lottie",
+  lottieLoop = false,
+  lottieAutoplay = false,
 }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>{title}</DialogTitle>
+      <DialogTitle
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+        }}
+      >
+        <Box
+          component="div"
+          sx={{
+            width: 40,
+            height: 40,
+          }}
+        >
+          <DotLottieReact
+            src={lottieSrc}
+            loop={lottieLoop}
+            autoplay={lottieAutoplay}
+          />
+        </Box>
+        {title}
+      </DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary">
           {message}

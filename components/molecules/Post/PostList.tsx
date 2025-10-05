@@ -46,7 +46,6 @@ export const PostList = ({ posts, isLoading, error, onRetry }: Props) => {
           message={t("loadErrorMessage")}
           actionLabel={t("retry")}
           onRetry={onRetry}
-          lottieAutoplay={true}
         />
       )}
 

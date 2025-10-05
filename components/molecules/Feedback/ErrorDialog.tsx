@@ -1,4 +1,6 @@
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -15,6 +17,9 @@ interface Props {
   onClose: () => void;
   onRetry?: () => void;
   retryLabel?: string;
+  lottieSrc?: string;
+  lottieLoop?: boolean;
+  lottieAutoplay?: boolean;
 }
 
 export const ErrorDialog: FC<Props> = ({
@@ -24,10 +29,34 @@ export const ErrorDialog: FC<Props> = ({
   onClose,
   onRetry,
   retryLabel = "Reintentar",
+  lottieSrc = "/assets/lotties/error-fail-animation.lottie",
+  lottieLoop = false,
+  lottieAutoplay = true,
 }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>{title}</DialogTitle>
+      <DialogTitle
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+        }}
+      >
+        <Box
+          component="div"
+          sx={{
+            width: 40,
+            height: 40,
+          }}
+        >
+          <DotLottieReact
+            src={lottieSrc}
+            loop={lottieLoop}
+            autoplay={lottieAutoplay}
+          />
+        </Box>
+        {title}
+      </DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary">
           {message}

@@ -22,7 +22,7 @@ export const ErrorState: FC<Props> = ({
   icon,
   lottieSrc = "/assets/lotties/error-fail-animation.lottie",
   lottieLoop = false,
-  lottieAutoplay = false,
+  lottieAutoplay = true,
 }) => {
   return (
     <Box
