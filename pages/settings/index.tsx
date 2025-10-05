@@ -1,32 +1,17 @@
-import { NextPage } from "next";
-import React, { useState } from "react";
-import {
-  Container,
-  Typography,
-  Box,
-  Tabs,
-  Tab,
-  Paper,
-  Divider,
-  TextField,
-  Button,
-  Switch,
-  FormControlLabel,
-  Avatar,
-  Grid,
-  IconButton,
-  Stack,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-} from "@mui/material";
-import PhotoCamera from "@mui/icons-material/PhotoCamera";
-import SaveIcon from "@mui/icons-material/Save";
+import { NextPage, GetStaticPropsContext } from "next";
+import React, { useState, useCallback } from "react";
+import { Container, Typography, Box, Tabs, Tab, Paper } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SecurityIcon from "@mui/icons-material/Security";
 import PersonIcon from "@mui/icons-material/Person";
 import { MainLayout } from "../../layouts";
+import { useTranslations } from "next-intl";
+import {
+  SettingsProfile,
+  SettingsAccount,
+  SettingsNotifications,
+} from "../../components/organisms/settings";
+import type { NotificationPreferences } from "../../components/organisms/settings/SettingsNotifications";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -52,18 +37,43 @@ function TabPanel(props: TabPanelProps) {
 
 const SettingsPage: NextPage = () => {
   const [tabValue, setTabValue] = useState(0);
-  const [notifications, setNotifications] = useState(true);
-  const [language, setLanguage] = useState("es");
+  const t = useTranslations("Settings");
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
+  const handleTabChange = useCallback(
+    (event: React.SyntheticEvent, newValue: number) => {
+      setTabValue(newValue);
+    },
+    []
+  );
+
+  const handleProfileSave = useCallback((data: any) => {
+    console.log("Profile data:", data);
+    // TODO: Implement profile update logic
+  }, []);
+
+  const handlePasswordUpdate = useCallback((data: any) => {
+    console.log("Password data:", data);
+    // TODO: Implement password update logic
+  }, []);
+
+  const handleDeleteAccount = useCallback(() => {
+    console.log("Delete account");
+    // TODO: Implement account deletion logic
+  }, []);
+
+  const handleNotificationsSave = useCallback(
+    (preferences: NotificationPreferences) => {
+      console.log("Notification preferences:", preferences);
+      // TODO: Implement notification preferences save logic
+    },
+    []
+  );
 
   return (
-    <MainLayout title="Configuración" pageDescription="Ajustes de usuario">
+    <MainLayout title={t("title")} pageDescription={t("pageDescription")}>
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Configuración
+          {t("title")}
         </Typography>
 
         <Paper elevation={3} sx={{ mt: 3 }}>
@@ -71,176 +81,28 @@ const SettingsPage: NextPage = () => {
             <Tabs
               value={tabValue}
               onChange={handleTabChange}
-              aria-label="configuración"
+              aria-label={t("title")}
               variant="fullWidth"
             >
-              <Tab icon={<PersonIcon />} label="Perfil" />
-              <Tab icon={<SecurityIcon />} label="Cuenta" />
-              <Tab icon={<NotificationsIcon />} label="Notificaciones" />
+              <Tab icon={<PersonIcon />} label={t("profileTab")} />
+              <Tab icon={<SecurityIcon />} label={t("accountTab")} />
+              <Tab icon={<NotificationsIcon />} label={t("notificationsTab")} />
             </Tabs>
           </Box>
 
           <TabPanel value={tabValue} index={0}>
-            <Typography variant="h6" gutterBottom>
-              Información del Perfil
-            </Typography>
-            <Divider sx={{ mb: 3 }} />
-
-            <Grid container spacing={3}>
-              <Grid
-                item
-                xs={12}
-                sm={4}
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                <Avatar
-                  sx={{ width: 100, height: 100, mb: 2 }}
-                  alt="Foto de perfil"
-                  src="/profile-placeholder.jpg"
-                />
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<PhotoCamera />}
-                  size="small"
-                >
-                  Cambiar foto
-                  <input hidden accept="image/*" type="file" />
-                </Button>
-              </Grid>
-
-              <Grid item xs={12} sm={8}>
-                <Stack spacing={3}>
-                  <TextField
-                    fullWidth
-                    label="Nombre"
-                    defaultValue="Usuario"
-                    variant="outlined"
-                  />
-                  <TextField
-                    fullWidth
-                    label="Apellidos"
-                    defaultValue="De Ejemplo"
-                    variant="outlined"
-                  />
-                  <TextField
-                    fullWidth
-                    label="Correo electrónico"
-                    defaultValue="usuario@ejemplo.com"
-                    variant="outlined"
-                    type="email"
-                  />
-                  <TextField
-                    fullWidth
-                    label="Biografía"
-                    defaultValue=""
-                    variant="outlined"
-                    multiline
-                    rows={4}
-                    placeholder="Cuéntanos un poco sobre ti..."
-                  />
-                </Stack>
-              </Grid>
-            </Grid>
-
-            <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<SaveIcon />}
-              >
-                Guardar cambios
-              </Button>
-            </Box>
+            <SettingsProfile onSave={handleProfileSave} />
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
-            <Typography variant="h6" gutterBottom>
-              Configuración de la Cuenta
-            </Typography>
-            <Divider sx={{ mb: 3 }} />
-
-            <Stack spacing={3}>
-              <TextField
-                fullWidth
-                label="Contraseña actual"
-                type="password"
-                variant="outlined"
-              />
-              <TextField
-                fullWidth
-                label="Nueva contraseña"
-                type="password"
-                variant="outlined"
-              />
-              <TextField
-                fullWidth
-                label="Confirmar contraseña"
-                type="password"
-                variant="outlined"
-              />
-
-              <Box sx={{ mt: 2 }}>
-                <Button variant="contained" color="error" sx={{ mr: 2 }}>
-                  Eliminar cuenta
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<SaveIcon />}
-                >
-                  Actualizar contraseña
-                </Button>
-              </Box>
-            </Stack>
+            <SettingsAccount
+              onUpdatePassword={handlePasswordUpdate}
+              onDeleteAccount={handleDeleteAccount}
+            />
           </TabPanel>
 
           <TabPanel value={tabValue} index={2}>
-            <Typography variant="h6" gutterBottom>
-              Preferencias de Notificación
-            </Typography>
-            <Divider sx={{ mb: 3 }} />
-
-            <Stack spacing={2}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={notifications}
-                    onChange={(e) => setNotifications(e.target.checked)}
-                  />
-                }
-                label="Activar notificaciones"
-              />
-
-              <FormControlLabel
-                control={<Switch defaultChecked />}
-                label="Notificaciones por correo electrónico"
-              />
-
-              <FormControlLabel
-                control={<Switch defaultChecked />}
-                label="Notificaciones push"
-              />
-
-              <FormControlLabel
-                control={<Switch />}
-                label="Notificaciones de marketing"
-              />
-            </Stack>
-
-            <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<SaveIcon />}
-              >
-                Guardar preferencias
-              </Button>
-            </Box>
+            <SettingsNotifications onSave={handleNotificationsSave} />
           </TabPanel>
         </Paper>
       </Container>
@@ -249,3 +111,11 @@ const SettingsPage: NextPage = () => {
 };
 
 export default SettingsPage;
+
+export async function getStaticProps({ locale }: GetStaticPropsContext) {
+  return {
+    props: {
+      messages: (await import(`../../lang/${locale}.json`)).default,
+    },
+  };
+}

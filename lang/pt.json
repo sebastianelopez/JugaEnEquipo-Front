@@ -107,5 +107,33 @@
         "sendMessageErrorTitle": "Não foi possível enviar a mensagem",
         "sendMessageErrorMessage": "Ocorreu um erro ao tentar enviar a mensagem. Por favor, tente novamente.",
         "retry": "Tentar novamente"
+    },
+    "Settings": {
+        "title": "Configurações",
+        "pageDescription": "Configurações do usuário",
+        "profileTab": "Perfil",
+        "accountTab": "Conta",
+        "notificationsTab": "Notificações",
+        "profileInformation": "Informações do Perfil",
+        "profilePicture": "Foto de perfil",
+        "changePhoto": "Alterar foto",
+        "firstName": "Nome",
+        "lastName": "Sobrenome",
+        "email": "Endereço de email",
+        "bio": "Biografia",
+        "bioPlaceholder": "Conte-nos um pouco sobre você...",
+        "saveChanges": "Salvar alterações",
+        "accountSettings": "Configurações da Conta",
+        "currentPassword": "Senha atual",
+        "newPassword": "Nova senha",
+        "confirmPassword": "Confirmar senha",
+        "deleteAccount": "Excluir conta",
+        "updatePassword": "Atualizar senha",
+        "notificationPreferences": "Preferências de Notificação",
+        "enableNotifications": "Ativar notificações",
+        "emailNotifications": "Notificações por email",
+        "pushNotifications": "Notificações push",
+        "marketingNotifications": "Notificações de marketing",
+        "savePreferences": "Salvar preferências"
     }
 }

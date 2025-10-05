@@ -107,5 +107,33 @@
         "sendMessageErrorTitle": "Could not send message",
         "sendMessageErrorMessage": "An error occurred while trying to send the message. Please try again.",
         "retry": "Retry"
+    },
+    "Settings": {
+        "title": "Settings",
+        "pageDescription": "User settings",
+        "profileTab": "Profile",
+        "accountTab": "Account",
+        "notificationsTab": "Notifications",
+        "profileInformation": "Profile Information",
+        "profilePicture": "Profile picture",
+        "changePhoto": "Change photo",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email address",
+        "bio": "Biography",
+        "bioPlaceholder": "Tell us a little about yourself...",
+        "saveChanges": "Save changes",
+        "accountSettings": "Account Settings",
+        "currentPassword": "Current password",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm password",
+        "deleteAccount": "Delete account",
+        "updatePassword": "Update password",
+        "notificationPreferences": "Notification Preferences",
+        "enableNotifications": "Enable notifications",
+        "emailNotifications": "Email notifications",
+        "pushNotifications": "Push notifications",
+        "marketingNotifications": "Marketing notifications",
+        "savePreferences": "Save preferences"
     }
 }
