@@ -10,6 +10,8 @@ interface Props {
   actionLabel?: string;
   icon?: ReactNode;
   lottieSrc?: string;
+  lottieLoop?: boolean;
+  lottieAutoplay?: boolean;
 }
 
 export const ErrorState: FC<Props> = ({
@@ -19,6 +21,8 @@ export const ErrorState: FC<Props> = ({
   actionLabel = "Reintentar",
   icon,
   lottieSrc = "/assets/lotties/error-fail-animation.lottie",
+  lottieLoop = false,
+  lottieAutoplay = false,
 }) => {
   return (
     <Box
@@ -45,7 +49,11 @@ export const ErrorState: FC<Props> = ({
       <Box sx={{ mb: 1 }}>
         {icon || (
           <Box component="div" sx={{ width: 80, height: 80 }}>
-            <DotLottieReact src={lottieSrc} loop autoplay />
+            <DotLottieReact
+              src={lottieSrc}
+              loop={lottieLoop}
+              autoplay={lottieAutoplay}
+            />
           </Box>
         )}
       </Box>
