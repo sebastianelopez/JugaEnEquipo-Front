@@ -52,7 +52,11 @@
         "selectLanguage": "Seleccionar idioma",
         "spanish": "Español",
         "english": "Ingles",
-        "portuguese": "Portugues"
+        "portuguese": "Portugues",
+        "toggleTheme": "Cambiar tema",
+        "switchToLightMode": "Cambiar a modo claro",
+        "switchToDarkMode": "Cambiar a modo oscuro",
+        "toggleSideMenu": "Abrir/cerrar menú lateral"
     },
     "Feed": {
         "loadErrorTitle": "No pudimos cargar las publicaciones",

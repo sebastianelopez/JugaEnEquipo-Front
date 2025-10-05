@@ -10,12 +10,15 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  Button,
 } from "@mui/material";
 import {
   AccountCircleOutlined,
   LoginOutlined,
   SearchOutlined,
-  Settings
+  Settings,
+  DarkMode,
+  LightMode,
 } from "@mui/icons-material";
 
 import { UiContext } from "../../../context";
@@ -27,9 +30,11 @@ import { SelectCountry } from "../../molecules/SelectCountry/SelectCountry";
 
 export const SideMenu = () => {
   const router = useRouter();
-  const { isMenuOpen, toggleSideMenu } = useContext(UiContext);
+  const { toggleSideMenu, themeMode, toggleTheme, isMenuOpen } =
+    useContext(UiContext);
   const { user, removeUser } = useContext(UserContext);
   const t = useTranslations("SideMenu");
+  const tGlobal = useTranslations("Global");
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -70,7 +75,16 @@ export const SideMenu = () => {
       }}
       onClose={toggleSideMenu}
     >
-      <Box component="div" sx={{ width: 250, paddingTop: 5 }}>
+      <Box
+        component="div"
+        sx={{
+          width: 250,
+          paddingTop: 5,
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+        }}
+      >
         <List>
           <ListItem>
             <Input
@@ -91,9 +105,6 @@ export const SideMenu = () => {
           </ListItem>
 
           <>
-            <ListItem>
-              <SelectCountry fullWidth />
-            </ListItem>
             <ListItem
               button
               onClick={() => navigateTo(`/profile/${user?.username}`)}
@@ -103,24 +114,53 @@ export const SideMenu = () => {
               </ListItemIcon>
               <ListItemText primary={t("profile")} />
             </ListItem>
-            <ListItem
-              button
-              onClick={() => navigateTo(`/settings`)}
-            >
+            <ListItem button onClick={() => navigateTo(`/settings`)}>
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
               <ListItemText primary={t("settings")} />
             </ListItem>
           </>
+        </List>
 
-          <ListItem button onClick={onLogOut}>
+        <List>
+          <ListItem
+            button
+            onClick={toggleTheme}
+            aria-label={tGlobal("toggleTheme")}
+            sx={{
+              "@media (min-width: 680px)": {
+                display: "none",
+              },
+            }}
+          >
             <ListItemIcon>
-              <LoginOutlined />
+              {themeMode === "dark" ? <LightMode /> : <DarkMode />}
             </ListItemIcon>
-            <ListItemText primary={t("logOut")} />
+            <ListItemText
+              primary={
+                themeMode === "dark"
+                  ? tGlobal("switchToLightMode")
+                  : tGlobal("switchToDarkMode")
+              }
+            />
+          </ListItem>
+          <ListItem>
+            <SelectCountry fullWidth />
           </ListItem>
         </List>
+
+        <Box component="div" sx={{ mt: "auto", p: 2 }}>
+          <Button
+            variant="contained"
+            onClick={onLogOut}
+            aria-label={t("logOut")}
+            fullWidth
+            startIcon={<LoginOutlined />}
+          >
+            {t("logOut")}
+          </Button>
+        </Box>
       </Box>
     </Drawer>
   );

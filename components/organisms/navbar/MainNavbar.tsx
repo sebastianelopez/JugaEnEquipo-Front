@@ -6,6 +6,7 @@ import {
   Link,
   Toolbar,
   Typography,
+  Tooltip,
 } from "@mui/material";
 import Image from "next/image";
 import NextLink from "next/link";
@@ -28,6 +29,7 @@ export const MainNavbar = () => {
   const { toggleSideMenu, themeMode, toggleTheme } = useContext(UiContext);
 
   const t = useTranslations("Navbar");
+  const tGlobal = useTranslations("Global");
 
   const logotitle = ".logotitle";
 
@@ -104,10 +106,6 @@ export const MainNavbar = () => {
           </NextLink>
           <NotificationsButton notificationCount={3} />
 
-          <IconButton onClick={toggleTheme} aria-label="toggle theme">
-            {themeMode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-          </IconButton>
-
           <Search
             sx={{
               display: "none",
@@ -118,9 +116,35 @@ export const MainNavbar = () => {
           />
         </Box>
 
-        <Button color="secondary" onClick={toggleSideMenu}>
-          <MenuIcon />
-        </Button>
+        <Box>
+          <Tooltip
+            title={
+              themeMode === "dark"
+                ? tGlobal("switchToLightMode")
+                : tGlobal("switchToDarkMode")
+            }
+          >
+            <IconButton
+              onClick={toggleTheme}
+              aria-label={tGlobal("toggleTheme")}
+              sx={{
+                display: "none",
+                "@media (min-width: 680px)": {
+                  display: "inline-flex",
+                },
+              }}
+            >
+              {themeMode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
+          </Tooltip>
+          <Button
+            color="secondary"
+            onClick={toggleSideMenu}
+            aria-label={tGlobal("toggleSideMenu")}
+          >
+            <MenuIcon />
+          </Button>
+        </Box>
       </Toolbar>
     </AppBar>
   );

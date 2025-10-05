@@ -52,7 +52,11 @@
         "selectLanguage": "Select language",
         "spanish": "Spanish",
         "english": "English",
-        "portuguese": "Portuguese"
+        "portuguese": "Portuguese",
+        "toggleTheme": "Toggle theme",
+        "switchToLightMode": "Switch to light mode",
+        "switchToDarkMode": "Switch to dark mode",
+        "toggleSideMenu": "Toggle side menu"
     },
     "Feed": {
         "loadErrorTitle": "We couldn't load the posts",
