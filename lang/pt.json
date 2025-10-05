@@ -95,5 +95,17 @@
     "Events": {
         "upcomingEvents": "Próximos eventos",
         "seeAll": "Ver todos"
+    },
+    "Chat": {
+        "selectConversation": "Selecione uma conversa para começar a conversar",
+        "loadingMessages": "Carregando mensagens...",
+        "noMessages": "Ainda não há mensagens. Envie a primeira mensagem!",
+        "sending": "enviando...",
+        "inputPlaceholder": "Digite uma mensagem...",
+        "loadMessagesErrorTitle": "Não foi possível carregar as mensagens",
+        "loadMessagesErrorMessage": "Ocorreu um erro ao tentar carregar as mensagens. Por favor, tente novamente.",
+        "sendMessageErrorTitle": "Não foi possível enviar a mensagem",
+        "sendMessageErrorMessage": "Ocorreu um erro ao tentar enviar a mensagem. Por favor, tente novamente.",
+        "retry": "Tentar novamente"
     }
 }

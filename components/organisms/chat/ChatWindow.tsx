@@ -16,12 +16,20 @@ import {
   Send as SendIcon,
   ArrowBack as ArrowBackIcon,
 } from "@mui/icons-material";
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useContext,
+  useCallback,
+} from "react";
 import { Conversation } from "../../../interfaces/conversation";
 import { Message } from "../../../interfaces/message";
 import { chatService } from "../../../services/chat.service";
 import { UserContext } from "../../../context/user/UserContext";
 import { useTimeTranslations } from "../../../hooks/useTimeTranslations";
+import { useFeedback } from "../../../hooks/useFeedback";
+import { useTranslations } from "next-intl";
 import { v4 as uuidv4 } from "uuid";
 
 interface ChatWindowProps {
@@ -41,124 +49,144 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useContext(UserContext);
   const timeTranslations = useTimeTranslations();
+  const { showError } = useFeedback();
+  const t = useTranslations("Chat");
 
   // Helper function to sort messages by creation date (oldest first)
-  const sortMessagesByDate = (messages: Message[]) => {
+  const sortMessagesByDate = useCallback((messages: Message[]) => {
     return [...messages].sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime();
       const dateB = new Date(b.createdAt).getTime();
       return dateA - dateB; // Ascending order (oldest first)
     });
-  };
+  }, []);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
+
+  const loadMessages = useCallback(async () => {
+    if (!conversation) return;
+
+    setIsLoading(true);
+    try {
+      const result = await chatService.getConversationMessages(conversation.id);
+      if (result.error || !result.data) {
+        showError({
+          title: t("loadMessagesErrorTitle"),
+          message: result.error?.message || t("loadMessagesErrorMessage"),
+          onRetry: loadMessages,
+          retryLabel: t("retry"),
+        });
+        setMessages([]);
+        return;
+      }
+      // Sort messages by date (oldest first)
+      const sortedMessages = sortMessagesByDate(result.data);
+      setMessages(sortedMessages);
+    } catch (error) {
+      console.error("Error loading messages:", error);
+      showError({
+        title: t("loadMessagesErrorTitle"),
+        message: t("loadMessagesErrorMessage"),
+        onRetry: loadMessages,
+        retryLabel: t("retry"),
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [conversation, sortMessagesByDate, showError, t]);
+
+  const setupSSE = useCallback(() => {
+    if (!conversation || !user) return;
+
+    // Close existing connection
+    if (eventSource) {
+      eventSource.close();
+    }
+
+    const newEventSource = chatService.connectToChat(conversation.id);
+
+    // Listen for new messages
+    newEventSource.onmessage = (event) => {
+      try {
+        const messageData: Message = JSON.parse(event.data);
+        console.log("Nuevo mensaje recibido via SSE:", messageData);
+
+        setMessages((prev) => {
+          // Determine if this message is from the current user
+          const isMyMessage = messageData.username === user?.username;
+
+          if (isMyMessage) {
+            // If it's our message, replace the temporary message with the real one
+            const tempMessageIndex = prev.findIndex(
+              (msg) =>
+                msg.username === user?.username &&
+                msg.content === messageData.content &&
+                msg.id.startsWith("temp-")
+            );
+
+            if (tempMessageIndex !== -1) {
+              const newMessages = [...prev];
+              newMessages[tempMessageIndex] = messageData;
+              return sortMessagesByDate(newMessages);
+            }
+            // If no temp message found, it might be from another session, add it
+            const exists = prev.some((msg) => msg.id === messageData.id);
+            if (!exists) {
+              const newMessages = [...prev, messageData];
+              return sortMessagesByDate(newMessages);
+            }
+            return prev;
+          } else {
+            // If it's not our message, add it if it doesn't exist
+            const exists = prev.some((msg) => msg.id === messageData.id);
+            if (exists) return prev;
+            const newMessages = [...prev, messageData];
+            return sortMessagesByDate(newMessages);
+          }
+        });
+      } catch (error) {
+        console.error("Error parsing SSE message:", error);
+      }
+    };
+
+    // Handle connection opened
+    newEventSource.onopen = () => {
+      console.log(
+        "Conexión SSE establecida para conversación:",
+        conversation.id
+      );
+    };
+
+    // Handle connection errors
+    newEventSource.onerror = (error) => {
+      console.error("SSE Error:", error);
+
+      // Implement automatic reconnection
+      if (newEventSource.readyState === EventSource.CLOSED) {
+        console.log(
+          "Conexión SSE cerrada, intentando reconectar en 5 segundos..."
+        );
+        setTimeout(() => {
+          if (conversation && user) {
+            setupSSE();
+          }
+        }, 5000);
+      }
+    };
+
+    setEventSource(newEventSource);
+  }, [conversation, user, eventSource, sortMessagesByDate]);
 
   useEffect(() => {
     if (!conversation || !user) {
       return;
     }
-
-    const loadMessages = async () => {
-      setIsLoading(true);
-      try {
-        const conversationMessages = await chatService.getConversationMessages(
-          conversation.id
-        );
-        // Sort messages by date (oldest first)
-        const sortedMessages = sortMessagesByDate(conversationMessages);
-        setMessages(sortedMessages);
-      } catch (error) {
-        console.error("Error loading messages:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const setupSSE = () => {
-      // Close existing connection
-      if (eventSource) {
-        eventSource.close();
-      }
-
-      const newEventSource = chatService.connectToChat(conversation.id);
-
-      // Listen for new messages
-      newEventSource.onmessage = (event) => {
-        try {
-          const messageData: Message = JSON.parse(event.data);
-          console.log("Nuevo mensaje recibido via SSE:", messageData);
-
-          setMessages((prev) => {
-            // Determine if this message is from the current user
-            const isMyMessage = messageData.username === user?.username;
-            
-            if (isMyMessage) {
-              // If it's our message, replace the temporary message with the real one
-              const tempMessageIndex = prev.findIndex(
-                (msg) =>
-                  msg.username === user?.username &&
-                  msg.content === messageData.content &&
-                  msg.id.startsWith("temp-")
-              );
-
-              if (tempMessageIndex !== -1) {
-                const newMessages = [...prev];
-                newMessages[tempMessageIndex] = messageData;
-                return sortMessagesByDate(newMessages);
-              }
-              // If no temp message found, it might be from another session, add it
-              const exists = prev.some((msg) => msg.id === messageData.id);
-              if (!exists) {
-                const newMessages = [...prev, messageData];
-                return sortMessagesByDate(newMessages);
-              }
-              return prev;
-            } else {
-              // If it's not our message, add it if it doesn't exist
-              const exists = prev.some((msg) => msg.id === messageData.id);
-              if (exists) return prev;
-              const newMessages = [...prev, messageData];
-              return sortMessagesByDate(newMessages);
-            }
-          });
-        } catch (error) {
-          console.error("Error parsing SSE message:", error);
-        }
-      };
-
-      // Handle connection opened
-      newEventSource.onopen = () => {
-        console.log(
-          "Conexión SSE establecida para conversación:",
-          conversation.id
-        );
-      };
-
-      // Handle connection errors
-      newEventSource.onerror = (error) => {
-        console.error("SSE Error:", error);
-
-        // Implement automatic reconnection
-        if (newEventSource.readyState === EventSource.CLOSED) {
-          console.log(
-            "Conexión SSE cerrada, intentando reconectar en 5 segundos..."
-          );
-          setTimeout(() => {
-            if (conversation && user) {
-              setupSSE();
-            }
-          }, 5000);
-        }
-      };
-
-      setEventSource(newEventSource);
-    };
 
     loadMessages();
     setupSSE();
@@ -174,55 +202,110 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         setEventSource(null);
       }
     };
-  }, [conversation?.id, user?.id]);
+  }, [conversation, user, loadMessages, setupSSE, eventSource]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !conversation || !user || isSending) return;
+  const handleSendMessage = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!newMessage.trim() || !conversation || !user || isSending) return;
 
-    const messageContent = newMessage.trim();
-    const messageId = uuidv4();
+      const messageContent = newMessage.trim();
+      const messageId = uuidv4();
 
-    setNewMessage("");
-    setIsSending(true);
+      setNewMessage("");
+      setIsSending(true);
 
-    try {
-      // Optimistic message
-      const optimisticMessage: Message = {
-        id: `temp-${messageId}`,
-        content: messageContent,
-        createdAt: new Date().toISOString(),
-        mine: true,
-        username: user.username,
-      };
+      try {
+        // Optimistic message
+        const optimisticMessage: Message = {
+          id: `temp-${messageId}`,
+          content: messageContent,
+          createdAt: new Date().toISOString(),
+          mine: true,
+          username: user.username,
+        };
 
-      setMessages((prev) => {
-        const newMessages = [...prev, optimisticMessage];
-        return sortMessagesByDate(newMessages);
-      });
+        setMessages((prev) => {
+          const newMessages = [...prev, optimisticMessage];
+          return sortMessagesByDate(newMessages);
+        });
 
-      // Send message to server
-      await chatService.sendMessage(conversation.id, messageId, messageContent);
+        // Send message to server
+        const result = await chatService.sendMessage(
+          conversation.id,
+          messageId,
+          messageContent
+        );
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
 
-      // The real message will come through SSE and replace the optimistic one
-    } catch (error) {
-      console.error("Error sending message:", error);
-      // Remove optimistic message on error
-      setMessages((prev) => prev.filter((msg) => msg.id !== `temp-${messageId}`));
-      setNewMessage(messageContent); // Restore message in input
-    } finally {
-      setIsSending(false);
-    }
-  };
+        // The real message will come through SSE and replace the optimistic one
+      } catch (error) {
+        console.error("Error sending message:", error);
+        // Remove optimistic message on error
+        setMessages((prev) =>
+          prev.filter((msg) => msg.id !== `temp-${messageId}`)
+        );
+        setNewMessage(messageContent); // Restore message in input
 
-  const formatMessageTime = (createdAt: string) => {
+        const retrySend = async () => {
+          setIsSending(true);
+          try {
+            const retryResult = await chatService.sendMessage(
+              conversation.id,
+              uuidv4(),
+              messageContent
+            );
+            if (retryResult.error) {
+              throw new Error(retryResult.error.message);
+            }
+          } catch (retryErr) {
+            console.error("Retry send failed:", retryErr);
+            showError({
+              title: t("sendMessageErrorTitle"),
+              message:
+                typeof (retryErr as any)?.message === "string"
+                  ? (retryErr as any).message
+                  : t("sendMessageErrorMessage"),
+            });
+          } finally {
+            setIsSending(false);
+          }
+        };
+
+        showError({
+          title: t("sendMessageErrorTitle"),
+          message:
+            typeof (error as any)?.message === "string"
+              ? (error as any).message
+              : t("sendMessageErrorMessage"),
+          onRetry: retrySend,
+          retryLabel: t("retry"),
+        });
+      } finally {
+        setIsSending(false);
+      }
+    },
+    [
+      newMessage,
+      conversation,
+      user,
+      isSending,
+      sortMessagesByDate,
+      showError,
+      t,
+    ]
+  );
+
+  const formatMessageTime = useCallback((createdAt: string) => {
     const date = new Date(createdAt);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
+  }, []);
 
   if (!conversation) {
     return (
-      <Grid size={{ xs: 12, md: 7 }} sx={{ height: "100%" }}>
+      <Grid item xs={12} md={7} sx={{ height: "100%" }}>
         <Box
           sx={{
             padding: 2,
@@ -235,7 +318,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           }}
         >
           <Typography variant="h6" color="text.secondary">
-            Selecciona una conversación para empezar a chatear
+            {t("selectConversation")}
           </Typography>
         </Box>
       </Grid>
@@ -243,7 +326,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   }
 
   return (
-    <Grid size={{ xs: 12, md: 7 }} sx={{ height: "100%" }}>
+    <Grid item xs={12} md={7} sx={{ height: "100%" }}>
       <Box
         sx={{
           display: "flex",
@@ -289,14 +372,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           {isLoading ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
               <Typography color="text.secondary">
-                Cargando mensajes...
+                {t("loadingMessages")}
               </Typography>
             </Box>
           ) : messages.length === 0 ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-              <Typography color="text.secondary">
-                No hay mensajes aún. ¡Envía el primer mensaje!
-              </Typography>
+              <Typography color="text.secondary">{t("noMessages")}</Typography>
             </Box>
           ) : (
             <List sx={{ py: 1 }}>
@@ -341,7 +422,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                           }}
                         >
                           {formatMessageTime(message.createdAt)}
-                          {isOptimistic && " (enviando...)"}
+                          {isOptimistic && ` (${t("sending")})`}
                         </Typography>
                       </Paper>
                     </ListItem>
@@ -368,7 +449,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Escribe un mensaje..."
+            placeholder={t("inputPlaceholder")}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             disabled={isSending}

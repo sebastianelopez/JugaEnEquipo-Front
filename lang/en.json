@@ -95,5 +95,17 @@
     "Events": {
         "upcomingEvents": "Upcoming events",
         "seeAll": "See all"
+    },
+    "Chat": {
+        "selectConversation": "Select a conversation to start chatting",
+        "loadingMessages": "Loading messages...",
+        "noMessages": "No messages yet. Send the first message!",
+        "sending": "sending...",
+        "inputPlaceholder": "Type a message...",
+        "loadMessagesErrorTitle": "Could not load messages",
+        "loadMessagesErrorMessage": "An error occurred while trying to load messages. Please try again.",
+        "sendMessageErrorTitle": "Could not send message",
+        "sendMessageErrorMessage": "An error occurred while trying to send the message. Please try again.",
+        "retry": "Retry"
     }
 }
