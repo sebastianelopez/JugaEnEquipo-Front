@@ -119,6 +119,8 @@
         "changePhoto": "Cambiar foto",
         "firstName": "Nombre",
         "lastName": "Apellidos",
+        "username": "Nombre de usuario",
+        "usernameHelperText": "El nombre de usuario no se puede cambiar",
         "email": "Correo electrónico",
         "bio": "Biografía",
         "bioPlaceholder": "Cuéntanos un poco sobre ti...",

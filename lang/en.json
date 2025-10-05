@@ -119,6 +119,8 @@
         "changePhoto": "Change photo",
         "firstName": "First name",
         "lastName": "Last name",
+        "username": "Username",
+        "usernameHelperText": "Username cannot be changed",
         "email": "Email address",
         "bio": "Biography",
         "bioPlaceholder": "Tell us a little about yourself...",

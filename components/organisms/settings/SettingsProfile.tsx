@@ -10,8 +10,9 @@ import {
 } from "@mui/material";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import SaveIcon from "@mui/icons-material/Save";
-import { FC, useCallback } from "react";
+import { FC, useCallback, useContext, useState } from "react";
 import { useTranslations } from "next-intl";
+import { UserContext } from "../../../context/user";
 
 interface SettingsProfileProps {
   onSave?: (data: ProfileFormData) => void;
@@ -27,6 +28,24 @@ interface ProfileFormData {
 
 export const SettingsProfile: FC<SettingsProfileProps> = ({ onSave }) => {
   const t = useTranslations("Settings");
+  const { user } = useContext(UserContext);
+  const [previewImage, setPreviewImage] = useState<string | undefined>(
+    user?.profileImage
+  );
+
+  const handleImageChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewImage(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    []
+  );
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -63,9 +82,11 @@ export const SettingsProfile: FC<SettingsProfileProps> = ({ onSave }) => {
         >
           <Avatar
             sx={{ width: 100, height: 100, mb: 2 }}
-            alt={t("profilePicture")}
-            src="/profile-placeholder.jpg"
-          />
+            alt={user?.username || t("profilePicture")}
+            src={previewImage || "/images/user-placeholder.png"}
+          >
+            {!previewImage && user?.firstname?.[0]?.toUpperCase()}
+          </Avatar>
           <Button
             variant="outlined"
             component="label"
@@ -73,7 +94,13 @@ export const SettingsProfile: FC<SettingsProfileProps> = ({ onSave }) => {
             size="small"
           >
             {t("changePhoto")}
-            <input hidden accept="image/*" type="file" name="profileImage" />
+            <input
+              hidden
+              accept="image/*"
+              type="file"
+              name="profileImage"
+              onChange={handleImageChange}
+            />
           </Button>
         </Grid>
 
@@ -83,21 +110,30 @@ export const SettingsProfile: FC<SettingsProfileProps> = ({ onSave }) => {
               fullWidth
               name="firstName"
               label={t("firstName")}
-              defaultValue="Usuario"
+              defaultValue={user?.firstname || ""}
               variant="outlined"
             />
             <TextField
               fullWidth
               name="lastName"
               label={t("lastName")}
-              defaultValue="De Ejemplo"
+              defaultValue={user?.lastname || ""}
               variant="outlined"
+            />
+            <TextField
+              fullWidth
+              name="username"
+              label={t("username")}
+              defaultValue={user?.username || ""}
+              variant="outlined"
+              disabled
+              helperText={t("usernameHelperText")}
             />
             <TextField
               fullWidth
               name="email"
               label={t("email")}
-              defaultValue="usuario@ejemplo.com"
+              defaultValue={user?.email || ""}
               variant="outlined"
               type="email"
             />
