@@ -1,78 +1,196 @@
-import { Box, Grid, Link, Typography } from "@mui/material";
-import Image from "next/image";
-import NextLink from "next/link";
+"use client";
 
-import logo from "./../../../assets/logo.png";
+import {
+  Box,
+  Container,
+  Grid,
+  Typography,
+  Link,
+  IconButton,
+  Divider,
+} from "@mui/material";
+import {
+  Twitter,
+  Facebook,
+  Instagram,
+  YouTube,
+} from "@mui/icons-material";
 
-export const Footer = () => {
+export function Footer() {
   return (
-    <footer>
-      <Grid container columns={12} padding={2}>
-        <Grid
-          position="relative"
-          display="flex"
-          alignItems="center"
-          flexDirection="row"
-          columns={12}
-          width="100%"
-        >
-          <Grid
-            display="flex"
-            alignItems="center"
-            flexDirection="column"
-            item
-            md={4}
-          >
-            <NextLink href={"/"} passHref>
-              <Link component="span">
-                <Box
-                  display={"flex"}
-                  justifyContent={"center"}
-                  alignItems="center"
-                  component="div"
-                >
-                  <Image
-                    src={logo}
-                    height={40}
-                    width={70}
-                    alt="Juga en equipo logo "
-                  />
-                  <Typography
-                    className="logotitle"
-                    sx={{ display: { xs: "none" } }}
-                  >
-                    Juga en equipo
-                  </Typography>
-                </Box>
-              </Link>
-            </NextLink>
+    <Box
+      component="footer"
+      sx={{
+        bgcolor: "background.paper",
+        borderTop: "1px solid",
+        borderColor: "divider",
+        py: 6,
+        mt: 8,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Grid container spacing={4}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography
+              variant="h6"
+              color="primary"
+              gutterBottom
+              fontWeight="bold"
+            >
+              Juga en Equipo
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              La red social definitiva para gamers. Conecta, compite y comparte
+              tu pasión por los videojuegos.
+            </Typography>
           </Grid>
-          <Grid
-            display="flex"
-            alignItems="center"
-            flexDirection="column"
-            item
-            md={4}
-          ></Grid>
-          <Grid
-            display="flex"
-            alignItems="center"
-            flexDirection="column"
-            item
-            md={4}
-          ></Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="h6" gutterBottom fontWeight="bold">
+              Producto
+            </Typography>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 2 }}
+            >
+              <Link href="#features" color="text.secondary" underline="hover">
+                Características
+              </Link>
+              <Link href="#community" color="text.secondary" underline="hover">
+                Comunidad
+              </Link>
+              <Link href="#" color="text.secondary" underline="hover">
+                Precios
+              </Link>
+              <Link href="#" color="text.secondary" underline="hover">
+                Descargas
+              </Link>
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="h6" gutterBottom fontWeight="bold">
+              Empresa
+            </Typography>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 2 }}
+            >
+              <Link href="#" color="text.secondary" underline="hover">
+                Sobre Nosotros
+              </Link>
+              <Link href="#" color="text.secondary" underline="hover">
+                Blog
+              </Link>
+              <Link href="#" color="text.secondary" underline="hover">
+                Carreras
+              </Link>
+              <Link href="#" color="text.secondary" underline="hover">
+                Contacto
+              </Link>
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="h6" gutterBottom fontWeight="bold">
+              Legal
+            </Typography>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 2 }}
+            >
+              <Link href="#" color="text.secondary" underline="hover">
+                Privacidad
+              </Link>
+              <Link href="#" color="text.secondary" underline="hover">
+                Términos
+              </Link>
+              <Link href="#" color="text.secondary" underline="hover">
+                Cookies
+              </Link>
+              <Link href="#" color="text.secondary" underline="hover">
+                Licencias
+              </Link>
+            </Box>
+          </Grid>
         </Grid>
-        <Grid
-          position="relative"
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          flexDirection="row"
-          width="100%"
+
+        <Divider sx={{ my: 4 }} />
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 2,
+          }}
         >
-          <Image src={logo} height={40} width={70} alt="Juga en Equipo Logo" />
-        </Grid>
-      </Grid>
-    </footer>
+          <Typography variant="body2" color="text.secondary">
+            © 2025 Juga en Equipo. Todos los derechos reservados.
+          </Typography>
+
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <IconButton
+              href="https://twitter.com"
+              target="_blank"
+              size="small"
+              sx={{
+                color: "text.secondary",
+                "&:hover": {
+                  color: "primary.main",
+                  transform: "translateY(-2px)",
+                },
+                transition: "all 0.3s ease",
+              }}
+            >
+              <Twitter />
+            </IconButton>
+            <IconButton
+              href="https://facebook.com"
+              target="_blank"
+              size="small"
+              sx={{
+                color: "text.secondary",
+                "&:hover": {
+                  color: "primary.main",
+                  transform: "translateY(-2px)",
+                },
+                transition: "all 0.3s ease",
+              }}
+            >
+              <Facebook />
+            </IconButton>
+            <IconButton
+              href="https://instagram.com"
+              target="_blank"
+              size="small"
+              sx={{
+                color: "text.secondary",
+                "&:hover": {
+                  color: "primary.main",
+                  transform: "translateY(-2px)",
+                },
+                transition: "all 0.3s ease",
+              }}
+            >
+              <Instagram />
+            </IconButton>
+            <IconButton
+              href="https://youtube.com"
+              target="_blank"
+              size="small"
+              sx={{
+                color: "text.secondary",
+                "&:hover": {
+                  color: "primary.main",
+                  transform: "translateY(-2px)",
+                },
+                transition: "all 0.3s ease",
+              }}
+            >
+              <YouTube />
+            </IconButton>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
-};
+}

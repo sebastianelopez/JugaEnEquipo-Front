@@ -1,37 +1,52 @@
 import { Box } from "@mui/material";
 import type { GetStaticPropsContext, NextPage } from "next";
+import { useTranslations } from "next-intl";
 import { HomeLayout } from "../layouts";
-import { HomeHeader, HomeNews, SliderText } from "../components/organisms";
-import MovingWords from "../components/organisms/movingWords/MovingWords";
-import InfiniteCarousel from "../components/organisms/infiniteCarousel/InfiniteCarousel";
-import lolLogo from "../assets/logos/lol.jpg";
-import counterstrikeLogo from "../assets/logos/counterstrike.webp";
-import heroesofthestormLogo from "../assets/logos/heroesofthestorm.jpg";
-import overwatchLogo from "../assets/logos/overwatch.jpg";
-import valorantLogo from "../assets/logos/valorant.png";
+import { MobileAppPromotion } from "../components/three";
+import { HomeHero } from "../components/organisms/hero/HomeHero";
+import { Features, Community, Stats, CTA } from "../components/organisms";
+
+import mobileBackground from "../assets/mobile-background.png";
 
 const Home: NextPage = (props) => {
   console.log(props);
+  const t = useTranslations("MobileApp");
+
+  const handleDownloadApp = () => {
+    // TODO: Implementar lógica de descarga o redirección a la tienda
+    console.log("Descargar app móvil");
+  };
+
   return (
     <HomeLayout
       title={"Juga en Equipo"}
       pageDescription={"Encuentra a tu equipo ideal"}
     >
-      <HomeHeader />
-      <MovingWords
-        words={["Juega", "Compite", "Disfruta", "Comparte", "Desafiate"]}
-      />
-      <InfiniteCarousel
-        images={[
-          lolLogo.src,
-          counterstrikeLogo.src,
-          heroesofthestormLogo.src,
-          overwatchLogo.src,
-          valorantLogo.src,
-        ]}
-      />
+      <HomeHero />
 
-      {/**Contenido */}
+      {/* Stats Section */}
+      <Stats />
+
+      {/* Features Section */}
+      <Features />
+
+      {/* Mobile App Promotion Section */}
+      <Box sx={{ mt: 8, mb: 8, px: { xs: 2, md: 4 } }}>
+        <MobileAppPromotion
+          screenImage={mobileBackground.src}
+          title={t("title")}
+          description={t("description")}
+          ctaText={t("ctaText")}
+          onCtaClick={handleDownloadApp}
+          showStars={false}
+        />
+      </Box>
+
+      {/* Community Section */}
+      <Community />
+
+      {/* Call to Action Section */}
+      <CTA />
     </HomeLayout>
   );
 };

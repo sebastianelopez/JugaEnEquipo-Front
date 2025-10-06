@@ -2,7 +2,12 @@
     "Navbar": {
         "news": "Noticias",
         "aboutus": "Sobre nosotros",
-        "search": "Buscar"
+        "search": "Buscar",
+        "login": "Iniciar sesión",
+        "signUp": "Registrarse",
+        "features": "Características",
+        "community": "Comunidad",
+        "about": "Nosotros"
     },
     "Home":{
         "headerFirstLine": "La app que",
@@ -108,6 +113,16 @@
         "sendMessageErrorMessage": "Ocurrió un error al intentar enviar el mensaje. Por favor, intenta nuevamente.",
         "retry": "Reintentar"
     },
+    "Validation": {
+        "passwordRequirements": "La contraseña debe cumplir con:",
+        "minLength": "Mínimo 8 caracteres",
+        "hasUpperCase": "Al menos una letra mayúscula",
+        "hasLowerCase": "Al menos una letra minúscula",
+        "hasNumber": "Al menos un número",
+        "hasSpecialChar": "Al menos un carácter especial (!@#$%^&*)",
+        "passwordsDontMatch": "Las contraseñas no coinciden",
+        "required": "Requerido"
+    },
     "Settings": {
         "title": "Configuración",
         "pageDescription": "Ajustes de usuario",
@@ -137,5 +152,70 @@
         "pushNotifications": "Notificaciones push",
         "marketingNotifications": "Notificaciones de marketing",
         "savePreferences": "Guardar preferencias"
+    },
+    "MobileApp": {
+        "availableOn": "Disponible en",
+        "androidAndIos": "Android & iOS",
+        "downloadApp": "Descargar App",
+        "rating": "Valoración",
+        "downloads": "Descargas",
+        "reviews": "Reseñas",
+        "title": "Lleva Juga En Equipo contigo",
+        "description": "Conecta con tu equipo, participa en torneos y mantente al día con las últimas noticias de gaming desde cualquier lugar.",
+        "ctaText": "Descargar Ahora"
+    },
+    "Landing": {
+        "hero": {
+            "newFeature": "Nuevo: Sistema de torneos en vivo",
+            "title": "Conecta con",
+            "titleHighlight": "gamers",
+            "titleEnd": "de todo el mundo",
+            "subtitle": "La red social definitiva para jugadores. Comparte tus logros, encuentra compañeros de equipo y participa en torneos épicos.",
+            "startNow": "Comenzar Ahora",
+            "viewDemo": "Ver Demo",
+            "multipleGames": "Múltiples Juegos",
+            "multipleGamesDesc": "Conecta con jugadores de todos tus juegos favoritos",
+            "activeCommunity": "Comunidad Activa",
+            "activeCommunityDesc": "Más de 2M de gamers conectados diariamente",
+            "dailyTournaments": "Torneos Diarios",
+            "dailyTournamentsDesc": "Compite y gana premios increíbles cada día"
+        },
+        "features": {
+            "title": "Todo lo que necesitas para",
+            "titleHighlight": "dominar",
+            "subtitle": "Herramientas diseñadas para mejorar tu experiencia gaming",
+            "realtimeChat": "Chat en Tiempo Real",
+            "realtimeChatDesc": "Comunícate con tu equipo con chat de voz y texto de baja latencia",
+            "smartMatchmaking": "Matchmaking Inteligente",
+            "smartMatchmakingDesc": "Encuentra compañeros de tu nivel y estilo de juego",
+            "safeCommunity": "Comunidad Segura",
+            "safeCommunityDesc": "Moderación activa y herramientas anti-toxicidad",
+            "achievementSystem": "Sistema de Logros",
+            "achievementSystemDesc": "Desbloquea insignias y recompensas por tus hazañas",
+            "integratedStreaming": "Streaming Integrado",
+            "integratedStreamingDesc": "Transmite tus partidas directamente desde la plataforma",
+            "globalRankings": "Rankings Globales",
+            "globalRankingsDesc": "Compite por el top en las tablas de clasificación"
+        },
+        "stats": {
+            "activePlayers": "Jugadores Activos",
+            "dailyMatches": "Partidas Diarias",
+            "monthlyTournaments": "Torneos Mensuales",
+            "supportedGames": "Juegos Soportados"
+        },
+        "community": {
+            "title": "Lo que dice nuestra",
+            "titleHighlight": "comunidad",
+            "subtitle": "Miles de gamers ya están disfrutando de Juga en Equipo",
+            "testimonial1": "Encontré mi equipo perfecto aquí. ¡Subimos de rango juntos!",
+            "testimonial2": "La mejor comunidad gaming que he encontrado. Cero toxicidad.",
+            "testimonial3": "Los torneos son increíbles. Ya gané 3 este mes."
+        },
+        "cta": {
+            "title": "¿Listo para unirte a la acción?",
+            "subtitle": "Únete a millones de gamers y lleva tu experiencia al siguiente nivel",
+            "createAccount": "Crear Cuenta Gratis",
+            "exploreCommunities": "Explorar Comunidades"
+        }
     }
 }

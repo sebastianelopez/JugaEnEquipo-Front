@@ -2,7 +2,12 @@
     "Navbar": {
         "news": "News",
         "aboutus": "About us",
-        "search": "Search"
+        "search": "Search",
+        "login": "Login",
+        "signUp": "Sign Up",
+        "features": "Features",
+        "community": "Community",
+        "about": "About"
     },
     "Home":{
         "headerFirstLine": "The app that",
@@ -108,6 +113,16 @@
         "sendMessageErrorMessage": "An error occurred while trying to send the message. Please try again.",
         "retry": "Retry"
     },
+    "Validation": {
+        "passwordRequirements": "Password must meet:",
+        "minLength": "Minimum 8 characters",
+        "hasUpperCase": "At least one uppercase letter",
+        "hasLowerCase": "At least one lowercase letter",
+        "hasNumber": "At least one number",
+        "hasSpecialChar": "At least one special character (!@#$%^&*)",
+        "passwordsDontMatch": "Passwords don't match",
+        "required": "Required"
+    },
     "Settings": {
         "title": "Settings",
         "pageDescription": "User settings",
@@ -137,5 +152,70 @@
         "pushNotifications": "Push notifications",
         "marketingNotifications": "Marketing notifications",
         "savePreferences": "Save preferences"
+    },
+    "MobileApp": {
+        "availableOn": "Available on",
+        "androidAndIos": "Android & iOS",
+        "downloadApp": "Download App",
+        "rating": "Rating",
+        "downloads": "Downloads",
+        "reviews": "Reviews",
+        "title": "Take Juga En Equipo With You",
+        "description": "Connect with your team, participate in tournaments and stay up to date with the latest gaming news from anywhere.",
+        "ctaText": "Download Now"
+    },
+    "Landing": {
+        "hero": {
+            "newFeature": "New: Live tournament system",
+            "title": "Connect with",
+            "titleHighlight": "gamers",
+            "titleEnd": "from around the world",
+            "subtitle": "The ultimate social network for players. Share your achievements, find teammates and participate in epic tournaments.",
+            "startNow": "Start Now",
+            "viewDemo": "View Demo",
+            "multipleGames": "Multiple Games",
+            "multipleGamesDesc": "Connect with players of all your favorite games",
+            "activeCommunity": "Active Community",
+            "activeCommunityDesc": "Over 2M gamers connected daily",
+            "dailyTournaments": "Daily Tournaments",
+            "dailyTournamentsDesc": "Compete and win incredible prizes every day"
+        },
+        "features": {
+            "title": "Everything you need to",
+            "titleHighlight": "dominate",
+            "subtitle": "Tools designed to improve your gaming experience",
+            "realtimeChat": "Real-Time Chat",
+            "realtimeChatDesc": "Communicate with your team using low-latency voice and text chat",
+            "smartMatchmaking": "Smart Matchmaking",
+            "smartMatchmakingDesc": "Find teammates of your level and play style",
+            "safeCommunity": "Safe Community",
+            "safeCommunityDesc": "Active moderation and anti-toxicity tools",
+            "achievementSystem": "Achievement System",
+            "achievementSystemDesc": "Unlock badges and rewards for your feats",
+            "integratedStreaming": "Integrated Streaming",
+            "integratedStreamingDesc": "Stream your games directly from the platform",
+            "globalRankings": "Global Rankings",
+            "globalRankingsDesc": "Compete for the top on the leaderboards"
+        },
+        "stats": {
+            "activePlayers": "Active Players",
+            "dailyMatches": "Daily Matches",
+            "monthlyTournaments": "Monthly Tournaments",
+            "supportedGames": "Supported Games"
+        },
+        "community": {
+            "title": "What our",
+            "titleHighlight": "community",
+            "subtitle": "Thousands of gamers are already enjoying Juga en Equipo",
+            "testimonial1": "I found my perfect team here. We ranked up together!",
+            "testimonial2": "The best gaming community I've found. Zero toxicity.",
+            "testimonial3": "The tournaments are amazing. I've already won 3 this month."
+        },
+        "cta": {
+            "title": "Ready to join the action?",
+            "subtitle": "Join millions of gamers and take your experience to the next level",
+            "createAccount": "Create Free Account",
+            "exploreCommunities": "Explore Communities"
+        }
     }
 }

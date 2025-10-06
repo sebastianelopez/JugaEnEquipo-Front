@@ -1,6 +1,8 @@
 import Head from "next/head";
 import { FC, PropsWithChildren } from "react";
-import { Footer, HomeNavbar } from "../components/organisms";
+
+import { HomeNavbar } from "../components/organisms/navbar/HomeNavbar";
+import { Footer } from "../components/organisms/footer/Footer";
 
 interface Props extends PropsWithChildren {
   title: string;
@@ -26,15 +28,7 @@ export const HomeLayout: FC<Props> = ({
 
       <HomeNavbar />
 
-      <main
-        style={{
-          margin: "60px auto",
-          padding: "0px 30px 0px 30px",
-          backgroundColor: "#f5f5f5",
-        }}
-      >
-        {children}
-      </main>
+      <main>{children}</main>
       <Footer />
     </>
   );

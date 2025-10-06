@@ -5,16 +5,9 @@ export { RegisterForm } from "./form/RegisterForm";
 //navs
 export { AuthNavbar } from "./navbar/AuthNavbar";
 export { MainNavbar } from "./navbar/MainNavbar";
-export { HomeNavbar } from "./navbar/HomeNavbar";
 
 //Menu
 export { SideMenu } from "./menu/SideMenu";
-
-//Headers
-export { HomeHeader } from "./headers/HomeHeader";
-
-//Footer
-export { Footer } from "./footer/Footer";
 
 //Cards
 export { IdentityCard } from "./cards/IdentityCard";
@@ -33,3 +26,9 @@ export { CreatePublicationModal } from "./modals/CreatePublicationModal";
 //Others
 export { HomeNews } from "./HomeNews/HomeNews";
 export { SliderText } from "./sliderText/SliderText";
+
+//Sections
+export { Features } from "./sections/Features";
+export { Community } from "./sections/Community";
+export { Stats } from "./sections/Stats";
+export { CTA } from "./sections/CTA";
