@@ -7,6 +7,7 @@ import { HomeHero } from "../components/organisms/hero/HomeHero";
 import { Features, Community, Stats, CTA } from "../components/organisms";
 
 import mobileBackground from "../assets/mobile-background.png";
+import { AboutUs } from "../components/organisms/sections/AboutUs";
 
 const Home: NextPage = (props) => {
   console.log(props);
@@ -44,6 +45,9 @@ const Home: NextPage = (props) => {
 
       {/* Community Section */}
       <Community />
+
+      {/* About Us Section */}
+      <AboutUs />
 
       {/* Call to Action Section */}
       <CTA />
