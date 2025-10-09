@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import {
   PresentationControls,
@@ -236,6 +236,23 @@ export const MobileAppPromotion: React.FC<MobileAppPromotionProps> = ({
           zIndex: 1,
         }}
       >
+        <Box
+          component="span"
+          sx={{
+            position: "absolute",
+            width: "1px",
+            height: "1px",
+            padding: 0,
+            margin: "-1px",
+            overflow: "hidden",
+            clip: "rect(0 0 0 0)",
+            whiteSpace: "nowrap",
+            border: 0,
+            clipPath: "inset(50%)",
+          }}
+        >
+          3D iPhone model credit: sriniwasjha / Downloaded from pmndrs market
+        </Box>
         <Canvas
           camera={{ position: [0, 0, 7], fov: 45 }}
           style={{ height: "100%", width: "100%" }}
