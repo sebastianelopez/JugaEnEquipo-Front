@@ -35,6 +35,7 @@
     "Register":{
         "name": "Nombre",
         "lastname":"Apellido",
+        "username":"Nombre de usuario",
         "email": "Correo electronico",
         "password": "Contraseña",
         "repeat-password":"Repita contraseña",
@@ -121,7 +122,15 @@
         "hasNumber": "Al menos un número",
         "hasSpecialChar": "Al menos un carácter especial (!@#$%^&*)",
         "passwordsDontMatch": "Las contraseñas no coinciden",
-        "required": "Requerido"
+        "required": "Requerido",
+        "firstNameMin": "El nombre debe tener al menos 2 caracteres",
+        "firstNameMax": "El nombre no puede exceder 50 caracteres",
+        "lastNameMin": "El apellido debe tener al menos 2 caracteres",
+        "lastNameMax": "El apellido no puede exceder 50 caracteres",
+        "invalidEmail": "Revise el formato del correo",
+        "usernameMin": "El nombre de usuario debe tener al menos 3 caracteres",
+        "usernameMax": "El nombre de usuario no puede exceder 20 caracteres",
+        "usernameInvalid": "Solo se permiten letras, números, guiones bajos y puntos"
     },
     "Settings": {
         "title": "Configuración",

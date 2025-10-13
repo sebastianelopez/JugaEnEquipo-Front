@@ -7,7 +7,7 @@ const LoginPage = () => {
   return (
     <>
       <AuthLayout title={"Login"}>
-        <Box component="div">
+        <Box component="div" sx={{ marginTop: "150px" }}>
           <LoginForm />
         </Box>        
       </AuthLayout>

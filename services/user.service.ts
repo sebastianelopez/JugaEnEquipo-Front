@@ -1,6 +1,8 @@
 import { User } from "../interfaces";
 import { api } from "../lib/api";
 import { getToken } from "../services/auth.service";
+import { v4 as uuidv4 } from "uuid";
+import type { ServiceResult } from "./types";
 
 interface UserResponse {
   data: User;
@@ -31,6 +33,15 @@ interface SearchFollowingUsersParams {
   limit?: number;
 }
 
+interface CreateUserPayload {
+  firstname: string;
+  lastname: string;
+  username: string;
+  email: string;
+  password: string;
+  confirmationPassword: string;
+}
+
 export const userService = {
   getUserById: async (id: string) => {
     const token = await getToken();
@@ -56,15 +67,23 @@ export const userService = {
     }
   },
 
-  createUser: async (userData: User) => {
-    const token = await getToken();
-    const response = await api.post<UserResponse>(
-      "/user",
-      userData,
-      undefined,
-      token
-    );
-    return response.data;
+  createUser: async (
+    userData: CreateUserPayload
+  ): Promise<ServiceResult<User>> => {
+    try {
+      const payload = {
+        id: uuidv4(),
+        ...userData,
+      };
+      const response = await api.post<UserResponse>("/user", payload);
+      return { ok: true, data: response.data };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Registration failed";
+      return { ok: false, errorMessage: message, error };
+    }
   },
 
   updateUser: async (id: string, userData: Partial<User>) => {

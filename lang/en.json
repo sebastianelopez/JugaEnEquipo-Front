@@ -35,6 +35,7 @@
     "Register":{
         "name": "First name",
         "lastname":"Last name",
+        "username":"Username",
         "email": "Email address",
         "password": "Password",
         "repeat-password":"Repeat password",
@@ -121,7 +122,15 @@
         "hasNumber": "At least one number",
         "hasSpecialChar": "At least one special character (!@#$%^&*)",
         "passwordsDontMatch": "Passwords don't match",
-        "required": "Required"
+        "required": "Required",
+        "firstNameMin": "First name must be at least 2 characters",
+        "firstNameMax": "First name cannot exceed 50 characters",
+        "lastNameMin": "Last name must be at least 2 characters",
+        "lastNameMax": "Last name cannot exceed 50 characters",
+        "invalidEmail": "Invalid email format",
+        "usernameMin": "Username must be at least 3 characters",
+        "usernameMax": "Username cannot exceed 20 characters",
+        "usernameInvalid": "Only letters, numbers, underscores and dots are allowed"
     },
     "Settings": {
         "title": "Settings",

@@ -1,6 +1,7 @@
 import { api } from "../lib/api";
 import Cookies from "js-cookie";
 import axiosInstance from "../lib/axios";
+import type { ServiceResult } from "./types";
 
 interface LoginResponse {
   data: {
@@ -24,26 +25,38 @@ export const login = async (email: string, password: string) => {
       password,
     });
 
-    // Make sure we're extracting from the correct structure
     const token = response.data.token;
     const refreshToken = response.data.refreshToken;
 
     Cookies.set("token", token, {
       secure: true,
       sameSite: "strict",
-      expires: 7, // days
+      expires: 7,
     });
 
     Cookies.set("refreshToken", refreshToken, {
       secure: true,
       sameSite: "strict",
-      expires: 7, // days
+      expires: 7,
     });
 
     return token;
   } catch (error) {
     const apiError = error as ApiError;
     throw new Error(apiError.response?.data?.message || "Login failed");
+  }
+};
+
+export const loginSafe = async (
+  email: string,
+  password: string
+): Promise<ServiceResult<string>> => {
+  try {
+    const token = await login(email, password);
+    return { ok: true, data: token };
+  } catch (error: any) {
+    const message = error?.message || "Login failed";
+    return { ok: false, errorMessage: message, error };
   }
 };
 

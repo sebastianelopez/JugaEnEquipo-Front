@@ -96,7 +96,9 @@ export const LoginForm = () => {
             }}
           />
 
-          <Button type="submit" disabled={isLoading}>
+          <Button variant="contained" type="submit" disabled={isLoading} sx={{
+            marginBottom: "20px",
+          }}>
             {isLoading ? <CircularProgress size={24} /> : t("submit-button")}
           </Button>
 
