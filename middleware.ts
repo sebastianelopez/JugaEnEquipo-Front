@@ -40,5 +40,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // Exclude static assets from middleware (anything with a file extension),
+  // plus common static paths, so those requests aren't intercepted.
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|assets|.*\\..*).*)"],
 };
