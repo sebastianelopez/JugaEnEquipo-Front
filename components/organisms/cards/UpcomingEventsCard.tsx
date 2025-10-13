@@ -33,25 +33,25 @@ export const UpcomingEventsCard: FC<Props> = ({ events }) => {
         id: "1",
         title: "Valorant Showdown",
         game: "Valorant",
-        startAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+        startAt: "2025-10-06T14:00:00.000Z", // Fixed date
       },
       {
         id: "2",
         title: "League Clash Cup",
         game: "League of Legends",
-        startAt: new Date(Date.now() + 1000 * 60 * 60 * 26).toISOString(),
+        startAt: "2025-10-07T16:00:00.000Z",
       },
       {
         id: "3",
         title: "Overwatch Community Night",
         game: "Overwatch",
-        startAt: new Date(Date.now() + 1000 * 60 * 60 * 50).toISOString(),
+        startAt: "2025-10-08T20:00:00.000Z",
       },
       {
         id: "4",
         title: "CS2 Weekend Cup",
         game: "Counter-Strike 2",
-        startAt: new Date(Date.now() + 1000 * 60 * 60 * 96).toISOString(),
+        startAt: "2025-10-10T12:00:00.000Z",
       },
     ],
     []
@@ -113,7 +113,12 @@ export const UpcomingEventsCard: FC<Props> = ({ events }) => {
                 </Box>
               }
               secondary={
-                <Box display="flex" alignItems="flex-start" flexDirection="column" gap={1}>
+                <Box
+                  display="flex"
+                  alignItems="flex-start"
+                  flexDirection="column"
+                  gap={1}
+                >
                   <Chip label={event.game} size="small" />
                   <Typography variant="caption" color="text.secondary">
                     {formatDateTime(event.startAt)}
