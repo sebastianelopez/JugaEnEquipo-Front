@@ -7,8 +7,10 @@ import {
   Box,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
-import { FC, useCallback } from "react";
+import { FC, useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
+import { usePasswordValidation } from "../../../hooks";
+import { PasswordRequirements } from "../../molecules/Form/PasswordRequirements";
 
 interface SettingsAccountProps {
   onUpdatePassword?: (data: PasswordFormData) => void;
@@ -26,19 +28,46 @@ export const SettingsAccount: FC<SettingsAccountProps> = ({
   onDeleteAccount,
 }) => {
   const t = useTranslations("Settings");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const {
+    password: newPassword,
+    setPassword: setNewPassword,
+    confirmPassword,
+    setConfirmPassword,
+    validation,
+    confirmPasswordError,
+    isFormValid,
+  } = usePasswordValidation();
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      const formData = new FormData(e.currentTarget);
+
+      if (!isFormValid || !currentPassword) {
+        return;
+      }
+
       const data: PasswordFormData = {
-        currentPassword: formData.get("currentPassword") as string,
-        newPassword: formData.get("newPassword") as string,
-        confirmPassword: formData.get("confirmPassword") as string,
+        currentPassword,
+        newPassword,
+        confirmPassword,
       };
       onUpdatePassword?.(data);
+
+      // Reset form
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     },
-    [onUpdatePassword]
+    [
+      currentPassword,
+      newPassword,
+      confirmPassword,
+      isFormValid,
+      onUpdatePassword,
+      setNewPassword,
+      setConfirmPassword,
+    ]
   );
 
   const handleDeleteAccount = useCallback(() => {
@@ -59,20 +88,40 @@ export const SettingsAccount: FC<SettingsAccountProps> = ({
           label={t("currentPassword")}
           type="password"
           variant="outlined"
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          required
         />
-        <TextField
-          fullWidth
-          name="newPassword"
-          label={t("newPassword")}
-          type="password"
-          variant="outlined"
-        />
+
+        <Box>
+          <TextField
+            fullWidth
+            name="newPassword"
+            label={t("newPassword")}
+            type="password"
+            variant="outlined"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            error={newPassword.length > 0 && !validation.isValid}
+            required
+          />
+          <PasswordRequirements
+            rules={validation.rules}
+            show={newPassword.length > 0}
+          />
+        </Box>
+
         <TextField
           fullWidth
           name="confirmPassword"
           label={t("confirmPassword")}
           type="password"
           variant="outlined"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          error={!!confirmPasswordError}
+          helperText={confirmPasswordError}
+          required
         />
 
         <Box sx={{ mt: 2 }}>
@@ -90,6 +139,7 @@ export const SettingsAccount: FC<SettingsAccountProps> = ({
             variant="contained"
             color="primary"
             startIcon={<SaveIcon />}
+            disabled={!isFormValid || !currentPassword}
           >
             {t("updatePassword")}
           </Button>
