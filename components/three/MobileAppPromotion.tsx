@@ -255,7 +255,7 @@ export const MobileAppPromotion: React.FC<MobileAppPromotionProps> = ({
         </Box>
         <Canvas
           camera={{ position: [0, 0, 7], fov: 45 }}
-          style={{ height: "100%", width: "100%" }}
+          style={{ height: "100%", width: "100%", touchAction: "none" }}
         >
           {/* Lighting */}
           <ambientLight intensity={0.4} />
