@@ -68,7 +68,6 @@ export function Community() {
       id="community"
       sx={{
         py: 10,
-        bgcolor: alpha(theme.palette.background.paper, 0.5),
       }}
     >
       <Container maxWidth="lg">
