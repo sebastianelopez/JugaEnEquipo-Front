@@ -22,8 +22,7 @@ export const AuthLayout: FC<Props> = ({ children, title }) => {
           sx={{
             display: "flex",
             justifyContent: "center",
-            alignItems: "center",
-            height: "calc(100vh - 200px)",
+            alignItems: "flex-start",
           }}
         >
           {children}
