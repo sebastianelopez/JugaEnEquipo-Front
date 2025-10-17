@@ -17,11 +17,9 @@ export { PublicateCard } from "./cards/PublicateCard";
 export { ProfileCard } from "./cards/ProfileCard";
 export { UpcomingEventsCard } from "./cards/UpcomingEventsCard";
 
-//Tables
-export { TournamentTable } from "./tables/TournamentTable";
-
 //Modals
 export { CreatePublicationModal } from "./modals/CreatePublicationModal";
+export { CreateTournamentModal } from "./modals/CreateTournamentModal";
 
 //Others
 export { HomeNews } from "./HomeNews/HomeNews";
