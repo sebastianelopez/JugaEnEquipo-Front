@@ -226,5 +226,63 @@
             "createAccount": "Create Free Account",
             "exploreCommunities": "Explore Communities"
         }
+    },
+    "Tournaments": {
+        "tournaments": "Tournaments",
+        "create": "Create tournament",
+        "cancel": "Cancel",
+        "modalTitle": "Create new tournament",
+        "title": "Gaming Tournaments",
+        "subtitle": "Find and join the best esports tournaments",
+        "searchPlaceholder": "Search tournaments by name or game...",
+        "start": "Start:",
+        "region": "Region:",
+        "startDateTbd": "To be decided",
+        "filters": {
+            "title": "Filters",
+            "game": "Game",
+            "type": "Type",
+            "mode": "Mode",
+            "organizer": "Organizer",
+            "region": "Region",
+            "clear": "Clear",
+            "apply": "Apply",
+            "tooltip": "Filters"
+        },
+        "join": "Join",
+        "leave": "Leave",
+        "notFound": "Tournament not found",
+        "form": {
+            "name": "Name",
+            "description": "Description",
+            "type": "Type",
+            "region": "Region",
+            "game": "Game",
+            "mode": "Participation mode",
+            "maxTeams": "Max teams",
+            "maxParticipants": "Max participants",
+            "startDate": "Start (ISO)",
+            "endDate": "End (ISO)",
+            "rules": "Rules"
+        },
+        "modes": { "team": "Teams", "individual": "Solo" },
+        "table": {
+            "type": "Type",
+            "name": "Name",
+            "teams": "Teams",
+            "region": "Region",
+            "game": "Game",
+            "mode": "Mode"
+        },
+        "startAt": "Start",
+        "participants": "Participants",
+        "noParticipants": "No participants yet",
+        "organizer": "Organizer",
+        "dateErrors": {
+            "minStart": "Start must be at least +1h"
+        },
+        "successTitle": "Tournament created",
+        "successMessage": "The tournament was created successfully.",
+        "errorTitle": "Could not create the tournament"
     }
 }

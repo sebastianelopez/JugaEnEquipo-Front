@@ -4,7 +4,14 @@ import { ErrorMessage, useField, useFormikContext } from "formik";
 interface Props {
   label: string;
   name: string;
-  type?: "text" | "email" | "password";
+  type?:
+    | "text"
+    | "email"
+    | "password"
+    | "number"
+    | "date"
+    | "time"
+    | "datetime-local";
   placeholder?: string;
   onlyShowRequiredError?: boolean;
   [x: string]: any;

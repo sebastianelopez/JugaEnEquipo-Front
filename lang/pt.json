@@ -226,5 +226,63 @@
             "createAccount": "Criar Conta Grátis",
             "exploreCommunities": "Explorar Comunidades"
         }
+    },
+    "Tournaments": {
+        "tournaments": "Torneios",
+        "create": "Criar torneio",
+        "cancel": "Cancelar",
+        "modalTitle": "Criar novo torneio",
+        "title": "Torneios de Gaming",
+        "subtitle": "Encontre e participe dos melhores torneios de esports",
+        "searchPlaceholder": "Pesquisar torneios por nome ou jogo...",
+        "start": "Início:",
+        "region": "Região:",
+        "startDateTbd": "A definir",
+        "join": "Inscrever-se",
+        "leave": "Cancelar inscrição",
+        "notFound": "Torneio não encontrado",
+        "form": {
+            "name": "Nome",
+            "description": "Descrição",
+            "type": "Tipo",
+            "region": "Região",
+            "game": "Jogo",
+            "mode": "Modo de participação",
+            "maxTeams": "Máximo de equipes",
+            "maxParticipants": "Máximo de participantes",
+            "startDate": "Início (ISO)",
+            "endDate": "Fim (ISO)",
+            "rules": "Regras"
+        },
+        "modes": { "team": "Equipes", "individual": "Individual" },
+        "table": {
+            "type": "Tipo",
+            "name": "Nome",
+            "teams": "Equipes",
+            "region": "Região",
+            "game": "Jogo",
+            "mode": "Modo"
+        },
+        "startAt": "Início",
+        "participants": "Participantes",
+        "noParticipants": "Ainda não há participantes",
+        "organizer": "Organizador",
+        "filters": {
+            "title": "Filtros",
+            "game": "Jogo",
+            "type": "Tipo",
+            "mode": "Modo",
+            "organizer": "Organizador",
+            "region": "Região",
+            "clear": "Limpar",
+            "apply": "Aplicar",
+            "tooltip": "Filtros"
+        },
+        "dateErrors": {
+            "minStart": "O início deve ser pelo menos +1h a partir de agora"
+        },
+        "successTitle": "Torneio criado",
+        "successMessage": "O torneio foi criado com sucesso.",
+        "errorTitle": "Não foi possível criar o torneio"
     }
 }
