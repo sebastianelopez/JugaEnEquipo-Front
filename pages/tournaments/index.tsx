@@ -12,7 +12,7 @@ import { tournamentService } from "../../services/tournament.service";
 import type { Tournament, User } from "../../interfaces";
 
 import { TournamentCard } from "../../components/organisms/cards/TournamentCard";
-import { TournamentsHeader } from "../../components/organisms/sections/TournamentsHeader";
+import { TournamentsHeader } from "../../components/organisms/headers/TournamentsHeader";
 import { TournamentFiltersDialog } from "../../components/organisms/modals/TournamentFiltersDialog";
 import { generateManyTournaments } from "./mocks";
 
@@ -178,7 +178,7 @@ const TournamentsPage: NextPage<Props> = ({}) => {
               {/* Search / Create / Filters */}
               <TournamentsHeader
                 searchQuery={searchQuery}
-                onSearchChange={(v) => {
+                onSearchChange={(v: string) => {
                   setSearchQuery(v);
                   setCurrentPage(1);
                 }}

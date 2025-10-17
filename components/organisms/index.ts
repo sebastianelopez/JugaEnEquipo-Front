@@ -20,6 +20,7 @@ export { UpcomingEventsCard } from "./cards/UpcomingEventsCard";
 //Modals
 export { CreatePublicationModal } from "./modals/CreatePublicationModal";
 export { CreateTournamentModal } from "./modals/CreateTournamentModal";
+export { TournamentFiltersDialog } from "./modals/TournamentFiltersDialog";
 
 //Others
 export { HomeNews } from "./HomeNews/HomeNews";
@@ -30,3 +31,5 @@ export { Features } from "./sections/Features";
 export { Community } from "./sections/Community";
 export { Stats } from "./sections/Stats";
 export { CTA } from "./sections/CTA";
+//Headers
+export { TournamentsHeader } from "./headers/TournamentsHeader";
