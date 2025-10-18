@@ -9,6 +9,38 @@
         "community": "Comunidad",
         "about": "Nosotros"
     },
+    "Teams": {
+        "title": "Equipos Gaming",
+        "subtitle": "Descubre los mejores equipos de esports",
+        "searchPlaceholder": "Buscar equipos por nombre o juego...",
+        "create": "Crear equipo",
+        "members": "Miembros",
+        "games": "Juegos",
+        "achievements": "Logros destacados",
+        "more": "+{{count}} más"
+    },
+    "TeamDetail": {
+        "back": "Volver a Equipos",
+        "founded": "Fundado en {{year}}",
+        "region": "Región",
+        "about": "Sobre el Equipo",
+        "gamesTitle": "Juegos Competitivos",
+        "membersTitle": "Miembros del Equipo ({{count}})",
+        "achievementsTitle": "Logros y Premios",
+        "joinCta": "Únete al Equipo",
+        "currentMembers": "Miembros Actuales",
+        "requestJoin": "Solicitar Unirse",
+        "requirementsTitle": "Requisitos para unirse:",
+        "requirements": [
+            "Experiencia competitiva",
+            "Disponibilidad para entrenar",
+            "Trabajo en equipo",
+            "Compromiso con el equipo"
+        ],
+        "prize": "Premio: {{prize}}",
+        "captain": "Capitán",
+        "since": "Desde {{date}}"
+    },
     "Home":{
         "headerFirstLine": "La app que",
         "headerSecondLine": "redefine tu forma",

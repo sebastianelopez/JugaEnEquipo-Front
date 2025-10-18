@@ -9,6 +9,38 @@
         "community": "Comunidade",
         "about": "Sobre"
     },
+    "Teams": {
+        "title": "Equipes de Esports",
+        "subtitle": "Descubra as melhores equipes de esports",
+        "searchPlaceholder": "Pesquisar equipes por nome ou jogo...",
+        "create": "Criar equipe",
+        "members": "Membros",
+        "games": "Jogos",
+        "achievements": "Conquistas em destaque",
+        "more": "+{{count}} mais"
+    },
+    "TeamDetail": {
+        "back": "Voltar para Equipes",
+        "founded": "Fundado em {{year}}",
+        "region": "Região",
+        "about": "Sobre a Equipe",
+        "gamesTitle": "Jogos Competitivos",
+        "membersTitle": "Membros da Equipe ({{count}})",
+        "achievementsTitle": "Conquistas e Prêmios",
+        "joinCta": "Junte-se à Equipe",
+        "currentMembers": "Membros Atuais",
+        "requestJoin": "Solicitar Ingresso",
+        "requirementsTitle": "Requisitos para ingressar:",
+        "requirements": [
+            "Experiência competitiva",
+            "Disponibilidade para treinar",
+            "Trabalho em equipe",
+            "Compromisso com a equipe"
+        ],
+        "prize": "Prêmio: {{prize}}",
+        "captain": "Capitão",
+        "since": "Desde {{date}}"
+    },
     "Home":{
         "headerFirstLine": "O app que",
         "headerSecondLine": "redefine a maneira",

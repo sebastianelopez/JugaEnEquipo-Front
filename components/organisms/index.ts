@@ -16,6 +16,7 @@ export { HashtagsCard } from "./cards/HashtagsCard";
 export { PublicateCard } from "./cards/PublicateCard";
 export { ProfileCard } from "./cards/ProfileCard";
 export { UpcomingEventsCard } from "./cards/UpcomingEventsCard";
+export { TeamCard } from "./cards/TeamCard";
 
 //Modals
 export { CreatePublicationModal } from "./modals/CreatePublicationModal";
@@ -33,3 +34,11 @@ export { Stats } from "./sections/Stats";
 export { CTA } from "./sections/CTA";
 //Headers
 export { TournamentsHeader } from "./headers/TournamentsHeader";
+export { TeamsHeader } from "./headers/TeamsHeader";
+//Hero
+export { TeamHero } from "./hero/TeamHero";
+//Team sections
+export { TeamStats } from "./team/TeamStats";
+export { TeamGamesGrid } from "./team/TeamGamesGrid";
+export { AchievementsList } from "./team/AchievementsList";
+export { JoinCard } from "./team/JoinCard";

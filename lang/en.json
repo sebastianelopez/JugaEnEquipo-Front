@@ -9,6 +9,38 @@
         "community": "Community",
         "about": "About"
     },
+    "Teams": {
+        "title": "Esports Teams",
+        "subtitle": "Discover the best esports teams",
+        "searchPlaceholder": "Search teams by name or game...",
+        "create": "Create team",
+        "members": "Members",
+        "games": "Games",
+        "achievements": "Featured achievements",
+        "more": "+{{count}} more"
+    },
+    "TeamDetail": {
+        "back": "Back to Teams",
+        "founded": "Founded in {{year}}",
+        "region": "Region",
+        "about": "About the Team",
+        "gamesTitle": "Competitive Games",
+        "membersTitle": "Team Members ({{count}})",
+        "achievementsTitle": "Achievements & Awards",
+        "joinCta": "Join the Team",
+        "currentMembers": "Current Members",
+        "requestJoin": "Request to Join",
+        "requirementsTitle": "Requirements to join:",
+        "requirements": [
+            "Competitive experience",
+            "Availability for practice",
+            "Teamwork",
+            "Commitment to the team"
+        ],
+        "prize": "Prize: {{prize}}",
+        "captain": "Captain",
+        "since": "Since {{date}}"
+    },
     "Home":{
         "headerFirstLine": "The app that",
         "headerSecondLine": "redefines the way",
