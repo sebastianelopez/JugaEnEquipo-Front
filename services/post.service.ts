@@ -2,6 +2,7 @@ import { Comment } from "../interfaces/comment";
 import { Post } from "../interfaces/post";
 import { api } from "../lib/api";
 import { getToken } from "./auth.service";
+import { buildQ } from "../utils/buildQ";
 
 interface Resource {
   id: string;
@@ -179,10 +180,17 @@ export const postService = {
   getPostComments: async (postId: string) =>
     (await api.get<CommentResponse>(`/post/${postId}/comments`)).data,
 
-  getMyFeed: async (): Promise<Result<Post[]>> => {
+  getMyFeed: async (
+    params: { limit?: number; offset?: number } = {}
+  ): Promise<Result<Post[]>> => {
     try {
       const token = await getToken();
-      const res = await api.get<PostResponse>(`/my-feed`, {}, token);
+      const q = buildQ(params);
+      const res = await api.get<PostResponse>(
+        `/my-feed`,
+        q ? { q } : undefined,
+        token
+      );
       const posts = Array.isArray(res.data) ? res.data : [res.data];
       return { data: posts, error: null };
     } catch (error: any) {

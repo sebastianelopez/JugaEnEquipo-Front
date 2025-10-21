@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import { Grid, useMediaQuery, useTheme } from "@mui/material";
 import { GetStaticPropsContext } from "next";
 import {
   IdentityCard,
@@ -7,7 +7,7 @@ import {
   UpcomingEventsCard,
 } from "../../components/organisms";
 import { MainLayout } from "../../layouts";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { UserContext } from "../../context/user";
 import { postService } from "../../services/post.service";
 import { Post } from "../../interfaces/post";
@@ -28,6 +28,15 @@ const HomePage = () => {
   const [hasError, setHasError] = useState(false);
   const lastUpdateTimestamp = useRef<number>(Date.now());
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"), { noSsr: true });
+  const limit = isDesktop ? 10 : 6;
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasUserScrolled, setHasUserScrolled] = useState(false);
 
   const checkForNewPosts = async () => {
     try {
@@ -50,14 +59,11 @@ const HomePage = () => {
   const handleLoadNewPosts = async () => {
     setIsLoadingNewPosts(true);
     try {
-      // Simular delay
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Agregar nuevos posts al inicio de la lista
       const updatedPosts = [...newPostsAvailable.posts, ...posts];
       setPosts(updatedPosts);
 
-      // Resetear estado de nuevos posts
       setNewPostsAvailable({ hasNew: false, count: 0, posts: [] });
       lastUpdateTimestamp.current = Date.now();
     } catch (error) {
@@ -67,27 +73,20 @@ const HomePage = () => {
     }
   };
 
-  const loadPosts = async () => {
+  const loadInitialPosts = useCallback(async () => {
     try {
       setHasError(false);
       setIsLoading(true);
-      const result = await postService.getMyFeed();
+      const result = await postService.getMyFeed({ limit, offset: 0 });
       if (result.error || !result.data) {
         setHasError(true);
         setPosts([]);
         return;
       }
       const postsArray = result.data;
-
-      const postsWithTimestamps = postsArray.map((post) => ({
-        ...post,
-        timestamp: new Date(post.createdAt).getTime(),
-      }));
-
-      postsWithTimestamps.sort((a, b) => b.timestamp - a.timestamp);
-      const sortedPosts = postsWithTimestamps;
-
-      setPosts(sortedPosts);
+      setPosts(postsArray);
+      setOffset(postsArray.length);
+      setHasMore(postsArray.length === limit);
     } catch (error) {
       console.error("Error loading posts:", error);
       setHasError(true);
@@ -95,11 +94,73 @@ const HomePage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [limit]);
+
+  const loadMorePosts = useCallback(async () => {
+    if (isLoading || isLoadingMore || !hasMore) return;
+    try {
+      setIsLoadingMore(true);
+      const result = await postService.getMyFeed({ limit, offset });
+      if (result.error || !result.data) {
+        setHasMore(false);
+        return;
+      }
+      const newPosts = result.data;
+      setPosts((prev) => [...prev, ...newPosts]);
+      setOffset((prev) => prev + newPosts.length);
+      setHasMore(newPosts.length === limit);
+    } catch (error) {
+      console.error("Error loading more posts:", error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [isLoading, isLoadingMore, hasMore, limit, offset]);
 
   useEffect(() => {
-    loadPosts();
-  }, []);
+    loadInitialPosts();
+  }, [loadInitialPosts]);
+
+  useEffect(() => {
+    const target = sentinelRef.current;
+    if (!target) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (!hasUserScrolled) return;
+            loadMorePosts();
+          }
+        });
+      },
+      { root: null, rootMargin: "0px 0px 1200px 0px", threshold: 0.1 }
+    );
+
+    observer.observe(target);
+    return () => {
+      observer.unobserve(target);
+      observer.disconnect();
+    };
+  }, [loadMorePosts, hasUserScrolled]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (
+        !hasUserScrolled &&
+        typeof window !== "undefined" &&
+        window.scrollY > 50
+      ) {
+        setHasUserScrolled(true);
+      }
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("scroll", onScroll, { passive: true });
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("scroll", onScroll);
+      }
+    };
+  }, [hasUserScrolled]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -124,18 +185,9 @@ const HomePage = () => {
 
   return (
     <MainLayout title={"Home"} pageDescription={""}>
-      <Grid
-        container
-        columns={12}
-        sx={{
-          display: "flex",
-          mx: "auto",
-          width: "100%",
-          justifyContent: "center",
-        }}
-      >
+      <Grid container>
         <Grid
-          md={3}
+          size={{ md: 3 }}
           position="relative"
           justifyContent="start"
           alignItems="end"
@@ -161,15 +213,12 @@ const HomePage = () => {
         </Grid>
         <Grid
           display="flex"
-          xs={12}
-          md={6}
+          size={{ xs: 12, md: 6 }}
           flexDirection="column"
           justifyContent="flex-start"
           alignItems="center"
           position="relative"
-          sx={{
-            marginX: { xs: 3, md: "none" },
-          }}
+          sx={{ marginX: { xs: 3, md: "none" } }}
         >
           <PublicateCard userProfileImage={user?.profileImage} />
           {newPostsAvailable.hasNew && (
@@ -183,11 +232,12 @@ const HomePage = () => {
             isLoading={isLoading}
             posts={posts}
             error={hasError}
-            onRetry={loadPosts}
+            onRetry={loadInitialPosts}
           />
+          <div ref={sentinelRef} style={{ height: 1 }} />
         </Grid>
         <Grid
-          md={3}
+          size={{ md: 3 }}
           position="relative"
           justifyContent="start"
           alignItems="start"
