@@ -2,7 +2,6 @@ import React, { Suspense, useEffect, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import {
   PresentationControls,
-  Environment,
   ContactShadows,
   Float,
   Stars,
@@ -311,9 +310,7 @@ export const MobileAppPromotion: React.FC<MobileAppPromotionProps> = ({
             </PresentationControls>
           </Suspense>
 
-          {/* Environment and effects */}
-          <Environment preset="city" />
-
+          {/* Effects */}
           {showStars && (
             <>
               <Stars
