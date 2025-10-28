@@ -22,7 +22,7 @@ export const TournamentsGrid = ({ tournaments }: TournamentsGridProps) => {
   return (
     <Grid container spacing={2}>
       {tournaments.map((tournament) => (
-        <Grid item xs={12} sm={6} md={4} key={tournament.id}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={tournament.id}>
           <Card
             sx={{
               bgcolor: theme.palette.background.paper,
