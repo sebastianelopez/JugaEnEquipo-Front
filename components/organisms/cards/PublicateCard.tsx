@@ -16,7 +16,7 @@ import { v4 as uuidv4 } from "uuid";
 import { User } from "../../../interfaces";
 
 interface Props {
-  userProfileImage?: String;
+  userProfileImage?: string;
   sx?: SxProps<Theme>;
 }
 
@@ -43,8 +43,8 @@ export const PublicateCard = ({ userProfileImage, sx = [] }: Props) => {
       <Paper
         sx={[
           {
-            width: { xs: "100%", md: 530 },
-            maxWidth: { xs: 530 },
+            width: "100%",
+            maxWidth: 530,
             mb: 5,
           },
           ...(Array.isArray(sx) ? sx : [sx]),
@@ -57,7 +57,10 @@ export const PublicateCard = ({ userProfileImage, sx = [] }: Props) => {
             p: 1.5,
           }}
         >
-          <Avatar src={userProfileImage} alt="user profile image" />
+          <Avatar
+            src={userProfileImage ?? "/images/user-placeholder.png"}
+            alt="user profile image"
+          />
           <Input
             placeholder="Crear publicacion"
             fullWidth
