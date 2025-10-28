@@ -17,15 +17,15 @@
         "members": "Membros",
         "games": "Jogos",
         "achievements": "Conquistas em destaque",
-        "more": "+{{count}} mais"
+        "more": "+{count} mais"
     },
     "TeamDetail": {
         "back": "Voltar para Equipes",
-        "founded": "Fundado em {{year}}",
+        "founded": "Fundado em {year}",
         "region": "Região",
         "about": "Sobre a Equipe",
         "gamesTitle": "Jogos Competitivos",
-        "membersTitle": "Membros da Equipe ({{count}})",
+        "membersTitle": "Membros da Equipe ({count})",
         "achievementsTitle": "Conquistas e Prêmios",
         "joinCta": "Junte-se à Equipe",
         "currentMembers": "Membros Atuais",
@@ -37,9 +37,9 @@
             "Trabalho em equipe",
             "Compromisso com a equipe"
         ],
-        "prize": "Prêmio: {{prize}}",
+        "prize": "Prêmio: {prize}",
         "captain": "Capitão",
-        "since": "Desde {{date}}"
+        "since": "Desde {date}"
     },
     "Home":{
         "headerFirstLine": "O app que",
@@ -103,10 +103,10 @@
         "teams": "Equipes",
         "recentTournaments": "Torneios Recentes",
         "achievements": "Conquistas e Prêmios",
-        "memberSince": "Membro desde {{date}}",
+        "memberSince": "Membro desde {date}",
         "captain": "Capitão",
         "previous": "Anterior",
-        "since": "Desde {{date}}"
+        "since": "Desde {date}"
     },
     "SideMenu":{
         "profile": "Perfil",

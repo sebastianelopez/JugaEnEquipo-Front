@@ -17,15 +17,15 @@
         "members": "Members",
         "games": "Games",
         "achievements": "Featured achievements",
-        "more": "+{{count}} more"
+        "more": "+{count} more"
     },
     "TeamDetail": {
         "back": "Back to Teams",
-        "founded": "Founded in {{year}}",
+        "founded": "Founded in {year}",
         "region": "Region",
         "about": "About the Team",
         "gamesTitle": "Competitive Games",
-        "membersTitle": "Team Members ({{count}})",
+        "membersTitle": "Team Members ({count})",
         "achievementsTitle": "Achievements & Awards",
         "joinCta": "Join the Team",
         "currentMembers": "Current Members",
@@ -37,9 +37,9 @@
             "Teamwork",
             "Commitment to the team"
         ],
-        "prize": "Prize: {{prize}}",
+        "prize": "Prize: {prize}",
         "captain": "Captain",
-        "since": "Since {{date}}"
+        "since": "Since {date}"
     },
     "Home":{
         "headerFirstLine": "The app that",
@@ -103,10 +103,10 @@
         "teams": "Teams",
         "recentTournaments": "Recent Tournaments",
         "achievements": "Achievements & Awards",
-        "memberSince": "Member since {{date}}",
+        "memberSince": "Member since {date}",
         "captain": "Captain",
         "previous": "Previous",
-        "since": "Since {{date}}"              
+        "since": "Since {date}"              
     },
     "SideMenu":{
         "profile": "Profile",
