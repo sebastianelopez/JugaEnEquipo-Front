@@ -16,6 +16,7 @@ export const NewPostsAvailable = ({
     <Box
       sx={{
         width: "100%",
+        maxWidth: 530,
         backgroundColor: "primary.main",
         borderRadius: 2,
         padding: 2,

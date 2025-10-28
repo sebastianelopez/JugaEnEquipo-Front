@@ -17,17 +17,43 @@ export const IdentityCard: FC<Props> = ({ user }) => {
         width: "100%",
         maxWidth: "250px",
         mb: 3,
+        overflow: "visible",
       }}
     >
       <Avatar
         alt="Profile Picture"
-        src={user.profileImage}
-        sx={{ width: 200, height: 200, m: "auto", marginBottom: 1 }}
+        src={user.profileImage ?? "/images/user-placeholder.png"}
+        sx={{
+          width: "100%",
+          height: "auto",
+          aspectRatio: "1/1",
+          maxWidth: 200,
+          maxHeight: 200,
+          m: "auto",
+          marginBottom: 1,
+        }}
       />
-      <Typography variant="h4" fontWeight="bold">
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        sx={{
+          wordWrap: "break-word",
+          overflowWrap: "break-word",
+          whiteSpace: "normal",
+        }}
+      >
         {user.username}
       </Typography>
-      <Typography variant="subtitle1">{`${user.firstname} ${user.lastname}`}</Typography>
+      <Typography
+        variant="subtitle1"
+        sx={{
+          wordWrap: "break-word",
+          overflowWrap: "break-word",
+          whiteSpace: "normal",
+        }}
+      >
+        {`${user.firstname} ${user.lastname}`}
+      </Typography>
     </Paper>
   );
 };

@@ -185,7 +185,7 @@ const HomePage = () => {
 
   return (
     <MainLayout title={"Home"} pageDescription={""}>
-      <Grid container>
+      <Grid container spacing={4}>
         <Grid
           size={{ md: 3 }}
           position="relative"
@@ -218,7 +218,7 @@ const HomePage = () => {
           justifyContent="flex-start"
           alignItems="center"
           position="relative"
-          sx={{ marginX: { xs: 3, md: "none" } }}
+          sx={{ marginX: { xs: 3, md: "auto" } }}
         >
           <PublicateCard userProfileImage={user?.profileImage} />
           {newPostsAvailable.hasNew && (
