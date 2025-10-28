@@ -259,14 +259,12 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
           <Grid container spacing={4}>
             {/* Left Column: Posts */}
             <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-              {showPostsSection && (
-                <PostList
-                  isLoading={isLoading}
-                  posts={posts}
-                  error={hasError}
-                  onRetry={loadPosts}
-                />
-              )}
+              <PostList
+                isLoading={isLoading}
+                posts={posts}
+                error={hasError}
+                onRetry={loadPosts}
+              />
             </Grid>
 
             {/* Right Column: About, Games, Teams, Tournaments, Achievements, Social Links, Quick Stats */}
