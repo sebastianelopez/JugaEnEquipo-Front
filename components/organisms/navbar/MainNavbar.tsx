@@ -20,6 +20,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import MenuIcon from "@mui/icons-material/Menu";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
+import GroupsIcon from '@mui/icons-material/Groups';
 import { Search } from "../../molecules/Search/Search";
 
 import logo from "./../../../assets/logo.png";
@@ -94,6 +95,13 @@ export const MainNavbar = () => {
             <Link component="span">
               <IconButton>
                 <MessageIcon />
+              </IconButton>
+            </Link>
+          </NextLink>
+          <NextLink href={"/teams"} passHref>
+            <Link component="span">
+              <IconButton>
+                <GroupsIcon />
               </IconButton>
             </Link>
           </NextLink>
