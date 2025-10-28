@@ -1,22 +1,31 @@
-import { Box, Button, Grid, Paper, Tab, Tabs, Typography } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Container,
+  Card,
+  CardContent,
+  Grid,
+} from "@mui/material";
 import { GetServerSideProps, GetServerSidePropsContext, NextPage } from "next";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
-import { ProfileCard } from "../../components/organisms";
+import {
+  ProfileHero,
+  AboutCard,
+  GamesGrid,
+  TeamsList,
+  TournamentsGrid,
+  ProfileAchievementsList,
+  SocialLinksCard,
+  QuickStatsCard,
+  ProfileEditModal,
+} from "../../components/organisms";
 import { Post, User } from "../../interfaces";
 import { MainLayout } from "../../layouts";
 import { userService } from "../../services/user.service";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import { postService } from "../../services/post.service";
-import { PostList } from "../../components/molecules/Post/PostList";
 import { UserContext } from "../../context/user";
-import { BlizzardButton } from "../../components/atoms";
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
+import { PostList } from "../../components/molecules/Post/PostList";
 
 interface Props {
   userFound: User;
@@ -32,40 +41,9 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [tab, setTab] = useState(0);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTab(newValue);
-  };
-
-  const CustomTabPanel = (props: TabPanelProps) => {
-    const { children, value, index, ...other } = props;
-
-    return (
-      <Box
-        role="tabpanel"
-        hidden={value !== index}
-        id={`simple-tabpanel-${index}`}
-        aria-labelledby={`simple-tab-${index}`}
-        sx={{
-          width: "100%",
-          maxWidth: 530,
-        }}
-        {...other}
-      >
-        {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-      </Box>
-    );
-  };
-
-  const getA11yProps = (index: number) => {
-    return {
-      id: `simple-tab-${index}`,
-      "aria-controls": `simple-tabpanel-${index}`,
-    };
-  };
-
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     try {
       setHasError(false);
       setIsLoading(true);
@@ -85,7 +63,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
       }));
 
       postsWithTimestamps.sort((a, b) => b.timestamp - a.timestamp);
-      const sortedPosts = postsWithTimestamps;
+      const sortedPosts = postsWithTimestamps as Post[];
 
       setPosts(sortedPosts);
     } catch (error) {
@@ -95,11 +73,162 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userFound.username]);
 
   useEffect(() => {
     loadPosts();
-  }, []);
+  }, [loadPosts]);
+
+  // Derived data and visibility checks
+  // MOCK DATA - Temporal until backend integration
+  const aboutText =
+    "Apasionado jugador de esports con más de 5 años de experiencia compitiendo en torneos internacionales. Especializado en estrategia de equipo y comunicación en línea. Busco formar parte de equipos competitivos para seguir mejorando y alcanzar nuevos objetivos.";
+
+  const stats: { label: string; value: string | number; color?: any }[] = [
+    { label: "Torneos", value: 24, color: "primary" },
+    { label: "Victorias", value: 18, color: "success" },
+    { label: "Equipos", value: 5, color: "info" },
+    { label: "Horas", value: 2500, color: "warning" },
+  ];
+
+  const games = (userFound.games || []).map((g) => ({
+    name: g.name,
+    icon: (g as any).image || undefined,
+    rank: String(g.elo),
+  }));
+  const hasGames = games.length > 0;
+
+  // MOCK DATA - Temporal until backend integration
+  const teams: {
+    id: string | number;
+    name: string;
+    logo?: string;
+    role?: string;
+    position?: string;
+    joinDate?: string | number | Date;
+    leftDate?: string | number | Date;
+  }[] = [
+    {
+      id: 1,
+      name: "Team Thunder",
+      logo: "/images/user-placeholder.png",
+      role: "Capitán",
+      position: "DPS",
+      joinDate: new Date("2023-01-15"),
+    },
+    {
+      id: 2,
+      name: "Elite Gaming Squad",
+      logo: "/images/user-placeholder.png",
+      position: "Support",
+      joinDate: new Date("2022-06-20"),
+      leftDate: new Date("2023-12-01"),
+    },
+    {
+      id: 3,
+      name: "Pro Players League",
+      logo: "/images/user-placeholder.png",
+      position: "Tank",
+      joinDate: new Date("2021-03-10"),
+      leftDate: new Date("2022-08-15"),
+    },
+  ];
+  const hasTeams = teams.length > 0;
+
+  // MOCK DATA - Temporal until backend integration
+  const tournaments: {
+    id: string | number;
+    name: string;
+    game?: string;
+    image?: string;
+    date?: string | number | Date;
+    placement?: string;
+  }[] = [
+    {
+      id: 1,
+      name: "Championship 2024",
+      game: "Counter-Strike",
+      date: new Date("2024-10-15"),
+      placement: "1er Lugar",
+    },
+    {
+      id: 2,
+      name: "Pro League Season 12",
+      game: "Valorant",
+      date: new Date("2024-08-22"),
+      placement: "3er Lugar",
+    },
+    {
+      id: 3,
+      name: "Regional Tournament",
+      game: "Overwatch",
+      date: new Date("2024-05-10"),
+      placement: "5to Lugar",
+    },
+  ];
+  const hasTournaments = tournaments.length > 0;
+
+  // MOCK DATA - Temporal until backend integration
+  const achievements: {
+    title: string;
+    tournament?: string;
+    game?: string;
+    date?: string | number | Date;
+    prize?: string;
+  }[] = [
+    {
+      title: "Campeón Internacional",
+      tournament: "Championship 2024",
+      game: "Counter-Strike",
+      date: new Date("2024-10-15"),
+      prize: "$5,000",
+    },
+    {
+      title: "MVP del Torneo",
+      tournament: "Pro League Season 12",
+      game: "Valorant",
+      date: new Date("2024-08-22"),
+      prize: "$1,500",
+    },
+    {
+      title: "Mejor Jugador de la Semana",
+      tournament: "Regional Tournament",
+      game: "Overwatch",
+      date: new Date("2024-05-10"),
+    },
+    {
+      title: "Consistencia Global",
+      tournament: "Mensual League",
+      game: "Heroes of the Storm",
+      date: new Date("2024-03-15"),
+    },
+  ];
+  const hasAchievements = achievements.length > 0;
+
+  // MOCK DATA - Temporal until backend integration
+  const socialLinks: {
+    twitter?: string;
+    instagram?: string;
+    youtube?: string;
+    twitch?: string;
+  } = {
+    twitch: "https://www.twitch.tv/jugaenequipo",
+    youtube: "https://www.youtube.com/@jugaenequipo",
+    twitter: "https://twitter.com/jugaenequipo",
+    instagram: "https://www.instagram.com/jugaenequipo",
+  };
+  const hasSocialLinks = Object.values(socialLinks).some(Boolean);
+
+  const hasAbout =
+    (aboutText?.trim?.() || "").length > 0 || (stats?.length || 0) > 0;
+
+  const currentTeams = teams.length;
+  const activeGames = games.length;
+  const totalAchievements = achievements.length;
+  const hasQuickStats =
+    currentTeams > 0 || activeGames > 0 || totalAchievements > 0;
+
+  const showPostsSection = isLoading || hasError || posts.length > 0;
 
   return (
     <>
@@ -107,109 +236,112 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
         pageDescription={`${userFound.firstname}'s profile page with all his information.`}
         title={`${t("profile")} - ${userFound.firstname}`}
       >
-        <Grid xs={12} sm={12} md={12} lg={12} container>
-          <Grid xs={12} sm={12} md={12} lg={12} container position="relative">
-            <Image
-              src="https://cdn.pixabay.com/photo/2018/08/14/13/23/ocean-3605547_1280.jpg"
-              width={1500}
-              height="300"
-              objectFit="fill"
-              alt="Background"
-            />
-            <Button
-              sx={{
-                position: "absolute",
-                top: { xs: 85, md: "unset" },
-                bottom: { xs: "unset", md: 25 },
-                right: 25,
-              }}
-              variant="contained"
-              color="primary"
-            >
-              {isLoggedUser ? t("editProfileBackground") : t("shareProfile")}
-            </Button>
-          </Grid>
-          <Grid container spacing={3} sx={{ width: "100%", justifyContent: 'space-around' }}>
-            <Grid
-              item
-              xs={12}
-              md={5}
-              position="relative"
-              display="flex"
-              flexDirection={"column"}
-              justifyContent="start"
-              alignItems="center"
-              mt={{ xs: -10, md: -20 }}
-            >
-              <ProfileCard user={userFound} />
-              <Paper
-                sx={{
-                  p: 2,
-                  mt: 3,
-                  top: 600,
-                  width: "100%",
-                  maxWidth: { xs: 530, md: 400 },
-                }}
-              >
-                <Typography fontWeight="bold" my={3}>
-                  ABOUT
-                </Typography>
-                <Typography>
-                  Soy un apasionado jugador de E-Games con años de experiencia
-                  en el mundo de los videojuegos. Me encanta competir y
-                  desafiarme a mí mismo en diferentes juegos, y he tenido la
-                  oportunidad de participar en varios torneos importantes en mi
-                  carrera. Mis especialidades son los juegos de estrategia y los
-                  juegos de disparos en primera persona, y me encanta pasar
-                  tiempo investigando y mejorando mis habilidades en diferentes
-                  juegos.¡Estoy emocionado de seguir creciendo y mejorando como
-                  jugador y espero enfrentarme a algunos de ustedes en el campo
-                  de batalla virtual pronto!
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              md={7}
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "start",
-                alignItems: "center",
-                mt: { xs: 0, md: 3 },
-              }}
-              position="relative"
-            >
-              <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                <Tabs
-                  value={tab}
-                  onChange={handleTabChange}
-                  aria-label="basic tabs example"
-                >
-                  <Tab label="Publicaciones" {...getA11yProps(0)} />
-                  <Tab label="Stats" {...getA11yProps(1)} />
-                  <Tab label="Item Three" {...getA11yProps(2)} />
-                </Tabs>
-              </Box>
-              <CustomTabPanel value={tab} index={0}>
+        <ProfileHero
+          fullName={`${userFound.firstname} ${userFound.lastname}`}
+          username={userFound.username}
+          avatarSrc={userFound.profileImage || "/images/user-placeholder.png"}
+          bannerSrc={"/assets/images.jpg"}
+          regionLabel={userFound.country}
+          memberSinceLabel={t("memberSince", {
+            date: new Date().toLocaleDateString(),
+          })}
+          isOwnProfile={isLoggedUser}
+          onEditClick={() => setIsEditOpen(true)}
+          onMessageClick={() => {
+            if (isLoggedUser) return;
+            window.location.href = `/messages?userId=${encodeURIComponent(
+              userFound.id
+            )}`;
+          }}
+        />
+
+        <Container maxWidth="xl" sx={{ mt: 4 }}>
+          <Grid container spacing={4}>
+            {/* Left Column: Posts */}
+            <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+              {showPostsSection && (
                 <PostList
                   isLoading={isLoading}
                   posts={posts}
                   error={hasError}
                   onRetry={loadPosts}
                 />
-              </CustomTabPanel>
-              <CustomTabPanel value={tab} index={1}>
-                <BlizzardButton />
-              </CustomTabPanel>
-              <CustomTabPanel value={tab} index={2}>
-                Item Three
-              </CustomTabPanel>
+              )}
+            </Grid>
+
+            {/* Right Column: About, Games, Teams, Tournaments, Achievements, Social Links, Quick Stats */}
+            <Grid size={{ xs: 12, md: 6, lg: 8 }}>
+              {hasAbout && <AboutCard aboutText={aboutText} stats={stats} />}
+
+              {hasGames && (
+                <Card sx={{ borderRadius: 3, mb: 3 }}>
+                  <CardContent sx={{ p: 4 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+                      {t("games")}
+                    </Typography>
+                    <GamesGrid games={games} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {hasTeams && (
+                <Card sx={{ borderRadius: 3, mb: 3 }}>
+                  <CardContent sx={{ p: 4 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+                      {t("teams")}
+                    </Typography>
+                    <TeamsList teams={teams} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {hasTournaments && (
+                <Card sx={{ borderRadius: 3, mb: 3 }}>
+                  <CardContent sx={{ p: 4 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+                      {t("recentTournaments")}
+                    </Typography>
+                    <TournamentsGrid tournaments={tournaments} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {hasAchievements && (
+                <Card sx={{ borderRadius: 3, mb: 3 }}>
+                  <CardContent sx={{ p: 4 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+                      {t("achievements")}
+                    </Typography>
+                    <ProfileAchievementsList achievements={achievements} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {hasSocialLinks && <SocialLinksCard links={socialLinks} />}
+              {hasQuickStats && (
+                <QuickStatsCard
+                  currentTeams={currentTeams}
+                  activeGames={activeGames}
+                  totalAchievements={totalAchievements}
+                />
+              )}
             </Grid>
           </Grid>
-        </Grid>
+        </Container>
       </MainLayout>
+      {isLoggedUser && (
+        <ProfileEditModal
+          open={isEditOpen}
+          onClose={() => setIsEditOpen(false)}
+          initialAboutText={aboutText}
+          initialSocialLinks={socialLinks}
+          onSave={({ aboutText: newAbout, socialLinks: newLinks }) => {
+            // TODO: Replace local assignment with server update and refresh
+            // For now, just console log. Integrate userService.updateUser when backend supports these fields.
+            console.log("Saving profile data", { newAbout, newLinks });
+          }}
+        />
+      )}
     </>
   );
 };

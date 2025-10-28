@@ -22,6 +22,7 @@ export { TeamCard } from "./cards/TeamCard";
 export { CreatePublicationModal } from "./modals/CreatePublicationModal";
 export { CreateTournamentModal } from "./modals/CreateTournamentModal";
 export { TournamentFiltersDialog } from "./modals/TournamentFiltersDialog";
+export { ProfileEditModal } from "./modals/ProfileEditModal";
 
 //Others
 export { HomeNews } from "./HomeNews/HomeNews";
@@ -42,3 +43,12 @@ export { TeamStats } from "./team/TeamStats";
 export { TeamGamesGrid } from "./team/TeamGamesGrid";
 export { AchievementsList } from "./team/AchievementsList";
 export { JoinCard } from "./team/JoinCard";
+// Profile
+export { ProfileHero } from "./profile/ProfileHero";
+export { AboutCard } from "./profile/AboutCard";
+export { GamesGrid } from "./profile/GamesGrid";
+export { TeamsList } from "./profile/TeamsList";
+export { TournamentsGrid } from "./profile/TournamentsGrid";
+export { AchievementsList as ProfileAchievementsList } from "./profile/AchievementsList";
+export { SocialLinksCard } from "./profile/SocialLinksCard";
+export { QuickStatsCard } from "./profile/QuickStatsCard";
