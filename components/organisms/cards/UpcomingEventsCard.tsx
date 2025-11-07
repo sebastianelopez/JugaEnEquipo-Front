@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import { FC, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/router";
+import { formatEventDateTime } from "../../../utils/formatDate";
 
 interface UpcomingEventItem {
   id: string;
@@ -26,6 +28,8 @@ interface Props {
 
 export const UpcomingEventsCard: FC<Props> = ({ events }) => {
   const t = useTranslations("Events");
+  const router = useRouter();
+  const locale = (router.locale as 'es' | 'en' | 'pt') || 'es';
 
   const fallbackEvents: UpcomingEventItem[] = useMemo(
     () => [
@@ -58,17 +62,6 @@ export const UpcomingEventsCard: FC<Props> = ({ events }) => {
   );
 
   const displayEvents = events && events.length > 0 ? events : fallbackEvents;
-
-  const formatDateTime = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleString(undefined, {
-      weekday: "short",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   return (
     <Paper
@@ -121,7 +114,7 @@ export const UpcomingEventsCard: FC<Props> = ({ events }) => {
                 >
                   <Chip label={event.game} size="small" />
                   <Typography variant="caption" color="text.secondary">
-                    {formatDateTime(event.startAt)}
+                    {formatEventDateTime(event.startAt, locale)}
                   </Typography>
                 </Box>
               }
