@@ -67,11 +67,11 @@ const HomePage = () => {
     }, 2000);
   }, []);
 
-  const checkForNewPosts = async () => {
+  const checkNewPosts = useCallback(async () => {
     try {
-      const result = await postService.checkForNewPosts(
-        lastUpdateTimestamp.current
-      );
+      const lastVisiblePost = posts.length > 0 ? posts[0] : null;
+      
+      const result = await postService.checkForNewPosts(lastVisiblePost, limit);
 
       if (result.hasNewPosts) {
         setNewPostsAvailable({
@@ -83,7 +83,7 @@ const HomePage = () => {
     } catch (error) {
       console.error("Error checking for new posts:", error);
     }
-  };
+  }, [posts, limit]);
 
   const handleLoadNewPosts = async () => {
     setIsLoadingNewPosts(true);
@@ -200,8 +200,8 @@ const HomePage = () => {
   }, [hasUserScrolled]);
 
   useEffect(() => {
-    if (!isLoading) {
-      intervalRef.current = setInterval(checkForNewPosts, 3000);
+    if (!isLoading && posts.length > 0) {
+      intervalRef.current = setInterval(checkNewPosts, 30000);
 
       return () => {
         if (intervalRef.current) {
@@ -209,7 +209,7 @@ const HomePage = () => {
         }
       };
     }
-  }, [isLoading]);
+  }, [isLoading, posts.length, checkNewPosts]);
 
   useEffect(() => {
     return () => {

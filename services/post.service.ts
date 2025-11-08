@@ -111,44 +111,50 @@ export const postService = {
   },
 
   checkForNewPosts: async (
-    lastTimestamp: number
+    lastVisiblePost: Post | null,
+    limit: number = 10
   ): Promise<{ hasNewPosts: boolean; count: number; posts: Post[] }> => {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const result = await postService.getMyFeed({ limit, offset: 0 });
+      
+      if (result.error || !result.data) {
+        return {
+          hasNewPosts: false,
+          count: 0,
+          posts: [],
+        };
+      }
 
-    // Mock: generar nuevos posts aleatorios
-    const shouldHaveNewPosts = Math.random() > 0.7; // 30% de probabilidad
+      const posts = result.data;
+      
+      if (!lastVisiblePost) {
+        return {
+          hasNewPosts: posts.length > 0,
+          count: posts.length,
+          posts: posts,
+        };
+      }
 
-    if (shouldHaveNewPosts) {
-      const newPostsCount = Math.floor(Math.random() * 3) + 1; // 1-3 nuevos posts
-      const mockNewPosts: Post[] = Array.from(
-        { length: newPostsCount },
-        (_, index) => ({
-          id: `new-${Date.now()}-${index}`,
-          body: `Nuevo post ${index + 1} - ${new Date().toLocaleString()}`,
-          username: `user${Math.floor(Math.random() * 100)}`,
-          createdAt: new Date().toISOString(),
-          likesQuantity: Math.floor(Math.random() * 50),
-          sharesQuantity: Math.floor(Math.random() * 10),
-          commentsQuantity: Math.floor(Math.random() * 20),
-          urlProfileImage: `https://picsum.photos/40/40?random=${index}`,
-          resources: [],
-          sharedPost: null,
-        })
-      );
+      const lastVisibleTimestamp = new Date(lastVisiblePost.createdAt).getTime();
+      
+      const newPosts = posts.filter(post => {
+        const postTimestamp = new Date(post.createdAt).getTime();
+        return postTimestamp > lastVisibleTimestamp;
+      });
 
       return {
-        hasNewPosts: true,
-        count: newPostsCount,
-        posts: mockNewPosts,
+        hasNewPosts: newPosts.length > 0,
+        count: newPosts.length,
+        posts: newPosts,
       };
-    }
-
+    } catch (error) {
+      console.error("Error checking for new posts:", error);
     return {
       hasNewPosts: false,
       count: 0,
       posts: [],
     };
+    }
   },
 
   searchPosts: (query: string) =>
