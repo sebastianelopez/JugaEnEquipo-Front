@@ -19,6 +19,7 @@ import { Post } from "../../../interfaces";
 import { SharedPostCard } from "../cards/SharedPostCard";
 import { v4 as uuidv4 } from "uuid";
 import { postService } from "../../../services/post.service";
+import { useFeedback } from "../../../hooks/useFeedback";
 
 interface Props {
   sx?: SxProps<Theme>;
@@ -36,6 +37,7 @@ export const CreatePublicationModal = ({
   onPostCreated,
 }: Props) => {
   const t = useTranslations("Publication");
+  const { showError } = useFeedback();
 
   const { postId } = useContext(PostContext);
   const { user } = useContext(UserContext);
@@ -55,6 +57,19 @@ export const CreatePublicationModal = ({
     if (postId === undefined) return;
     if (event.target.files && event.target.files.length > 0) {
       const filesArray = Array.from(event.target.files);
+
+      const maxSize = 1 * 1024 * 1024; // 1MB
+      const oversizedFiles = filesArray.filter((file) => file.size > maxSize);
+
+      if (oversizedFiles.length > 0) {
+        const fileNames = oversizedFiles.map((f) => f.name).join(", ");
+        showError({
+          title: t("uploadErrorTitle"),
+          message: t("uploadErrorOversizedFiles", { files: fileNames }),
+        });
+        return;
+      }
+
       setIsUploadingMedia(true);
 
       try {
@@ -87,9 +102,25 @@ export const CreatePublicationModal = ({
         setUploadedResources((prev) => [...prev, ...uploadedResults]);
 
         console.log("All resources uploaded successfully:", uploadedResults);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error uploading resources:", error);
-        // TODO - Show a notification here
+
+        let errorMessage = t("uploadErrorGeneric");
+
+        if (error?.response?.status === 500) {
+          errorMessage = t("uploadErrorServerError");
+        } else if (error?.response?.status === 413) {
+          errorMessage = t("uploadErrorFileTooLarge");
+        } else if (error?.code === "ERR_NETWORK") {
+          errorMessage = t("uploadErrorNetwork");
+        }
+
+        showError({
+          title: t("uploadErrorTitle"),
+          message: errorMessage,
+          onRetry: () => handleFileChange(event),
+          retryLabel: t("retry"),
+        });
       } finally {
         setIsUploadingMedia(false);
       }
@@ -152,10 +183,26 @@ export const CreatePublicationModal = ({
       }
 
       handleClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating post:", error);
 
-      // TODO - Show an error message
+      let errorMessage = t("createPostErrorGeneric");
+
+      if (error?.response?.status === 500) {
+        errorMessage = t("createPostErrorServerError");
+      } else if (error?.response?.status === 413) {
+        errorMessage = t("createPostErrorContentTooLarge");
+      } else if (error?.code === "ERR_NETWORK") {
+        errorMessage = t("createPostErrorNetwork");
+      }
+
+      showError({
+        title: t("createPostErrorTitle"),
+        message: errorMessage,
+        onRetry: handleSubmit,
+        retryLabel: t("retry"),
+      });
+
       setIsCreating(false);
       // Don't close on error, let user try again
     }
@@ -187,22 +234,36 @@ export const CreatePublicationModal = ({
         >
           <h2 id="modal-title">{t("createPost")}</h2>
 
-          <Button
-            variant="outlined"
-            component="label"
-            startIcon={<PermMediaIcon />}
-            sx={{ mb: 2 }}
-          >
-            {t("mediaButton")}
-            <input
-              type="file"
-              hidden
-              multiple
-              accept="image/*,video/*"
-              onChange={handleFileChange}
-              ref={fileInputRef}
-            />
-          </Button>
+          <Box>
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={<PermMediaIcon />}
+              sx={{ mb: 1 }}
+            >
+              {t("mediaButton")}
+              <input
+                type="file"
+                hidden
+                multiple
+                accept="image/*,video/*"
+                onChange={handleFileChange}
+                ref={fileInputRef}
+              />
+            </Button>
+            <Box
+              component="p"
+              sx={{
+                fontSize: "0.75rem",
+                color: "text.secondary",
+                margin: 0,
+                mb: 2,
+                fontStyle: "italic",
+              }}
+            >
+              {t("mediaButtonHint")}
+            </Box>
+          </Box>
 
           {selectedFiles.length > 0 && (
             <Box sx={{ mb: 2 }}>
