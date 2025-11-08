@@ -152,7 +152,7 @@ export const PublicationCard = ({
         <CardHeader
           avatar={
             <Avatar
-              src={urlProfileImage}
+              src={urlProfileImage || undefined}
               alt="Profile Picture"
               sx={{ cursor: "pointer" }}
               onClick={() => handleNavigateToProfile(username)}
@@ -230,12 +230,11 @@ export const PublicationCard = ({
                           <Image
                             src={mediaItem.url || ""}
                             alt={`Image ${index + 1}`}
-                            layout="fill"
+                            fill
+                            sizes="(max-width: 650px) 50vw, 164px"
                             style={{
                               borderRadius: "6px",
                               objectFit: "cover",
-                              maxWidth: matches ? 164 : 300,
-                              maxHeight: 164,
                             }}
                           />
                         </ImageListItem>
@@ -316,7 +315,7 @@ export const PublicationCard = ({
             >
               {likesQuantity > 0 && (
                 <Button>
-                  <FavoriteIcon color="red" />
+                  <FavoriteIcon sx={{ color: 'red' }} />
                   <Typography>{likesQuantity}</Typography>
                 </Button>
               )}
