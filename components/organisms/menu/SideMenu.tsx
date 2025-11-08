@@ -106,15 +106,18 @@ export const SideMenu = () => {
 
           <>
             <ListItem
-              button
               onClick={() => navigateTo(`/profile/${user?.username}`)}
+              sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
             >
               <ListItemIcon>
                 <AccountCircleOutlined />
               </ListItemIcon>
               <ListItemText primary={t("profile")} />
             </ListItem>
-            <ListItem button onClick={() => navigateTo(`/settings`)}>
+            <ListItem 
+              onClick={() => navigateTo(`/settings`)}
+              sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
+            >
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
@@ -125,10 +128,11 @@ export const SideMenu = () => {
 
         <List>
           <ListItem
-            button
             onClick={toggleTheme}
             aria-label={tGlobal("toggleTheme")}
             sx={{
+              cursor: 'pointer',
+              '&:hover': { backgroundColor: 'action.hover' },
               "@media (min-width: 680px)": {
                 display: "none",
               },
