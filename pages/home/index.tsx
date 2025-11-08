@@ -13,6 +13,7 @@ import { postService } from "../../services/post.service";
 import { Post } from "../../interfaces/post";
 import { PostList } from "../../components/molecules/Post/PostList";
 import { NewPostsAvailable } from "../../components/molecules/Post/NewPostsAvailable";
+import { sortPostsByDate } from "../../utils/sortPosts";
 
 const HomePage = () => {
   const { user } = useContext(UserContext);
@@ -62,7 +63,8 @@ const HomePage = () => {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       const updatedPosts = [...newPostsAvailable.posts, ...posts];
-      setPosts(updatedPosts);
+      const sortedPosts = sortPostsByDate(updatedPosts);
+      setPosts(sortedPosts);
 
       setNewPostsAvailable({ hasNew: false, count: 0, posts: [] });
       lastUpdateTimestamp.current = Date.now();
@@ -84,9 +86,10 @@ const HomePage = () => {
         return;
       }
       const postsArray = result.data;
-      setPosts(postsArray);
-      setOffset(postsArray.length);
-      setHasMore(postsArray.length === limit);
+      const sortedPosts = sortPostsByDate(postsArray);
+      setPosts(sortedPosts);
+      setOffset(sortedPosts.length);
+      setHasMore(sortedPosts.length === limit);
     } catch (error) {
       console.error("Error loading posts:", error);
       setHasError(true);
@@ -106,9 +109,15 @@ const HomePage = () => {
         return;
       }
       const newPosts = result.data;
-      setPosts((prev) => [...prev, ...newPosts]);
-      setOffset((prev) => prev + newPosts.length);
-      setHasMore(newPosts.length === limit);
+
+      const sortedNewPosts = sortPostsByDate(newPosts);
+      setPosts((prev) => {
+        const allPosts = [...prev, ...sortedNewPosts];
+
+        return sortPostsByDate(allPosts);
+      });
+      setOffset((prev) => prev + sortedNewPosts.length);
+      setHasMore(sortedNewPosts.length === limit);
     } catch (error) {
       console.error("Error loading more posts:", error);
     } finally {

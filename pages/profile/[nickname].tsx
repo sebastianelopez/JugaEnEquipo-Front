@@ -26,6 +26,7 @@ import { useContext, useEffect, useState, useCallback } from "react";
 import { postService } from "../../services/post.service";
 import { UserContext } from "../../context/user";
 import { PostList } from "../../components/molecules/Post/PostList";
+import { sortPostsByDate } from "../../utils/sortPosts";
 
 interface Props {
   userFound: User;
@@ -56,15 +57,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
         return;
       }
       const postsArray = result.data;
-
-      const postsWithTimestamps = postsArray.map((post) => ({
-        ...post,
-        timestamp: new Date(post.createdAt).getTime(),
-      }));
-
-      postsWithTimestamps.sort((a, b) => b.timestamp - a.timestamp);
-      const sortedPosts = postsWithTimestamps as Post[];
-
+      const sortedPosts = sortPostsByDate(postsArray);
       setPosts(sortedPosts);
     } catch (error) {
       console.error("Error loading posts:", error);
