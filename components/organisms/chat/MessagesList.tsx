@@ -5,7 +5,7 @@ import {
   TextField,
   InputAdornment,
   List,
-  ListItem,
+  ListItemButton,
   ListItemAvatar,
   Avatar,
   ListItemText,
@@ -83,7 +83,7 @@ export const ConversationsList = forwardRef<
   }, [searchTerm, conversations]);
 
   return (
-    <Grid item xs={12} md={5} sx={{ height: "100%" }}>
+    <Grid size={{ xs: 12, md: 5 }} sx={{ height: "100%" }}>
       <Box
         sx={{
           padding: 2,
@@ -133,8 +133,7 @@ export const ConversationsList = forwardRef<
           >
             {filteredConversations.map((conversation, index) => (
               <Box key={conversation.id}>
-                <ListItem
-                  button
+                <ListItemButton
                   alignItems="flex-start"
                   onClick={() => handleSelectConversation(conversation)}
                   sx={{
@@ -206,7 +205,7 @@ export const ConversationsList = forwardRef<
                       </Box>
                     }
                   />
-                </ListItem>
+                </ListItemButton>
                 {index < filteredConversations.length - 1 && (
                   <Divider variant="inset" component="li" />
                 )}

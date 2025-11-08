@@ -305,7 +305,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
   if (!conversation) {
     return (
-      <Grid item xs={12} md={7} sx={{ height: "100%" }}>
+      <Grid size={{ xs: 12, md: 7 }} sx={{ height: "100%" }}>
         <Box
           sx={{
             padding: 2,
@@ -326,7 +326,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   }
 
   return (
-    <Grid item xs={12} md={7} sx={{ height: "100%" }}>
+    <Grid size={{ xs: 12, md: 7 }} sx={{ height: "100%" }}>
       <Box
         sx={{
           display: "flex",
