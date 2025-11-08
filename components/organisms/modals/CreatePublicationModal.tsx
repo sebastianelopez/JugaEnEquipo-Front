@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 import PermMediaIcon from "@mui/icons-material/PermMedia";
 import CloseIcon from "@mui/icons-material/Close";
 import { PostContext } from "../../../context/post";
+import { UserContext } from "../../../context/user";
 import { Post } from "../../../interfaces";
 import { SharedPostCard } from "../cards/SharedPostCard";
 import { v4 as uuidv4 } from "uuid";
@@ -24,6 +25,7 @@ interface Props {
   open: boolean;
   onClose: (value: SetStateAction<boolean>) => void;
   sharePost?: Post;
+  onPostCreated?: (newPost: Post) => void;
 }
 
 export const CreatePublicationModal = ({
@@ -31,49 +33,79 @@ export const CreatePublicationModal = ({
   open,
   onClose,
   sharePost,
+  onPostCreated,
 }: Props) => {
   const t = useTranslations("Publication");
 
   const { postId } = useContext(PostContext);
+  const { user } = useContext(UserContext);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [postContent, setPostContent] = useState<string>("");
   const [mediaIds, setMediaIds] = useState<string[]>([]);
+  const [uploadedResources, setUploadedResources] = useState<
+    Array<{ id: string; url: string; type: string }>
+  >([]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (postId === undefined) return;
     if (event.target.files && event.target.files.length > 0) {
       const filesArray = Array.from(event.target.files);
-      const newMediaIds: string[] = [];
-      filesArray.forEach((element) => {
-        const mediaId = uuidv4();
-        newMediaIds.push(mediaId);
-        const file = element;
-        const resourceType = file.type.startsWith("video/") ? "video" : "image";
+      setIsUploadingMedia(true);
 
-        postService
-          .addResource(postId, {
+      try {
+        const newMediaIds: string[] = [];
+        const uploadPromises = filesArray.map(async (file) => {
+          const mediaId = uuidv4();
+          newMediaIds.push(mediaId);
+          const resourceType = file.type.startsWith("video/")
+            ? "video"
+            : "image";
+
+          const response = await postService.addResource(postId, {
             id: mediaId,
             resource: file,
             type: resourceType,
-          })
-          .then((res) => {
-            console.log("Resource added successfully:", res);
           });
-      });
-      setSelectedFiles((prev) => [...prev, ...filesArray]);
-      setMediaIds((prev) => [...prev, ...newMediaIds]);
+
+          return {
+            id: mediaId,
+            url: URL.createObjectURL(file),
+            type: resourceType,
+            response: response,
+          };
+        });
+
+        const uploadedResults = await Promise.all(uploadPromises);
+
+        setSelectedFiles((prev) => [...prev, ...filesArray]);
+        setMediaIds((prev) => [...prev, ...newMediaIds]);
+        setUploadedResources((prev) => [...prev, ...uploadedResults]);
+
+        console.log("All resources uploaded successfully:", uploadedResults);
+      } catch (error) {
+        console.error("Error uploading resources:", error);
+        // TODO - Show a notification here
+      } finally {
+        setIsUploadingMedia(false);
+      }
     }
   };
 
   const removeFile = (index: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     setMediaIds((prev) => prev.filter((_, i) => i !== index));
+    setUploadedResources((prev) => prev.filter((_, i) => i !== index));
   };
 
   const clearState = () => {
     setSelectedFiles([]);
     setMediaIds([]);
+    setUploadedResources([]);
     setPostContent("");
   };
 
@@ -82,23 +114,51 @@ export const CreatePublicationModal = ({
     onClose(false);
   };
 
-  const handleSubmit = () => {
-    if (postId === undefined) return;
+  const handleSubmit = async () => {
+    if (postId === undefined || !user) return;
 
-    postService
-      .createPost(postId, {
+    setIsCreating(true);
+
+    try {
+      const response = await postService.createPost(postId, {
         body: postContent,
         resources: mediaIds,
         sharedPostId: sharePost ? sharePost.id : null,
-      })
-      .then((res) => {
-        console.log("Post created successfully:", res);
-      })
-      .catch((error) => {
-        console.error("Error creating post:", error);
       });
 
-    handleClose();
+      console.log("Post created successfully:", response);
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const optimisticPost: Post = {
+        id: postId,
+        body: postContent,
+        username: user.username,
+        createdAt: new Date().toISOString(),
+        urlProfileImage: user.profileImage,
+        resources: uploadedResources.map((resource) => ({
+          id: resource.id,
+          url: resource.url,
+          type: resource.type as "image" | "video",
+        })),
+        sharedPost: sharePost || null,
+        likesQuantity: 0,
+        sharesQuantity: 0,
+        commentsQuantity: 0,
+      };
+
+      if (onPostCreated) {
+        onPostCreated(optimisticPost);
+      }
+
+      handleClose();
+    } catch (error) {
+      console.error("Error creating post:", error);
+
+      // TODO - Show an error message
+      setIsCreating(false);
+      // Don't close on error, let user try again
+    }
   };
 
   return (
@@ -148,7 +208,7 @@ export const CreatePublicationModal = ({
             <Box sx={{ mb: 2 }}>
               <Grid container spacing={1}>
                 {selectedFiles.map((file, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
                     <Box
                       sx={{
                         position: "relative",
@@ -223,9 +283,19 @@ export const CreatePublicationModal = ({
             fullWidth
             sx={{ mt: 2 }}
             onClick={handleSubmit}
-            disabled={!postContent.trim() && selectedFiles.length === 0}
+            disabled={
+              (!postContent.trim() && selectedFiles.length === 0) ||
+              isCreating ||
+              isUploadingMedia
+            }
           >
-            {t("createPost")}
+            {isUploadingMedia
+              ? t("uploadingMedia", {
+                  defaultMessage: "Subiendo multimedia...",
+                })
+              : isCreating
+              ? t("creating", { defaultMessage: "Creando..." })
+              : t("createPost")}
           </Button>
         </Box>
       </Modal>

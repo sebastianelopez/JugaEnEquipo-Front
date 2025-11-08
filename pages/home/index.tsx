@@ -39,6 +39,34 @@ const HomePage = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasUserScrolled, setHasUserScrolled] = useState(false);
 
+  const addNewPost = useCallback((newPost: Post) => {
+    setPosts((prevPosts) => {
+      const updatedPosts = [newPost, ...prevPosts];
+      return sortPostsByDate(updatedPosts);
+    });
+    lastUpdateTimestamp.current = Date.now();
+
+    setTimeout(async () => {
+      try {
+        const result = await postService.getMyFeed({ limit: 1, offset: 0 });
+        if (result.data && result.data.length > 0) {
+          const latestPost = result.data[0];
+
+          if (latestPost.id === newPost.id) {
+            setPosts((prevPosts) => {
+              const updatedPosts = prevPosts.map((post) =>
+                post.id === newPost.id ? latestPost : post
+              );
+              return sortPostsByDate(updatedPosts);
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error refreshing post:", error);
+      }
+    }, 2000);
+  }, []);
+
   const checkForNewPosts = async () => {
     try {
       const result = await postService.checkForNewPosts(
@@ -173,7 +201,6 @@ const HomePage = () => {
 
   useEffect(() => {
     if (!isLoading) {
-      // Verificar nuevos posts cada 30 segundos
       intervalRef.current = setInterval(checkForNewPosts, 3000);
 
       return () => {
@@ -229,7 +256,10 @@ const HomePage = () => {
           position="relative"
           sx={{ marginX: { xs: 3, md: "auto" } }}
         >
-          <PublicateCard userProfileImage={user?.profileImage} />
+          <PublicateCard
+            userProfileImage={user?.profileImage}
+            onPostCreated={addNewPost}
+          />
           {newPostsAvailable.hasNew && (
             <NewPostsAvailable
               newPostsCount={newPostsAvailable.count}
