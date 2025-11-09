@@ -13,6 +13,10 @@ const PUBLIC_ROUTE_PREFIXES = [
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  const token = request.cookies.get("token")?.value;
+  const refreshToken = request.cookies.get("refreshToken")?.value;
+  const isAuthenticated = Boolean(token && refreshToken);
+
   // Check if current path starts with any public route prefix
   const isPublicRoute = PUBLIC_ROUTE_PREFIXES.some((route) => {
     if (route === "/") {
@@ -22,25 +26,28 @@ export function middleware(request: NextRequest) {
     return pathname === route || pathname.startsWith(`${route}/`);
   });
 
-  if (isPublicRoute) {
-    return NextResponse.next();
+  // If authenticated user lands on a public route, send them to /home (avoid loop)
+  if (isAuthenticated && isPublicRoute) {
+    // Don't redirect if already on /home to avoid infinite loops
+    if (pathname === "/home" || pathname.startsWith("/home/")) {
+      return NextResponse.next();
+    }
+
+    return NextResponse.redirect(new URL("/home", request.url));
   }
 
-  const token = request.cookies.get("token")?.value;
-  const refreshToken = request.cookies.get("refreshToken")?.value;
-
-  // If not authenticated, redirect to login
-  if (!token || !refreshToken) {
-    console.log("Authentication failed: Missing token or refreshToken");
-    return NextResponse.redirect(new URL("/auth/login", request.url));
+  // For protected routes: if not authenticated, go to login
+  if (!isPublicRoute) {
+    if (!isAuthenticated) {
+      return NextResponse.redirect(new URL("/auth/login", request.url));
+    }
   }
-
-  // Authenticated user can proceed
   return NextResponse.next();
 }
 
 export const config = {
-  // Exclude static assets from middleware (anything with a file extension),
-  // plus common static paths, so those requests aren't intercepted.
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|assets|.*\\..*).*)"],
+  // Match everything, including root path, except API routes, _next, and static assets
+  matcher: [
+    "/",
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|gltf|glb|bin|hdr|exr)).*)"],
 };
