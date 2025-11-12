@@ -148,6 +148,7 @@ export const FollowersModal = ({
                   "&:hover": {
                     backgroundColor: "action.hover",
                   },
+                  gap: 2,
                 }}
               >
                 <ListItemAvatar>
