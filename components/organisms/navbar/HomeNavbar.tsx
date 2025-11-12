@@ -29,7 +29,7 @@ import NextLink from "next/link";
 import { useTranslations } from "next-intl";
 import { SelectCountry } from "../../molecules/SelectCountry/SelectCountry";
 import { UiContext } from "../../../context";
-import logo from "../../../assets/logo.png";
+import { ResponsiveLogo } from "../../atoms";
 
 export function HomeNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -81,27 +81,7 @@ export function HomeNavbar() {
         <Toolbar sx={{ justifyContent: "space-between", py: 1 }}>
           <NextLink href={"/"} passHref>
             <Link component="span" sx={{ textDecoration: "none" }}>
-              <Box
-                display={"flex"}
-                justifyContent={"center"}
-                alignItems="center"
-                component={"div"}
-              >
-                <Image
-                  src={logo}
-                  height={40}
-                  width={70}
-                  alt="Juga en Equipo logo"
-                />
-                <Typography
-                  sx={{
-                    color: "text.primary",
-                    fontWeight: 600,
-                  }}
-                >
-                  Juga en equipo
-                </Typography>
-              </Box>
+              <ResponsiveLogo size="medium" />
             </Link>
           </NextLink>
 

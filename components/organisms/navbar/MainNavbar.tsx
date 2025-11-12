@@ -20,27 +20,16 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import MenuIcon from "@mui/icons-material/Menu";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
-import GroupsIcon from '@mui/icons-material/Groups';
+import GroupsIcon from "@mui/icons-material/Groups";
 import { Search } from "../../molecules/Search/Search";
-
-import logo from "./../../../assets/logo.png";
 import { NotificationsButton } from "../../atoms/NotificationsButton";
+import { ResponsiveLogo } from "../../atoms/ResponsiveLogo";
 
 export const MainNavbar = () => {
   const { toggleSideMenu, themeMode, toggleTheme } = useContext(UiContext);
 
   const t = useTranslations("Navbar");
   const tGlobal = useTranslations("Global");
-
-  const logotitle = ".logotitle";
-
-  useEffect(() => {
-    gsap.from(logotitle, {
-      opacity: 1,
-      x: 100,
-      duration: 2,
-    });
-  }, []);
 
   return (
     <AppBar component="nav">
@@ -54,25 +43,7 @@ export const MainNavbar = () => {
       >
         <NextLink href={"/home"} passHref>
           <Link component="span">
-            <Box
-              display={"flex"}
-              justifyContent={"center"}
-              alignItems="center"
-              component="div"
-            >
-              <Image
-                src={logo}
-                height={40}
-                width={70}
-                alt="Juga en Equipo logo"
-              />
-              <Typography
-                className="logotitle"
-                sx={{ display: { xs: "none" } }}
-              >
-                Juga en equipo
-              </Typography>
-            </Box>
+            <ResponsiveLogo size="medium" />
           </Link>
         </NextLink>
 

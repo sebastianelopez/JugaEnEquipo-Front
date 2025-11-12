@@ -5,16 +5,15 @@ import {
   MenuItem,
   Select,
   Toolbar,
-  Typography,
 } from "@mui/material";
-import Image from "next/image";
+
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { gsap } from "gsap";
 
-import logo from "./../../../assets/logo.png";
+import { ResponsiveLogo } from "../../atoms";
 
 export const AuthNavbar = () => {
   const { asPath, push, locale, query, pathname } = useRouter();
@@ -41,20 +40,7 @@ export const AuthNavbar = () => {
       <Toolbar>
         <NextLink href={"/"} passHref>
           <Link component="span">
-            <Box
-              component="div"
-              display={"flex"}
-              justifyContent={"center"}
-              alignItems="center"
-            >
-              <Image
-                src={logo}
-                height={40}
-                width={70}
-                alt="Juga en Equipo logo"
-              />
-              <Typography className="logotitle">Juga en equipo</Typography>
-            </Box>
+            <ResponsiveLogo size="medium" />
           </Link>
         </NextLink>
 
