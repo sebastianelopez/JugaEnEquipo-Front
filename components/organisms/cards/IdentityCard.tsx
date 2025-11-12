@@ -1,6 +1,6 @@
 import { Avatar, Paper, Typography } from "@mui/material";
-import { useTranslations } from "next-intl";
 import { FC } from "react";
+import { useRouter } from "next/router";
 import { User } from "../../../interfaces";
 import { formatFullName } from "../../../utils/textFormatting";
 
@@ -9,7 +9,12 @@ interface Props {
 }
 
 export const IdentityCard: FC<Props> = ({ user }) => {
-  const t = useTranslations("Publication");
+  const router = useRouter();
+
+  const handleAvatarClick = () => {
+    router.push(`/profile/${user.username}`);
+  };
+
   return (
     <Paper
       sx={{
@@ -24,6 +29,7 @@ export const IdentityCard: FC<Props> = ({ user }) => {
       <Avatar
         alt="Profile Picture"
         src={user.profileImage ?? "/images/user-placeholder.png"}
+        onClick={handleAvatarClick}
         sx={{
           width: "100%",
           height: "auto",
@@ -32,6 +38,12 @@ export const IdentityCard: FC<Props> = ({ user }) => {
           maxHeight: 200,
           m: "auto",
           marginBottom: 1,
+          cursor: "pointer",
+          "&:hover": {
+            opacity: 0.8,
+            transform: "scale(1.02)",
+          },
+          transition: "all 0.2s ease-in-out",
         }}
       />
       <Typography
