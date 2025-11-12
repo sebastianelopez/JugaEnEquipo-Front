@@ -14,7 +14,6 @@ export { IdentityCard } from "./cards/IdentityCard";
 export { PublicationCard } from "./cards/PublicationCard/PublicationCard";
 export { HashtagsCard } from "./cards/HashtagsCard";
 export { PublicateCard } from "./cards/PublicateCard";
-export { ProfileCard } from "./cards/ProfileCard";
 export { UpcomingEventsCard } from "./cards/UpcomingEventsCard";
 export { TeamCard } from "./cards/TeamCard";
 
@@ -23,6 +22,7 @@ export { CreatePublicationModal } from "./modals/CreatePublicationModal";
 export { CreateTournamentModal } from "./modals/CreateTournamentModal";
 export { TournamentFiltersDialog } from "./modals/TournamentFiltersDialog";
 export { ProfileEditModal } from "./modals/ProfileEditModal";
+export { FollowersModal } from "./modals/FollowersModal";
 
 //Others
 export { HomeNews } from "./HomeNews/HomeNews";

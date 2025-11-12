@@ -109,6 +109,7 @@
         "profile": "Profile",
         "editProfilePicture": "Update photo",
         "followUser": "Follow",
+        "unfollowUser": "Unfollow",
         "sendMessage": "Send message",
         "editProfileBackground": "Update background",
         "shareProfile": "Share profile",
@@ -127,7 +128,13 @@
         "memberSince": "Member since {date}",
         "captain": "Captain",
         "previous": "Previous",
-        "since": "Since {date}"              
+        "since": "Since {date}",
+        "followers": "Followers",
+        "followings": "Following",
+        "noFollowers": "No followers yet",
+        "noFollowings": "Not following anyone yet",
+        "loading": "Loading...",
+        "close": "Close"
     },
     "SideMenu":{
         "profile": "Profile",

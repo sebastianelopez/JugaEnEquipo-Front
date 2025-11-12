@@ -1,5 +1,4 @@
 import {
-  Box,
   Typography,
   Container,
   Card,
@@ -232,6 +231,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
         <ProfileHero
           fullName={`${userFound.firstname} ${userFound.lastname}`}
           username={userFound.username}
+          userId={userFound.id}
           avatarSrc={userFound.profileImage || "/images/user-placeholder.png"}
           bannerSrc={"/assets/images.jpg"}
           regionLabel={userFound.country}

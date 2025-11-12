@@ -139,24 +139,95 @@ export const userService = {
   },
 
   // User relationships
-  followUser: async (id: string) => {
-    const token = await getToken();
-    return api.put<void>(`/user/${id}/follow`, {}, token);
+  followUser: async (
+    id: string
+  ): Promise<ServiceResult<{ isFollowing: boolean }>> => {
+    try {
+      const token = await getToken();
+      console.log("Following user:", id);
+      console.log("Using token:", token);
+      const response = await api.put<{
+        isFollowing?: boolean;
+        message?: string;
+      }>(`/user/${id}/follow`, token);
+      // Return success with isFollowing status (defaults to true if not provided)
+      return {
+        ok: true,
+        data: { isFollowing: response?.isFollowing ?? true },
+      };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to follow user";
+      return { ok: false, errorMessage: message, error };
+    }
   },
 
-  unfollowUser: async (id: string) => {
-    const token = await getToken();
-    return api.put<void>(`/user/${id}/unfollow`, {}, token);
+  unfollowUser: async (
+    id: string
+  ): Promise<ServiceResult<{ isFollowing: boolean }>> => {
+    try {
+      const token = await getToken();
+      const response = await api.put<{
+        isFollowing?: boolean;
+        message?: string;
+      }>(`/user/${id}/unfollow`, token);
+      return {
+        ok: true,
+        data: { isFollowing: response?.isFollowing ?? false },
+      };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to unfollow user";
+      return { ok: false, errorMessage: message, error };
+    }
   },
 
-  getUserFollowings: async (id: string) => {
-    const token = await getToken();
-    return api.get<User[]>(`/user/${id}/followings`, {}, token);
+  getUserFollowings: async (id: string): Promise<User[]> => {
+    try {
+      const token = await getToken();
+      const response = await api.get<User[] | { data: User[] }>(
+        `/user/${id}/followings`,
+        {},
+        token
+      );
+      // Handle both array and wrapped response formats
+      if (Array.isArray(response)) {
+        return response;
+      }
+      if (response && typeof response === "object" && "data" in response) {
+        return Array.isArray(response.data) ? response.data : [];
+      }
+      return [];
+    } catch (error) {
+      console.error("Error fetching followings:", error);
+      return [];
+    }
   },
 
-  getUserFollowers: async (id: string) => {
-    const token = await getToken();
-    return api.get<User[]>(`/user/${id}/followers`, {}, token);
+  getUserFollowers: async (id: string): Promise<User[]> => {
+    try {
+      const token = await getToken();
+      const response = await api.get<User[] | { data: User[] }>(
+        `/user/${id}/followers`,
+        {},
+        token
+      );
+      // Handle both array and wrapped response formats
+      if (Array.isArray(response)) {
+        return response;
+      }
+      if (response && typeof response === "object" && "data" in response) {
+        return Array.isArray(response.data) ? response.data : [];
+      }
+      return [];
+    } catch (error) {
+      console.error("Error fetching followers:", error);
+      return [];
+    }
   },
 
   searchUsers: async (query: string) => {

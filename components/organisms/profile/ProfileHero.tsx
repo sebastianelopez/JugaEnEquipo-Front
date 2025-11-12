@@ -15,38 +15,146 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { useRouter } from "next/router";
 import { useTheme, alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
+import { useState, useEffect, useCallback, useContext } from "react";
+import { userService } from "../../../services/user.service";
+import { FollowersModal } from "../modals/FollowersModal";
+import { UserContext } from "../../../context/user/UserContext";
 
 interface ProfileHeroProps {
   fullName: string;
   username: string;
+  userId: string;
   avatarSrc?: string;
   bannerSrc?: string;
   regionLabel?: string;
   memberSinceLabel?: string;
   isOwnProfile?: boolean;
+  initialIsFollowing?: boolean;
   onEditClick?: () => void;
   onMessageClick?: () => void;
+  onFollowChange?: (isFollowing: boolean) => void;
 }
 
 export const ProfileHero = ({
   fullName,
   username,
+  userId,
   avatarSrc,
   bannerSrc,
   regionLabel,
   memberSinceLabel,
   isOwnProfile = false,
+  initialIsFollowing = false,
   onEditClick,
   onMessageClick,
+  onFollowChange,
 }: ProfileHeroProps) => {
   const router = useRouter();
   const theme = useTheme();
   const t = useTranslations("Profile");
+  const { user: currentUser } = useContext(UserContext);
+  const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
+  const [isLoading, setIsLoading] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingsCount, setFollowingsCount] = useState(0);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<"followers" | "followings">(
+    "followers"
+  );
+  const [isCheckingFollowStatus, setIsCheckingFollowStatus] = useState(false);
 
   const bgGradient = `linear-gradient(to bottom, ${alpha(
     theme.palette.background.default,
     0.3
   )}, ${alpha(theme.palette.background.default, 0.9)})`;
+
+  const loadCounts = useCallback(async () => {
+    try {
+      const [followers, followings] = await Promise.all([
+        userService.getUserFollowers(userId),
+        userService.getUserFollowings(userId),
+      ]);
+      setFollowersCount(Array.isArray(followers) ? followers.length : 0);
+      setFollowingsCount(Array.isArray(followings) ? followings.length : 0);
+    } catch (error) {
+      console.error("Error loading counts");
+    }
+  }, [userId]);
+
+  const checkFollowStatus = useCallback(async () => {
+    if (isOwnProfile || !currentUser?.id) return;
+
+    setIsCheckingFollowStatus(true);
+    try {
+      const followings = await userService.getUserFollowings(currentUser.id);
+
+      if (Array.isArray(followings)) {
+        const isCurrentlyFollowing = followings.some(
+          (user) => user.id === userId
+        );
+        setIsFollowing(isCurrentlyFollowing);
+      }
+    } catch (error) {
+      console.error("Error checking follow status");
+      setIsFollowing(initialIsFollowing);
+    } finally {
+      setIsCheckingFollowStatus(false);
+    }
+  }, [userId, isOwnProfile, currentUser?.id, initialIsFollowing]);
+
+  useEffect(() => {
+    loadCounts();
+  }, [loadCounts]);
+
+  useEffect(() => {
+    if (!isOwnProfile && currentUser?.id) {
+      checkFollowStatus();
+    }
+  }, [checkFollowStatus, isOwnProfile, currentUser?.id]);
+
+  const handleFollowClick = async () => {
+    if (isLoading || isOwnProfile) return;
+
+    setIsLoading(true);
+    try {
+      if (isFollowing) {
+        console.log("Unfollowing user:", userId);
+        const result = await userService.unfollowUser(userId);
+        if (result.ok) {
+          setIsFollowing(result.data.isFollowing);
+          onFollowChange?.(result.data.isFollowing);
+          // Reload counts
+          loadCounts();
+        } else {
+          console.error("Error unfollowing user");
+        }
+      } else {
+        const result = await userService.followUser(userId);
+        if (result.ok) {
+          setIsFollowing(result.data.isFollowing);
+          onFollowChange?.(result.data.isFollowing);
+          // Reload counts
+          loadCounts();
+        } else {
+          console.error("Error following user");
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling follow status");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOpenModal = (type: "followers" | "followings") => {
+    setModalType(type);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    loadCounts();
+  };
 
   return (
     <Box
@@ -70,7 +178,7 @@ export const ProfileHero = ({
             ":hover": { bgcolor: alpha(theme.palette.primary.main, 0.08) },
           }}
         >
-          {t("back", { default: "Volver" })}
+          {t("back")}
         </Button>
 
         <Stack
@@ -159,16 +267,83 @@ export const ProfileHero = ({
                 />
               )}
             </Stack>
+
+            <Stack direction="row" spacing={3} sx={{ mt: 2 }}>
+              <Box
+                onClick={() => handleOpenModal("followers")}
+                sx={{
+                  cursor: "pointer",
+                  "&:hover": {
+                    opacity: 0.8,
+                  },
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 700,
+                    color: theme.palette.text.primary,
+                  }}
+                >
+                  {followersCount}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    textTransform: "uppercase",
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  {t("followers")}
+                </Typography>
+              </Box>
+              <Box
+                onClick={() => handleOpenModal("followings")}
+                sx={{
+                  cursor: "pointer",
+                  "&:hover": {
+                    opacity: 0.8,
+                  },
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 700,
+                    color: theme.palette.text.primary,
+                  }}
+                >
+                  {followingsCount}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    textTransform: "uppercase",
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  {t("followings")}
+                </Typography>
+              </Box>
+            </Stack>
           </Box>
 
           {!isOwnProfile && (
             <Stack direction="row" spacing={1}>
               <Button
-                variant="contained"
+                variant={isFollowing ? "outlined" : "contained"}
                 sx={{ px: 3, py: 1.2, borderRadius: 2, fontWeight: 700 }}
                 color="primary"
+                onClick={handleFollowClick}
+                disabled={isLoading || isCheckingFollowStatus}
               >
-                {t("followUser")}
+                {isLoading || isCheckingFollowStatus
+                  ? t("loading")
+                  : isFollowing
+                  ? t("unfollowUser")
+                  : t("followUser")}
               </Button>
               <Button
                 variant="outlined"
@@ -182,6 +357,13 @@ export const ProfileHero = ({
           )}
         </Stack>
       </Container>
+
+      <FollowersModal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        userId={userId}
+        type={modalType}
+      />
     </Box>
   );
 };

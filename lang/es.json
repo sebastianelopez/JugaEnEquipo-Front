@@ -109,6 +109,7 @@
         "profile": "Perfil",
         "editProfilePicture": "Cambiar foto",
         "followUser": "Seguir",
+        "unfollowUser": "Dejar de seguir",
         "sendMessage": "Enviar mensaje",
         "editProfileBackground": "Cambiar fondo",
         "shareProfile": "Compartir perfil",
@@ -127,7 +128,13 @@
         "memberSince": "Miembro desde {date}",
         "captain": "Capitán",
         "previous": "Anterior",
-        "since": "Desde {date}"
+        "since": "Desde {date}",
+        "followers": "Seguidores",
+        "followings": "Seguidos",
+        "noFollowers": "No hay seguidores aún",
+        "noFollowings": "No sigues a nadie aún",
+        "loading": "Cargando...",
+        "close": "Cerrar"
     },
     "SideMenu":{
         "profile": "Perfil",
