@@ -44,9 +44,10 @@ export const SideMenu = () => {
   };
 
   const onLogOut = () => {
+    toggleSideMenu();
+    router.push("/");
     logout();
     removeUser();
-    router.push("/");
   };
 
   const navigateTo = (url: string) => {
@@ -107,16 +108,22 @@ export const SideMenu = () => {
           <>
             <ListItem
               onClick={() => navigateTo(`/profile/${user?.username}`)}
-              sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
+              sx={{
+                cursor: "pointer",
+                "&:hover": { backgroundColor: "action.hover" },
+              }}
             >
               <ListItemIcon>
                 <AccountCircleOutlined />
               </ListItemIcon>
               <ListItemText primary={t("profile")} />
             </ListItem>
-            <ListItem 
+            <ListItem
               onClick={() => navigateTo(`/settings`)}
-              sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
+              sx={{
+                cursor: "pointer",
+                "&:hover": { backgroundColor: "action.hover" },
+              }}
             >
               <ListItemIcon>
                 <Settings />
@@ -131,8 +138,8 @@ export const SideMenu = () => {
             onClick={toggleTheme}
             aria-label={tGlobal("toggleTheme")}
             sx={{
-              cursor: 'pointer',
-              '&:hover': { backgroundColor: 'action.hover' },
+              cursor: "pointer",
+              "&:hover": { backgroundColor: "action.hover" },
               "@media (min-width: 680px)": {
                 display: "none",
               },
