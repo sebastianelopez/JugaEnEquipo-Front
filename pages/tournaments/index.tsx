@@ -15,6 +15,7 @@ import { TournamentCard } from "../../components/organisms/cards/TournamentCard"
 import { TournamentsHeader } from "../../components/organisms/headers/TournamentsHeader";
 import { TournamentFiltersDialog } from "../../components/organisms/modals/TournamentFiltersDialog";
 import { generateManyTournaments } from "./mocks";
+import { formatFullName } from "../../utils/textFormatting";
 
 interface Props {}
 
@@ -84,7 +85,7 @@ const TournamentsPage: NextPage<Props> = ({}) => {
           const u = t.createdBy as User;
           return (
             u.username?.toLowerCase().includes(oq) ||
-            `${u.firstname || ""} ${u.lastname || ""}`
+            formatFullName(u.firstname || "", u.lastname || "")
               .toLowerCase()
               .includes(oq)
           );

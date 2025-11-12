@@ -20,6 +20,7 @@ import { User } from "../../../interfaces";
 import { userService } from "../../../services/user.service";
 import { useRouter } from "next/router";
 import { useTranslations } from "next-intl";
+import { formatFullName } from "../../../utils/textFormatting";
 
 interface Props {
   open: boolean;
@@ -166,7 +167,7 @@ export const FollowersModal = ({
                   }
                   secondary={
                     <Typography variant="body2" color="text.secondary">
-                      {user.firstname} {user.lastname}
+                      {formatFullName(user.firstname, user.lastname)}
                     </Typography>
                   }
                 />

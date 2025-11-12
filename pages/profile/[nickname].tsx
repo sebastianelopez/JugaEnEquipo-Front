@@ -1,10 +1,4 @@
-import {
-  Typography,
-  Container,
-  Card,
-  CardContent,
-  Grid,
-} from "@mui/material";
+import { Typography, Container, Card, CardContent, Grid } from "@mui/material";
 import { GetServerSideProps, GetServerSidePropsContext, NextPage } from "next";
 import { useTranslations } from "next-intl";
 import {
@@ -26,6 +20,7 @@ import { postService } from "../../services/post.service";
 import { UserContext } from "../../context/user";
 import { PostList } from "../../components/molecules/Post/PostList";
 import { sortPostsByDate } from "../../utils/sortPosts";
+import { formatFullName } from "../../utils/textFormatting";
 
 interface Props {
   userFound: User;
@@ -225,11 +220,17 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   return (
     <>
       <MainLayout
-        pageDescription={`${userFound.firstname}'s profile page with all his information.`}
-        title={`${t("profile")} - ${userFound.firstname}`}
+        pageDescription={`${formatFullName(
+          userFound.firstname,
+          userFound.lastname
+        )}'s profile page with all their information.`}
+        title={`${t("profile")} - ${formatFullName(
+          userFound.firstname,
+          userFound.lastname
+        )}`}
       >
         <ProfileHero
-          fullName={`${userFound.firstname} ${userFound.lastname}`}
+          fullName={formatFullName(userFound.firstname, userFound.lastname)}
           username={userFound.username}
           userId={userFound.id}
           avatarSrc={userFound.profileImage || "/images/user-placeholder.png"}

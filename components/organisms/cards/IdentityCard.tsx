@@ -2,6 +2,7 @@ import { Avatar, Paper, Typography } from "@mui/material";
 import { useTranslations } from "next-intl";
 import { FC } from "react";
 import { User } from "../../../interfaces";
+import { formatFullName } from "../../../utils/textFormatting";
 
 interface Props {
   user: User;
@@ -52,7 +53,7 @@ export const IdentityCard: FC<Props> = ({ user }) => {
           whiteSpace: "normal",
         }}
       >
-        {`${user.firstname} ${user.lastname}`}
+        {formatFullName(user.firstname, user.lastname)}
       </Typography>
     </Paper>
   );

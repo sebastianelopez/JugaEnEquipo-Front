@@ -16,6 +16,7 @@ import CalendarIcon from "@mui/icons-material/CalendarMonth";
 import PublicIcon from "@mui/icons-material/Public";
 import { useTheme, alpha } from "@mui/material/styles";
 import type { Tournament, User } from "../../../interfaces";
+import { formatFullName } from "../../../utils/textFormatting";
 
 interface TournamentCardProps {
   tournament: Tournament & { image?: string; teams?: any[]; users?: any[] };
@@ -189,7 +190,7 @@ export const TournamentCard: FC<TournamentCardProps> = ({
                     fontWeight: 600,
                   }}
                 >
-                  {organizer.firstname} {organizer.lastname}
+                  {formatFullName(organizer.firstname, organizer.lastname)}
                 </Typography>
                 <Typography
                   sx={{
