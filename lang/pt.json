@@ -87,7 +87,14 @@
         "repeat-password":"Repita a senha",
         "terms": "Termos e Condições",
         "submit-button": "Enviar",
-        "existing-account": "Você já tem uma conta?"
+        "existing-account": "Você já tem uma conta?",
+        "successTitle": "Registro bem-sucedido",
+        "successMessage": "Sua conta foi criada com sucesso. Estamos te redirecionando para a home...",
+        "closeLabel": "Fechar",
+        "errorTitle": "Erro ao registrar",
+        "errorMessage": "Não foi possível criar a conta",
+        "loginErrorTitle": "Erro ao fazer login",
+        "loginErrorMessage": "Sua conta foi criada, mas não conseguimos fazer o login."
     },
     "Login":{
         "email": "Endereço de email",

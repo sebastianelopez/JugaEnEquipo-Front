@@ -87,7 +87,14 @@
         "repeat-password":"Repita contraseña",
         "terms": "Terminos y condiciones",
         "submit-button": "Enviar",
-        "existing-account": "¿Ya tiene una cuenta?"
+        "existing-account": "¿Ya tiene una cuenta?",
+        "successTitle": "Registro exitoso",
+        "successMessage": "Tu cuenta fue creada correctamente. Te estamos redirigiendo a la home...",
+        "closeLabel": "Cerrar",
+        "errorTitle": "Error al registrarse",
+        "errorMessage": "No se pudo crear la cuenta",
+        "loginErrorTitle": "Error al iniciar sesión",
+        "loginErrorMessage": "Tu cuenta fue creada, pero no pudimos iniciar sesión."
     },
     "Login":{
         "email": "Correo electronico",

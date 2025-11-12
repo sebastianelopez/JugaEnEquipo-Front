@@ -87,7 +87,14 @@
         "repeat-password":"Repeat password",
         "terms": "Terms and conditions",
         "submit-button": "Submit",
-        "existing-account": "Already have an account?"
+        "existing-account": "Already have an account?",
+        "successTitle": "Registration successful",
+        "successMessage": "Your account was created successfully. We are redirecting you to home...",
+        "closeLabel": "Close",
+        "errorTitle": "Registration error",
+        "errorMessage": "Could not create account",
+        "loginErrorTitle": "Login error",
+        "loginErrorMessage": "Your account was created, but we couldn't log you in."
     },
     "Login":{
         "email": "Email address",
