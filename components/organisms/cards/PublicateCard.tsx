@@ -6,6 +6,7 @@ import {
   Paper,
   SxProps,
   Theme,
+  useTheme,
 } from "@mui/material";
 import { useContext, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -21,8 +22,13 @@ interface Props {
   onPostCreated?: (newPost: Post) => void;
 }
 
-export const PublicateCard = ({ userProfileImage, sx = [], onPostCreated }: Props) => {
+export const PublicateCard = ({
+  userProfileImage,
+  sx = [],
+  onPostCreated,
+}: Props) => {
   const t = useTranslations("Publication");
+  const theme = useTheme();
 
   const { setPostId, removePostId } = useContext(PostContext);
 
@@ -91,11 +97,25 @@ export const PublicateCard = ({ userProfileImage, sx = [], onPostCreated }: Prop
           <Button
             startIcon={<PermMediaIcon />}
             sx={{
-              backgroundColor: "white",
-              color: "#696b6f",
+              backgroundColor:
+                theme.palette.mode === "dark"
+                  ? theme.palette.background.paper
+                  : theme.palette.background.paper,
+              color:
+                theme.palette.mode === "dark"
+                  ? theme.palette.text.secondary
+                  : "#696b6f",
               ":hover": {
-                backgroundColor: "lightgray",
+                backgroundColor:
+                  theme.palette.mode === "dark"
+                    ? theme.palette.action.hover
+                    : "rgba(0, 0, 0, 0.04)",
               },
+              border:
+                theme.palette.mode === "dark"
+                  ? `1px solid ${theme.palette.divider}`
+                  : "none",
+              transition: "all 0.2s ease-in-out",
             }}
             onClick={() => handleOpenModal()}
           >

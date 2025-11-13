@@ -1,4 +1,5 @@
 import { UIState } from "./";
+import { setThemeCookie } from "../../utils/cookies";
 
 type UIType =
   | { type: "UI - ToggleMenu" }
@@ -17,8 +18,10 @@ export const uiReducer = (state: UIState, action: UIType): UIState => {
         state.themeMode === "light" ? "dark" : "light";
       if (typeof window !== "undefined") {
         try {
-          localStorage.setItem("themeMode", newMode);
-        } catch {}
+          setThemeCookie(newMode);
+        } catch (error) {
+          console.warn("Error setting theme cookie:", error);
+        }
       }
       return {
         ...state,
@@ -27,6 +30,13 @@ export const uiReducer = (state: UIState, action: UIType): UIState => {
     }
     case "UI - SetTheme": {
       const newMode = action.payload;
+      if (typeof window !== "undefined") {
+        try {
+          setThemeCookie(newMode);
+        } catch (error) {
+          console.warn("Error setting theme cookie:", error);
+        }
+      }
       return {
         ...state,
         themeMode: newMode,

@@ -1,3 +1,17 @@
+/* Theme support for preventing FOUC */
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Smooth theme transitions after hydration */
+.theme-transitions * {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
 html,
 body {
   height: 100vh;
