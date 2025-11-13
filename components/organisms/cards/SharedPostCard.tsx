@@ -60,7 +60,9 @@ export const SharedPostCard = ({
     >
       <CardActionArea onClick={() => handleNavigateToPost(id)}>
         <CardHeader
-          avatar={<Avatar src={urlProfileImage} alt="Profile Picture" />}
+          avatar={
+            <Avatar src={urlProfileImage || undefined} alt="Profile Picture" />
+          }
           title={username}
           subheader={formatTimeElapsed(new Date(createdAt), timeTranslations)}
         />

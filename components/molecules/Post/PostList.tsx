@@ -9,9 +9,16 @@ interface Props {
   isLoading: boolean;
   error?: boolean;
   onRetry?: () => void;
+  onPostCreated?: (newPost: Post) => void;
 }
 
-export const PostList = ({ posts, isLoading, error, onRetry }: Props) => {
+export const PostList = ({
+  posts,
+  isLoading,
+  error,
+  onRetry,
+  onPostCreated,
+}: Props) => {
   const t = useTranslations("Feed");
   return (
     <>
@@ -88,7 +95,7 @@ export const PostList = ({ posts, isLoading, error, onRetry }: Props) => {
               maxWidth: 530,
             }}
           >
-            <PublicationCard {...post} />
+            <PublicationCard {...post} onPostCreated={onPostCreated} />
           </Box>
         ))}
     </>

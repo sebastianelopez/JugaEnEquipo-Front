@@ -70,7 +70,7 @@ const HomePage = () => {
   const checkNewPosts = useCallback(async () => {
     try {
       const lastVisiblePost = posts.length > 0 ? posts[0] : null;
-      
+
       const result = await postService.checkForNewPosts(lastVisiblePost, limit);
 
       if (result.hasNewPosts) {
@@ -272,6 +272,7 @@ const HomePage = () => {
             posts={posts}
             error={hasError}
             onRetry={loadInitialPosts}
+            onPostCreated={addNewPost}
           />
           <div ref={sentinelRef} style={{ height: 1 }} />
         </Grid>

@@ -55,6 +55,7 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
 
 interface PublicationCardProps extends Post {
   maxWidth?: number;
+  onPostCreated?: (newPost: Post) => void;
 }
 
 export const PublicationCard = ({
@@ -69,6 +70,7 @@ export const PublicationCard = ({
   commentsQuantity,
   sharesQuantity,
   maxWidth,
+  onPostCreated,
 }: PublicationCardProps) => {
   const timeT = useTranslations("Time");
 
@@ -315,7 +317,7 @@ export const PublicationCard = ({
             >
               {likesQuantity > 0 && (
                 <Button>
-                  <FavoriteIcon sx={{ color: 'red' }} />
+                  <FavoriteIcon sx={{ color: "red" }} />
                   <Typography>{likesQuantity}</Typography>
                 </Button>
               )}
@@ -384,6 +386,7 @@ export const PublicationCard = ({
         }}
         open={isModalOpen}
         onClose={() => handleCloseModal()}
+        onPostCreated={onPostCreated}
       />
     </>
   );
