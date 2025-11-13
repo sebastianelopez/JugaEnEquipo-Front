@@ -86,7 +86,7 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
           createdAt: new Date().toISOString(),
         };
 
-        setComments((prev) => [...prev, localComment]);
+        setComments((prev) => [localComment, ...prev]);
         setNewCommentId(commentId);
 
         setTimeout(() => {
@@ -132,13 +132,17 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
           setLoading(true);
           try {
             const fetchedComments = await postService.getPostComments(postId);
-            setComments(
-              Array.isArray(fetchedComments)
-                ? fetchedComments
-                : [fetchedComments]
+            const commentsArray = Array.isArray(fetchedComments)
+              ? fetchedComments
+              : [fetchedComments];
+
+            const sortedComments = commentsArray.sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
             );
 
-            console.log("Fetched comments:", fetchedComments);
+            setComments(sortedComments);
           } catch (error) {
             console.error("Error cargando comentarios:", error);
           } finally {
