@@ -76,7 +76,8 @@ export const FollowersModal = ({
     onClose();
   };
 
-  const displayTitle = title || (type === "followers" ? t("followers") : t("followings"));
+  const displayTitle =
+    title || (type === "followers" ? t("followers") : t("followings"));
 
   return (
     <Dialog
@@ -184,4 +185,3 @@ export const FollowersModal = ({
     </Dialog>
   );
 };
-
