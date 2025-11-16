@@ -14,7 +14,7 @@ import {
   Typography,
   useMediaQuery,
 } from "@mui/material";
-import ShareIcon from "@mui/icons-material/Share";
+import RepeatIcon from "@mui/icons-material/Repeat";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 
@@ -352,7 +352,7 @@ export const PublicationCard = ({
                     justifyContent: "space-between",
                   }}
                 >
-                  <ShareIcon />
+                  <RepeatIcon />
                   <Typography>{sharesQuantity}</Typography>
                 </Box>
               )}
@@ -371,7 +371,7 @@ export const PublicationCard = ({
           </IconButton>
           <LikeButton onClick={handleLikeClick} isPressed={currentIsLiked} />
           <IconButton aria-label="share" onClick={handleOpenModal}>
-            <ShareIcon />
+            <RepeatIcon />
           </IconButton>
           <ExpandMore
             expand={expanded}
