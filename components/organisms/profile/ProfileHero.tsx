@@ -18,6 +18,7 @@ import { useTranslations } from "next-intl";
 import { useState, useEffect, useCallback, useContext } from "react";
 import { userService } from "../../../services/user.service";
 import { FollowersModal } from "../modals/FollowersModal";
+import { MediaViewerModal } from "../modals/MediaViewerModal";
 import { UserContext } from "../../../context/user/UserContext";
 
 interface ProfileHeroProps {
@@ -62,6 +63,7 @@ export const ProfileHero = ({
     "followers"
   );
   const [isCheckingFollowStatus, setIsCheckingFollowStatus] = useState(false);
+  const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
 
   const bgGradient = `linear-gradient(to bottom, ${alpha(
     theme.palette.background.default,
@@ -156,6 +158,10 @@ export const ProfileHero = ({
     loadCounts();
   };
 
+  const handleCloseMediaViewer = () => {
+    setMediaViewerOpen(false);
+  };
+
   return (
     <Box
       sx={{
@@ -189,11 +195,20 @@ export const ProfileHero = ({
           <Avatar
             src={avatarSrc}
             alt={username}
+            onClick={() => avatarSrc && setMediaViewerOpen(true)}
             sx={{
               width: { xs: 100, md: 140 },
               height: { xs: 100, md: 140 },
               border: `4px solid ${theme.palette.primary.main}`,
               boxShadow: `0 0 30px ${alpha(theme.palette.primary.main, 0.5)}`,
+              cursor: avatarSrc ? "pointer" : "default",
+              "&:hover": avatarSrc
+                ? {
+                    opacity: 0.9,
+                    transform: "scale(1.02)",
+                    transition: "all 0.2s ease-in-out",
+                  }
+                : {},
             }}
           />
 
@@ -364,6 +379,15 @@ export const ProfileHero = ({
         userId={userId}
         type={modalType}
       />
+      {avatarSrc && (
+        <MediaViewerModal
+          open={mediaViewerOpen}
+          onClose={handleCloseMediaViewer}
+          allMedia={[{ url: avatarSrc, type: "image" }]}
+          initialIndex={0}
+          ariaLabel="Profile image viewer"
+        />
+      )}
     </Box>
   );
 };
