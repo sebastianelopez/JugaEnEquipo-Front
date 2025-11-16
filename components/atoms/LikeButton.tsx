@@ -1,21 +1,19 @@
 import { IconButton } from "@mui/material";
-import { useState } from "react";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 
-interface Props {}
+interface Props {
+  onClick: () => void;
+  isPressed: boolean;
+}
 
-export const LikeButton = ({}: Props) => {
-  const [pressed, setPressed] = useState<boolean>(false);
-
-  const handeClick = () => {
-    setPressed(!pressed);
-  };
-
+export const LikeButton = ({ onClick, isPressed }: Props) => {
   return (
-    <IconButton aria-label="like" aria-pressed={pressed} onClick={handeClick}>
-      <FavoriteIcon sx={{
-        color: pressed ? 'red': 'inherit'
-      }} />
+    <IconButton aria-label="like" aria-pressed={isPressed} onClick={onClick}>
+      <FavoriteIcon
+        sx={{
+          color: isPressed ? "red" : "inherit",
+        }}
+      />
     </IconButton>
   );
 };

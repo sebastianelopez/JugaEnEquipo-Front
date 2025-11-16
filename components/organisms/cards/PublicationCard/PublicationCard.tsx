@@ -37,6 +37,7 @@ import {
   CommentSection,
   CommentSectionHandle,
 } from "./CommentSection/CommentSection";
+import { postService } from "../../../../services/post.service";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -69,6 +70,7 @@ export const PublicationCard = ({
   likesQuantity,
   commentsQuantity,
   sharesQuantity,
+  isLiked = false,
   maxWidth,
   onPostCreated,
 }: PublicationCardProps) => {
@@ -100,6 +102,7 @@ export const PublicationCard = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
+  const [currentIsLiked, setCurrentIsLiked] = useState(isLiked);
 
   const { user } = useContext(UserContext);
 
@@ -139,6 +142,26 @@ export const PublicationCard = ({
 
   const handleNavigateToProfile = (username: string) => {
     router.push(`/profile/${username}`);
+  };
+
+  const handleLikeClick = async () => {
+    if (!user) return; // Don't allow liking if user is not logged in
+
+    const previousIsLiked = currentIsLiked;
+
+    try {
+      const newIsLiked = !currentIsLiked;
+
+      if (newIsLiked) {
+        await postService.likePost(id);
+      } else {
+        await postService.dislikePost(id);
+      }
+    } catch (error) {
+      console.error("Error handling like:", error);
+      // Revert the optimistic update on error
+      setCurrentIsLiked(previousIsLiked);
+    }
   };
 
   return (
@@ -346,7 +369,7 @@ export const PublicationCard = ({
           <IconButton aria-label="like" onClick={handleCommentClick}>
             <AddCommentRoundedIcon />
           </IconButton>
-          <LikeButton />
+          <LikeButton onClick={handleLikeClick} isPressed={currentIsLiked} />
           <IconButton aria-label="share" onClick={handleOpenModal}>
             <ShareIcon />
           </IconButton>
