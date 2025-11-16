@@ -13,6 +13,7 @@ import {
   styled,
   Typography,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import RepeatIcon from "@mui/icons-material/Repeat";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -75,6 +76,7 @@ export const PublicationCard = ({
   onPostCreated,
 }: PublicationCardProps) => {
   const timeT = useTranslations("Time");
+  const publicationT = useTranslations("Publication");
 
   const timeTranslations = {
     timePrefixText: timeT("timePrefixText"),
@@ -95,6 +97,8 @@ export const PublicationCard = ({
   };
 
   const matches = useMediaQuery("(min-width:650px)");
+  const isSmallScreen = useMediaQuery("(max-width:480px)");
+  const theme = useTheme();
 
   const router = useRouter();
 
@@ -318,7 +322,7 @@ export const PublicationCard = ({
             component={"div"}
             sx={{
               paddingX: 2,
-              paddingY: 1,
+              paddingY: 0.5,
               display: "flex",
               justifyContent:
                 likesQuantity === 0 && sharesQuantity === 0
@@ -332,47 +336,115 @@ export const PublicationCard = ({
           >
             <Box
               sx={{
-                paddingX: 2,
-                paddingY: 1,
                 display: "flex",
                 justifyContent: "space-between",
+                alignItems: "center",
+                gap: 1,
               }}
             >
               {likesQuantity > 0 && (
-                <Button>
-                  <FavoriteIcon sx={{ color: "red" }} />
-                  <Typography>{likesQuantity}</Typography>
+                <Button
+                  sx={{
+                    minWidth: "auto",
+                    paddingX: 0.5,
+                    paddingY: 0.25,
+                    "& .MuiButton-startIcon": {
+                      margin: 0,
+                      marginRight: 0.5,
+                    },
+                  }}
+                  size="small"
+                >
+                  <FavoriteIcon sx={{ color: "#E17055", fontSize: "1rem" }} />
+                  <Typography variant="caption">{likesQuantity}</Typography>
                 </Button>
               )}
               {sharesQuantity > 0 && (
-                <Box
+                <Button
                   sx={{
+                    minWidth: "auto",
+                    paddingX: 0.5,
+                    paddingY: 0.25,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
+                    gap: 0.5,
                   }}
+                  size="small"
                 >
-                  <RepeatIcon />
-                  <Typography>{sharesQuantity}</Typography>
-                </Box>
+                  <RepeatIcon sx={{ fontSize: "1rem" }} />
+                  <Typography variant="caption">{sharesQuantity}</Typography>
+                </Button>
               )}
             </Box>
             {commentsQuantity > 0 && (
-              <Button variant="text" onClick={() => setExpanded(true)}>
-                <Typography>{`${commentsQuantity} comments`}</Typography>
+              <Button
+                variant="text"
+                onClick={() => setExpanded(true)}
+                size="small"
+                sx={{
+                  paddingX: 0.5,
+                  paddingY: 0.25,
+                }}
+              >
+                <Typography variant="caption">{`${commentsQuantity} comments`}</Typography>
               </Button>
             )}
           </Box>
         )}
 
-        <CardActions disableSpacing>
-          <IconButton aria-label="like" onClick={handleCommentClick}>
-            <ChatBubbleOutlineIcon />
-          </IconButton>
-          <LikeButton onClick={handleLikeClick} isPressed={currentIsLiked} />
-          <IconButton aria-label="share" onClick={handleOpenModal}>
-            <RepeatIcon />
-          </IconButton>
+        <CardActions disableSpacing sx={{ display: "flex", gap: 1 }}>
+          <>
+            <Button
+              startIcon={<ChatBubbleOutlineIcon />}
+              onClick={handleCommentClick}
+              sx={{
+                flex: 1,
+                color: theme.palette.text.primary,
+                "&:hover": {
+                  backgroundColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.08)"
+                      : "rgba(0, 0, 0, 0.04)",
+                },
+              }}
+              variant="text"
+            >
+              {!isSmallScreen && publicationT("commentButton")}
+            </Button>
+            <LikeButton
+              onClick={handleLikeClick}
+              isPressed={currentIsLiked}
+              sx={{
+                flex: 1,
+                color: theme.palette.text.primary,
+                "&:hover": {
+                  backgroundColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.08)"
+                      : "rgba(0, 0, 0, 0.04)",
+                },
+              }}
+              isSmallScreen={isSmallScreen}
+            />
+            <Button
+              startIcon={<RepeatIcon />}
+              onClick={handleOpenModal}
+              sx={{
+                flex: 1,
+                color: theme.palette.text.primary,
+                "&:hover": {
+                  backgroundColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.08)"
+                      : "rgba(0, 0, 0, 0.04)",
+                },
+              }}
+              variant="text"
+            >
+              {!isSmallScreen && publicationT("shareButton")}
+            </Button>
+          </>
+
           <ExpandMore
             expand={expanded}
             onClick={handleExpandClick}
