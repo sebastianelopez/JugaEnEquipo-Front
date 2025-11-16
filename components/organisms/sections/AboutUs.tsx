@@ -43,6 +43,7 @@ export function AboutUs() {
         position: "relative",
         overflow: "hidden",
       }}
+      id="about"
     >
       <Container maxWidth="lg">
         {/* Header */}

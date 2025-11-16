@@ -49,6 +49,22 @@ export function HomeNavbar() {
     { label: t("about"), href: "#about" },
   ];
 
+  const handleSmoothScroll = (href: string) => {
+    const elementId = href.replace("#", "");
+    const element = document.getElementById(elementId);
+
+    if (element) {
+      const offset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+  };
+
   const handleScroll = useCallback(() => {
     const currentScrollY = window.scrollY;
 
@@ -89,7 +105,10 @@ export function HomeNavbar() {
             {menuItems.map((item) => (
               <Button
                 key={item.href}
-                href={item.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSmoothScroll(item.href);
+                }}
                 sx={{
                   color: "text.primary",
                   "&:hover": { color: "primary.main" },
@@ -183,8 +202,11 @@ export function HomeNavbar() {
             {menuItems.map((item) => (
               <ListItem key={item.href} disablePadding>
                 <ListItemButton
-                  href={item.href}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleSmoothScroll(item.href);
+                    setIsMenuOpen(false);
+                  }}
                 >
                   <Typography sx={{ color: "text.primary" }}>
                     {item.label}
