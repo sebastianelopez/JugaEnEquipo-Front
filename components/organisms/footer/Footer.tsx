@@ -9,12 +9,7 @@ import {
   IconButton,
   Divider,
 } from "@mui/material";
-import {
-  Twitter,
-  Facebook,
-  Instagram,
-  YouTube,
-} from "@mui/icons-material";
+import { Twitter, Facebook, Instagram, YouTube } from "@mui/icons-material";
 
 export function Footer() {
   return (
@@ -29,8 +24,8 @@ export function Footer() {
       }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          <Grid item xs={12} sm={6} md={3}>
+        <Grid container spacing={{ xs: 2, sm: 4, md: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography
               variant="h6"
               color="primary"
@@ -45,7 +40,7 @@ export function Footer() {
             </Typography>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="h6" gutterBottom fontWeight="bold">
               Producto
             </Typography>
@@ -67,7 +62,7 @@ export function Footer() {
             </Box>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="h6" gutterBottom fontWeight="bold">
               Empresa
             </Typography>
@@ -89,7 +84,7 @@ export function Footer() {
             </Box>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="h6" gutterBottom fontWeight="bold">
               Legal
             </Typography>
