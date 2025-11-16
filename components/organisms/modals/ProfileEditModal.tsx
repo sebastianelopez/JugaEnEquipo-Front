@@ -5,9 +5,12 @@ import {
   Button,
   Stack,
   Typography,
+  Avatar,
+  useTheme,
 } from "@mui/material";
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import { SxProps, Theme } from "@mui/material/styles";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 interface SocialLinks {
   twitter?: string;
@@ -19,9 +22,15 @@ interface SocialLinks {
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSave: (data: { aboutText: string; socialLinks: SocialLinks }) => void;
+  onSave: (data: {
+    aboutText: string;
+    socialLinks: SocialLinks;
+    profileImage?: File;
+  }) => void;
   initialAboutText?: string;
   initialSocialLinks?: SocialLinks;
+  initialProfileImage?: string;
+  initialUsername?: string;
   sx?: SxProps<Theme>;
 }
 
@@ -31,10 +40,16 @@ export const ProfileEditModal = ({
   onSave,
   initialAboutText = "",
   initialSocialLinks = {},
+  initialProfileImage,
+  initialUsername,
   sx = [],
 }: Props) => {
   const [aboutText, setAboutText] = useState<string>(initialAboutText);
   const [links, setLinks] = useState<SocialLinks>(initialSocialLinks);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | undefined>(
+    initialProfileImage
+  );
 
   useEffect(() => {
     setAboutText(initialAboutText);
@@ -44,8 +59,32 @@ export const ProfileEditModal = ({
     setLinks(initialSocialLinks || {});
   }, [initialSocialLinks]);
 
+  useEffect(() => {
+    setPreviewImage(initialProfileImage);
+    setSelectedImage(null);
+  }, [initialProfileImage]);
+
+  const handleImageChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setSelectedImage(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewImage(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    []
+  );
+
   const handleSave = () => {
-    onSave({ aboutText, socialLinks: links });
+    onSave({
+      aboutText,
+      socialLinks: links,
+      profileImage: selectedImage || undefined,
+    });
     onClose();
   };
 
@@ -65,7 +104,7 @@ export const ProfileEditModal = ({
           transform: "translate(-50%, -50%)",
           width: "100%",
           maxWidth: 600,
-          background: "white",
+          bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,
           borderRadius: 2,
@@ -80,6 +119,38 @@ export const ProfileEditModal = ({
         </Typography>
 
         <Stack spacing={2} sx={{ mb: 2 }}>
+          {/* Foto de perfil */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
+            <Avatar
+              sx={{ width: 120, height: 120, mb: 2 }}
+              alt={initialUsername || "Foto de perfil"}
+              src={previewImage || "/images/user-placeholder.png"}
+            >
+              {!previewImage && initialUsername?.[0]?.toUpperCase()}
+            </Avatar>
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={<PhotoCamera />}
+              size="small"
+            >
+              Cambiar foto
+              <input
+                hidden
+                accept="image/*"
+                type="file"
+                onChange={handleImageChange}
+              />
+            </Button>
+          </Box>
+
           <TextField
             label="Sobre mí"
             placeholder="Cuéntanos sobre ti..."
