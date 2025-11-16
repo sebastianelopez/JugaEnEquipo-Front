@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 
 import { useContext, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -367,7 +367,7 @@ export const PublicationCard = ({
 
         <CardActions disableSpacing>
           <IconButton aria-label="like" onClick={handleCommentClick}>
-            <AddCommentRoundedIcon />
+            <ChatBubbleOutlineIcon />
           </IconButton>
           <LikeButton onClick={handleLikeClick} isPressed={currentIsLiked} />
           <IconButton aria-label="share" onClick={handleOpenModal}>
