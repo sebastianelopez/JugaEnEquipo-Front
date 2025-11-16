@@ -1,5 +1,5 @@
 import { NextPage, GetStaticPropsContext } from "next";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useContext } from "react";
 import { Container, Typography, Box, Tabs, Tab, Paper } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SecurityIcon from "@mui/icons-material/Security";
@@ -12,6 +12,9 @@ import {
   SettingsNotifications,
 } from "../../components/organisms/settings";
 import type { NotificationPreferences } from "../../components/organisms/settings/SettingsNotifications";
+import { UserContext } from "../../context/user";
+import { useFeedback } from "../../hooks/useFeedback";
+import { userService } from "../../services/user.service";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -38,6 +41,8 @@ function TabPanel(props: TabPanelProps) {
 const SettingsPage: NextPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const t = useTranslations("Settings");
+  const { user } = useContext(UserContext);
+  const { showError, showSuccess } = useFeedback();
 
   const handleTabChange = useCallback(
     (event: React.SyntheticEvent, newValue: number) => {
@@ -51,10 +56,43 @@ const SettingsPage: NextPage = () => {
     // TODO: Implement profile update logic
   }, []);
 
-  const handlePasswordUpdate = useCallback((data: any) => {
-    console.log("Password data:", data);
-    // TODO: Implement password update logic
-  }, []);
+  const handlePasswordUpdate = useCallback(
+    async (data: {
+      currentPassword: string;
+      newPassword: string;
+      confirmPassword: string;
+    }) => {
+      if (!user?.id) {
+        const errorMessage = t("passwordUpdateErrorMessage");
+        showError({
+          title: t("passwordUpdateError"),
+          message: errorMessage,
+        });
+        throw new Error(errorMessage);
+      }
+
+      const result = await userService.updatePassword(user.id, {
+        oldPassword: data.currentPassword,
+        newPassword: data.newPassword,
+        confirmationNewPassword: data.confirmPassword,
+      });
+
+      if (!result.ok) {
+        const errorMessage = result.errorMessage || t("passwordUpdateErrorMessage");
+        showError({
+          title: t("passwordUpdateError"),
+          message: errorMessage,
+        });
+        throw new Error(errorMessage);
+      }
+
+      showSuccess({
+        title: t("passwordUpdateSuccess"),
+        message: t("passwordUpdateSuccessMessage"),
+      });
+    },
+    [user, showError, showSuccess, t]
+  );
 
   const handleDeleteAccount = useCallback(() => {
     console.log("Delete account");

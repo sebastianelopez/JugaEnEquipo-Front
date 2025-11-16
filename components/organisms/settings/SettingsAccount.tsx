@@ -5,15 +5,19 @@ import {
   Button,
   Stack,
   Box,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { FC, useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePasswordValidation } from "../../../hooks";
 import { PasswordRequirements } from "../../molecules/Form/PasswordRequirements";
 
 interface SettingsAccountProps {
-  onUpdatePassword?: (data: PasswordFormData) => void;
+  onUpdatePassword?: (data: PasswordFormData) => void | Promise<void>;
   onDeleteAccount?: () => void;
 }
 
@@ -29,6 +33,9 @@ export const SettingsAccount: FC<SettingsAccountProps> = ({
 }) => {
   const t = useTranslations("Settings");
   const [currentPassword, setCurrentPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const {
     password: newPassword,
     setPassword: setNewPassword,
@@ -40,7 +47,7 @@ export const SettingsAccount: FC<SettingsAccountProps> = ({
   } = usePasswordValidation();
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
+    async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
       if (!isFormValid || !currentPassword) {
@@ -52,12 +59,20 @@ export const SettingsAccount: FC<SettingsAccountProps> = ({
         newPassword,
         confirmPassword,
       };
-      onUpdatePassword?.(data);
-
-      // Reset form
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      
+      try {
+        await onUpdatePassword?.(data);
+        // Reset form only on success
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setShowCurrentPassword(false);
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
+      } catch (error) {
+        // Error handling is done in the parent component via dialogs
+        // Form is not reset on error so user can retry
+      }
     },
     [
       currentPassword,
@@ -86,10 +101,23 @@ export const SettingsAccount: FC<SettingsAccountProps> = ({
           fullWidth
           name="currentPassword"
           label={t("currentPassword")}
-          type="password"
+          type={showCurrentPassword ? "text" : "password"}
           variant="outlined"
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  edge="end"
+                  aria-label="toggle password visibility"
+                >
+                  {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
           required
         />
 
@@ -98,11 +126,24 @@ export const SettingsAccount: FC<SettingsAccountProps> = ({
             fullWidth
             name="newPassword"
             label={t("newPassword")}
-            type="password"
+            type={showNewPassword ? "text" : "password"}
             variant="outlined"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             error={newPassword.length > 0 && !validation.isValid}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    edge="end"
+                    aria-label="toggle password visibility"
+                  >
+                    {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
             required
           />
           <PasswordRequirements
@@ -115,12 +156,25 @@ export const SettingsAccount: FC<SettingsAccountProps> = ({
           fullWidth
           name="confirmPassword"
           label={t("confirmPassword")}
-          type="password"
+          type={showConfirmPassword ? "text" : "password"}
           variant="outlined"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           error={!!confirmPasswordError}
           helperText={confirmPasswordError}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  edge="end"
+                  aria-label="toggle password visibility"
+                >
+                  {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
           required
         />
 

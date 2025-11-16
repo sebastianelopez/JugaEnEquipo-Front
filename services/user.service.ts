@@ -109,9 +109,18 @@ export const userService = {
       newPassword: string;
       confirmationNewPassword: string;
     }
-  ) => {
-    const token = await getToken();
-    return api.put<void>(`/user/password/${id}`, passwordData, token);
+  ): Promise<ServiceResult<void>> => {
+    try {
+      const token = await getToken();
+      await api.put<void>(`/user/password/${id}`, passwordData, token);
+      return { ok: true, data: undefined };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update password";
+      return { ok: false, errorMessage: message, error };
+    }
   },
 
   restorePassword: async (
