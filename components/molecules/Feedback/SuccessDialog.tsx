@@ -27,9 +27,9 @@ export const SuccessDialog: FC<Props> = ({
   message = "La acción se completó correctamente.",
   onClose,
   closeLabel = "Cerrar",
-  lottieSrc = "/assets/lotties/success-animation.lottie",
+  lottieSrc = "/assets/lotties/succesfull-animation.lottie",
   lottieLoop = false,
-  lottieAutoplay = false,
+  lottieAutoplay = true,
 }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
