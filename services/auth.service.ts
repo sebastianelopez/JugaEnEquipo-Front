@@ -15,7 +15,9 @@ interface ApiError {
     data?: {
       message?: string;
     };
+    status?: number;
   };
+  message?: string;
 }
 
 export const login = async (email: string, password: string) => {
@@ -27,6 +29,10 @@ export const login = async (email: string, password: string) => {
 
     const token = response.data.token;
     const refreshToken = response.data.refreshToken;
+
+    if (!token || !refreshToken) {
+      throw new Error("Invalid response: missing tokens");
+    }
 
     Cookies.set("token", token, {
       secure: true,
@@ -42,8 +48,13 @@ export const login = async (email: string, password: string) => {
 
     return token;
   } catch (error) {
+    Cookies.remove("token");
+    Cookies.remove("refreshToken");
+
     const apiError = error as ApiError;
-    throw new Error(apiError.response?.data?.message || "Login failed");
+    const errorMessage =
+      apiError.response?.data?.message || apiError.message || "Login failed";
+    throw new Error(errorMessage);
   }
 };
 
@@ -55,6 +66,8 @@ export const loginSafe = async (
     const token = await login(email, password);
     return { ok: true, data: token };
   } catch (error: any) {
+    Cookies.remove("token");
+    Cookies.remove("refreshToken");
     const message = error?.message || "Login failed";
     return { ok: false, errorMessage: message, error };
   }

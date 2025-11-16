@@ -27,7 +27,7 @@ import NextLink from "next/link";
 import { useContext, useState } from "react";
 import * as Yup from "yup";
 import logo from "../../../assets/logo.png";
-import { login } from "../../../services/auth.service";
+import { loginSafe, logout } from "../../../services/auth.service";
 import { userService } from "../../../services/user.service";
 import { decodeUserIdByToken } from "../../../utils/decodeIdByToken";
 import { useRouter } from "next/router";
@@ -48,29 +48,55 @@ export const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const onLoginUser = async ({ email, password }: FormData) => {
+  const onLoginUser = async (
+    { email, password }: FormData,
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
+  ) => {
     setIsLoading(true);
     setShowError(false);
+    setSubmitting(true);
 
-    const token = await login(email, password);
-
-    if (!token) {
-      setShowError(true);
-      return;
-    }
+    logout();
 
     try {
-      const userId = decodeUserIdByToken(token);
-      const user = await userService.getUserById(userId);
-      if (user) {
-        setUser(user);
-        router.push("/home");
+      const result = await loginSafe(email, password);
+
+      if (!result.ok || !result.data) {
+        const errorMsg =
+          result.ok === false ? result.errorMessage : "Unknown error";
+        console.error("Login failed:", errorMsg);
+        setShowError(true);
+        setIsLoading(false);
+        setSubmitting(false);
+        return;
+      }
+
+      const token = result.data;
+
+      try {
+        const userId = decodeUserIdByToken(token);
+        const user = await userService.getUserById(userId);
+
+        if (user) {
+          setUser(user);
+
+          router.push("/home");
+        } else {
+          setShowError(true);
+          setIsLoading(false);
+          setSubmitting(false);
+        }
+      } catch (userError) {
+        console.error("Error fetching user:", userError);
+        setShowError(true);
+        setIsLoading(false);
+        setSubmitting(false);
       }
     } catch (error) {
-      console.log("Invalid credentials");
+      console.error("Login error:", error);
       setShowError(true);
-    } finally {
       setIsLoading(false);
+      setSubmitting(false);
     }
   };
 

@@ -71,11 +71,15 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config;
 
-    // If the error is not 401 or the request was for refreshing token
+    const url = originalRequest?.url || "";
+    const isLoginEndpoint = url.includes("/login") || url.endsWith("/login");
+    const isRefreshTokenEndpoint = url.includes("refresh-token");
+
     if (
       !error.response ||
       error.response.status !== 401 ||
-      originalRequest?.url?.includes("refresh-token") ||
+      isRefreshTokenEndpoint ||
+      isLoginEndpoint ||
       (originalRequest as any)._retry
     ) {
       return Promise.reject(error);
