@@ -14,6 +14,7 @@ import { FC, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/router";
 import { formatEventDateTime } from "../../../utils/formatDate";
+import { ComingSoon } from "../../atoms/ComingSoon";
 
 interface UpcomingEventItem {
   id: string;
@@ -29,7 +30,7 @@ interface Props {
 export const UpcomingEventsCard: FC<Props> = ({ events }) => {
   const t = useTranslations("Events");
   const router = useRouter();
-  const locale = (router.locale as 'es' | 'en' | 'pt') || 'es';
+  const locale = (router.locale as "es" | "en" | "pt") || "es";
 
   const fallbackEvents: UpcomingEventItem[] = useMemo(
     () => [
@@ -70,58 +71,77 @@ export const UpcomingEventsCard: FC<Props> = ({ events }) => {
         textAlign: "start",
         width: "100%",
         maxWidth: "250px",
+        position: "relative",
       }}
     >
       <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={1}
+        sx={{
+          opacity: 0.6,
+          filter: "grayscale(20%)",
+          pointerEvents: "none",
+        }}
       >
-        <Typography variant="h5" fontWeight="bold">
-          {t("upcomingEvents")}
-        </Typography>
-        <Button size="small" sx={{ textTransform: "none" }}>
-          {t("seeAll")}
-        </Button>
-      </Box>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={1}
+        >
+          <Typography variant="h5" fontWeight="bold" sx={{ opacity: 0.8 }}>
+            {t("upcomingEvents")}
+          </Typography>
+          <Button
+            size="small"
+            sx={{
+              textTransform: "none",
+              cursor: "not-allowed",
+              pointerEvents: "none",
+            }}
+          >
+            {t("seeAll")}
+          </Button>
+        </Box>
 
-      <List dense>
-        {displayEvents.map((event) => (
-          <ListItem key={event.id} alignItems="flex-start" sx={{ px: 0 }}>
-            <ListItemAvatar>
-              <Avatar
-                alt={event.game}
-                src="/images/image-placeholder.png"
-                sx={{ width: 36, height: 36 }}
+        <List dense>
+          {displayEvents.map((event) => (
+            <ListItem key={event.id} alignItems="flex-start" sx={{ px: 0 }}>
+              <ListItemAvatar>
+                <Avatar
+                  alt={event.game}
+                  src="/images/image-placeholder.png"
+                  sx={{ width: 36, height: 36 }}
+                />
+              </ListItemAvatar>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Typography variant="body1" fontWeight="bold">
+                      {event.title}
+                    </Typography>
+                  </Box>
+                }
+                secondary={
+                  <Box
+                    display="flex"
+                    alignItems="flex-start"
+                    flexDirection="column"
+                    gap={1}
+                  >
+                    <Chip label={event.game} size="small" />
+                    <Typography variant="caption" color="text.secondary">
+                      {formatEventDateTime(event.startAt, locale)}
+                    </Typography>
+                  </Box>
+                }
               />
-            </ListItemAvatar>
-            <ListItemText
-              disableTypography
-              primary={
-                <Box display="flex" alignItems="center" gap={1}>
-                  <Typography variant="body1" fontWeight="bold">
-                    {event.title}
-                  </Typography>
-                </Box>
-              }
-              secondary={
-                <Box
-                  display="flex"
-                  alignItems="flex-start"
-                  flexDirection="column"
-                  gap={1}
-                >
-                  <Chip label={event.game} size="small" />
-                  <Typography variant="caption" color="text.secondary">
-                    {formatEventDateTime(event.startAt, locale)}
-                  </Typography>
-                </Box>
-              }
-            />
-          </ListItem>
-        ))}
-      </List>
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+      <Box sx={{ mt: 2, opacity: 1, filter: "none", pointerEvents: "auto" }}>
+        <ComingSoon variant="minimal" />
+      </Box>
     </Paper>
   );
 };
