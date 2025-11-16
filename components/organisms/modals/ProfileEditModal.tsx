@@ -6,11 +6,11 @@ import {
   Stack,
   Typography,
   Avatar,
-  useTheme,
 } from "@mui/material";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import { SxProps, Theme } from "@mui/material/styles";
 import { useEffect, useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 
 interface SocialLinks {
   twitter?: string;
@@ -44,6 +44,7 @@ export const ProfileEditModal = ({
   initialUsername,
   sx = [],
 }: Props) => {
+  const t = useTranslations("ProfileEditModal");
   const [aboutText, setAboutText] = useState<string>(initialAboutText);
   const [links, setLinks] = useState<SocialLinks>(initialSocialLinks);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -115,11 +116,10 @@ export const ProfileEditModal = ({
           variant="h6"
           sx={{ mb: 2, fontWeight: 700 }}
         >
-          Completar perfil
+          {t("title")}
         </Typography>
 
         <Stack spacing={2} sx={{ mb: 2 }}>
-          {/* Foto de perfil */}
           <Box
             sx={{
               display: "flex",
@@ -130,7 +130,7 @@ export const ProfileEditModal = ({
           >
             <Avatar
               sx={{ width: 120, height: 120, mb: 2 }}
-              alt={initialUsername || "Foto de perfil"}
+              alt={initialUsername || t("profilePictureAlt")}
               src={previewImage || "/images/user-placeholder.png"}
             >
               {!previewImage && initialUsername?.[0]?.toUpperCase()}
@@ -141,7 +141,7 @@ export const ProfileEditModal = ({
               startIcon={<PhotoCamera />}
               size="small"
             >
-              Cambiar foto
+              {t("changePhoto")}
               <input
                 hidden
                 accept="image/*"
@@ -152,8 +152,8 @@ export const ProfileEditModal = ({
           </Box>
 
           <TextField
-            label="Sobre mí"
-            placeholder="Cuéntanos sobre ti..."
+            label={t("aboutMe")}
+            placeholder={t("aboutMePlaceholder")}
             multiline
             minRows={3}
             fullWidth
@@ -162,11 +162,11 @@ export const ProfileEditModal = ({
           />
 
           <Typography variant="subtitle1" sx={{ fontWeight: 700, mt: 1 }}>
-            Redes sociales
+            {t("socialNetworks")}
           </Typography>
           <TextField
-            label="Twitch URL"
-            placeholder="https://twitch.tv/usuario"
+            label={t("twitchUrl")}
+            placeholder={t("twitchPlaceholder")}
             fullWidth
             value={links.twitch || ""}
             onChange={(e) =>
@@ -174,8 +174,8 @@ export const ProfileEditModal = ({
             }
           />
           <TextField
-            label="YouTube URL"
-            placeholder="https://youtube.com/@canal"
+            label={t("youtubeUrl")}
+            placeholder={t("youtubePlaceholder")}
             fullWidth
             value={links.youtube || ""}
             onChange={(e) =>
@@ -183,8 +183,8 @@ export const ProfileEditModal = ({
             }
           />
           <TextField
-            label="Twitter/X URL"
-            placeholder="https://x.com/usuario"
+            label={t("twitterUrl")}
+            placeholder={t("twitterPlaceholder")}
             fullWidth
             value={links.twitter || ""}
             onChange={(e) =>
@@ -192,8 +192,8 @@ export const ProfileEditModal = ({
             }
           />
           <TextField
-            label="Instagram URL"
-            placeholder="https://instagram.com/usuario"
+            label={t("instagramUrl")}
+            placeholder={t("instagramPlaceholder")}
             fullWidth
             value={links.instagram || ""}
             onChange={(e) =>
@@ -204,10 +204,10 @@ export const ProfileEditModal = ({
 
         <Stack direction="row" spacing={2} justifyContent="flex-end">
           <Button variant="text" onClick={onClose}>
-            Cancelar
+            {t("cancel")}
           </Button>
           <Button variant="contained" onClick={handleSave}>
-            Guardar
+            {t("save")}
           </Button>
         </Stack>
       </Box>
