@@ -48,6 +48,9 @@
     },
     "Publication":{
         "comment": "Reply to this post...",
+        "commentButton": "Comment",
+        "likeButton": "Like",
+        "shareButton": "Share",
         "mediaButton": "Photo / Video",
         "mediaButtonHint": "Maximum 1MB per file",
         "createPost": "Create a post",
@@ -408,5 +411,10 @@
         "instagramPlaceholder": "https://instagram.com/username",
         "cancel": "Cancel",
         "save": "Save"
+    },
+    "ComingSoon": {
+        "comingSoon": "Coming Soon",
+        "workingOnFeature": "We're working on this functionality",
+        "availableSoon": "This functionality will be available soon"
     }
 }
