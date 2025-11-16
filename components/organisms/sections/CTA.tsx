@@ -12,10 +12,12 @@ import {
 } from "@mui/material";
 import { ArrowForward } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/router";
 
 export function CTA() {
   const theme = useTheme();
   const t = useTranslations("Landing.cta");
+  const router = useRouter();
 
   return (
     <Box component="section" sx={{ py: 10 }}>
@@ -61,24 +63,21 @@ export function CTA() {
                 justifyContent: "center",
               }}
             >
-              <NextLink href="/auth/register" passHref>
-                <Link component="span" sx={{ textDecoration: "none" }}>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    endIcon={<ArrowForward />}
-                    sx={{
-                      bgcolor: "background.default",
-                      color: "text.primary",
-                      "&:hover": {
-                        bgcolor: alpha(theme.palette.background.default, 0.9),
-                      },
-                    }}
-                  >
-                    {t("createAccount")}
-                  </Button>
-                </Link>
-              </NextLink>
+              <Button
+                variant="contained"
+                size="large"
+                endIcon={<ArrowForward />}
+                onClick={() => router.push("/auth/register")}
+                sx={{
+                  bgcolor: "background.default",
+                  color: "text.primary",
+                  "&:hover": {
+                    bgcolor: alpha(theme.palette.background.default, 0.9),
+                  },
+                }}
+              >
+                {t("createAccount")}
+              </Button>
               <NextLink href="/home" passHref>
                 <Link component="span" sx={{ textDecoration: "none" }}>
                   <Button
