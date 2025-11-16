@@ -11,4 +11,5 @@ export interface Post {
   likesQuantity: number;
   sharesQuantity: number;
   commentsQuantity: number;
+  isLiked?: boolean;
 }
