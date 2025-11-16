@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useContext } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   AppBar,
   Toolbar,
@@ -16,20 +16,13 @@ import {
   useTheme,
   alpha,
   Link,
-  Tooltip,
 } from "@mui/material";
-import {
-  Menu as MenuIcon,
-  Close as CloseIcon,
-  DarkMode as DarkModeIcon,
-  LightMode as LightModeIcon,
-} from "@mui/icons-material";
-import Image from "next/image";
+import { Menu as MenuIcon, Close as CloseIcon } from "@mui/icons-material";
 import NextLink from "next/link";
 import { useTranslations } from "next-intl";
 import { SelectCountry } from "../../molecules/SelectCountry/SelectCountry";
-import { UiContext } from "../../../context";
-import { ResponsiveLogo } from "../../atoms";
+import { ResponsiveLogo, ThemeToggleButton } from "../../atoms";
+import { itemsHeight } from "./constants";
 
 export function HomeNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -37,10 +30,7 @@ export function HomeNavbar() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const theme = useTheme();
   const t = useTranslations("Navbar");
-  const tGlobal = useTranslations("Global");
-  const { themeMode, toggleTheme } = useContext(UiContext);
 
-  const itemsHeight = 40;
   const itemsRightMargin = 1.5;
 
   const menuItems = [
@@ -130,23 +120,7 @@ export function HomeNavbar() {
             <Box sx={{ marginRight: itemsRightMargin }}>
               <SelectCountry height={itemsHeight} />
             </Box>
-            <Tooltip
-              title={
-                themeMode === "dark"
-                  ? tGlobal("switchToLightMode")
-                  : tGlobal("switchToDarkMode")
-              }
-            >
-              <IconButton
-                onClick={toggleTheme}
-                aria-label={tGlobal("toggleTheme")}
-                sx={{
-                  color: "text.primary",
-                }}
-              >
-                {themeMode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-              </IconButton>
-            </Tooltip>
+            <ThemeToggleButton />
             <NextLink href={"/auth/login"} passHref>
               <Link component="span" sx={{ textDecoration: "none" }}>
                 <Button
@@ -227,28 +201,14 @@ export function HomeNavbar() {
             <Box
               sx={{
                 display: "flex",
+                flexDirection: "column",
                 justifyContent: "space-between",
-                alignItems: "center",
+                gap: 2,
+                alignItems: "flex-start",
               }}
             >
-              <SelectCountry height={itemsHeight} />
-              <Tooltip
-                title={
-                  themeMode === "dark"
-                    ? tGlobal("switchToLightMode")
-                    : tGlobal("switchToDarkMode")
-                }
-              >
-                <IconButton
-                  onClick={toggleTheme}
-                  aria-label={tGlobal("toggleTheme")}
-                  sx={{
-                    color: "text.primary",
-                  }}
-                >
-                  {themeMode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-                </IconButton>
-              </Tooltip>
+              <SelectCountry height={itemsHeight} fullWidth />
+              <ThemeToggleButton />
             </Box>
             <NextLink href={"/auth/login"} passHref>
               <Link

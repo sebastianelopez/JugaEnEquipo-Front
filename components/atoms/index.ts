@@ -4,3 +4,4 @@ export * from "./MySelect";
 export * from "./MyTextInput";
 export * from "./BlizzardButton";
 export * from "./ResponsiveLogo";
+export * from "./ThemeToggleButton";

@@ -1,0 +1,1 @@
+export const itemsHeight = 40;
