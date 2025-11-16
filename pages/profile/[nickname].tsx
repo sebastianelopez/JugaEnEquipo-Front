@@ -1,6 +1,7 @@
 import { Typography, Container, Card, CardContent, Grid } from "@mui/material";
 import { GetServerSideProps, GetServerSidePropsContext, NextPage } from "next";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/router";
 import {
   ProfileHero,
   AboutCard,
@@ -28,8 +29,9 @@ interface Props {
 
 const ProfilePage: NextPage<Props> = ({ userFound }) => {
   const t = useTranslations("Profile");
+  const router = useRouter();
 
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
 
   const isLoggedUser = user?.username === userFound.username;
 
@@ -65,6 +67,53 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   useEffect(() => {
     loadPosts();
   }, [loadPosts]);
+
+  const handleOnSave = useCallback(
+    async ({
+      aboutText: newAbout,
+      socialLinks: newLinks,
+      profileImage,
+    }: {
+      aboutText: string;
+      socialLinks: {
+        twitter?: string;
+        instagram?: string;
+        youtube?: string;
+        twitch?: string;
+      };
+      profileImage?: File;
+    }) => {
+      try {
+        // Subir imagen de perfil si hay una nueva
+        if (profileImage) {
+          const response = await userService.updateProfileImage(profileImage);
+          // Actualizar el usuario en el contexto con la nueva URL de imagen
+          if (user && response?.imageUrl) {
+            const updatedUser = {
+              ...user,
+              profileImage: response.imageUrl,
+            };
+            setUser(updatedUser);
+          }
+        }
+
+        // TODO: Replace local assignment with server update and refresh
+        // For now, just console log. Integrate userService.updateUser when backend supports these fields.
+        console.log("Saving profile data", {
+          newAbout,
+          newLinks,
+          profileImage: profileImage ? "uploaded" : "none",
+        });
+
+        // Recargar la página para mostrar los cambios
+        router.reload();
+      } catch (error) {
+        console.error("Error saving profile:", error);
+        // TODO: Mostrar notificación de error al usuario
+      }
+    },
+    [user, setUser, router]
+  );
 
   // Derived data and visibility checks
   // MOCK DATA - Temporal until backend integration
@@ -327,11 +376,9 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
           onClose={() => setIsEditOpen(false)}
           initialAboutText={aboutText}
           initialSocialLinks={socialLinks}
-          onSave={({ aboutText: newAbout, socialLinks: newLinks }) => {
-            // TODO: Replace local assignment with server update and refresh
-            // For now, just console log. Integrate userService.updateUser when backend supports these fields.
-            console.log("Saving profile data", { newAbout, newLinks });
-          }}
+          initialProfileImage={userFound.profileImage}
+          initialUsername={userFound.username}
+          onSave={handleOnSave}
         />
       )}
     </>
