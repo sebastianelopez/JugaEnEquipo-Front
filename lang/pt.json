@@ -386,5 +386,23 @@
                 "description": "Desenvolvedor Backend"
             }
         }
+    },
+    "ProfileEditModal": {
+        "title": "Completar perfil",
+        "profilePictureAlt": "Foto de perfil",
+        "changePhoto": "Alterar foto",
+        "aboutMe": "Sobre mim",
+        "aboutMePlaceholder": "Conte-nos sobre você...",
+        "socialNetworks": "Redes Sociais",
+        "twitchUrl": "URL do Twitch",
+        "twitchPlaceholder": "https://twitch.tv/usuario",
+        "youtubeUrl": "URL do YouTube",
+        "youtubePlaceholder": "https://youtube.com/@canal",
+        "twitterUrl": "URL do Twitter/X",
+        "twitterPlaceholder": "https://x.com/usuario",
+        "instagramUrl": "URL do Instagram",
+        "instagramPlaceholder": "https://instagram.com/usuario",
+        "cancel": "Cancelar",
+        "save": "Salvar"
     }
 }
