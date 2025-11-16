@@ -360,5 +360,20 @@
         "successTitle": "Torneio criado",
         "successMessage": "O torneio foi criado com sucesso.",
         "errorTitle": "Não foi possível criar o torneio"
+    },
+    "AboutUs": {
+        "chipLabel": "SOBRE NÓS",
+        "title": "Nossa Missão",
+        "description": "Conectar gamers de todo o mundo em uma plataforma onde possam encontrar companheiros de equipe, compartilhar experiências e crescer juntos no mundo dos jogos",
+        "team": {
+            "sebastian": {
+                "role": "Co-Fundador & CEO",
+                "description": "Desenvolvedor Frontend"
+            },
+            "marcos": {
+                "role": "Co-Fundador & CTO",
+                "description": "Desenvolvedor Backend"
+            }
+        }
     }
 }

@@ -1,20 +1,14 @@
 "use client";
 
-import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  Chip,
-} from "@mui/material";
+import { Box, Container, Typography, Chip } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import sebastian from "../../../assets/sebastian-lopez.png";
 import marcos from "../../../assets/marcos-romero.jpeg";
 
 export function AboutUs() {
   const [isVisible, setIsVisible] = useState(false);
+  const t = useTranslations("AboutUs");
 
   useEffect(() => {
     setIsVisible(true);
@@ -23,15 +17,15 @@ export function AboutUs() {
   const team = [
     {
       name: "Sebastián",
-      role: "Co-Fundador & CEO",
+      role: t("team.sebastian.role"),
       image: sebastian.src,
-      description: "Frontend Developer",
+      description: t("team.sebastian.description"),
     },
     {
       name: "Marcos",
-      role: "Co-Fundadora & CTO",
+      role: t("team.marcos.role"),
       image: marcos.src,
-      description: "Backend Developer",
+      description: t("team.marcos.description"),
     },
   ];
 
@@ -57,7 +51,7 @@ export function AboutUs() {
           }}
         >
           <Chip
-            label="SOBRE NOSOTROS"
+            label={t("chipLabel")}
             sx={{
               mb: 2,
               bgcolor: "primary.main",
@@ -78,7 +72,7 @@ export function AboutUs() {
               backgroundClip: "text",
             }}
           >
-            Nuestra Misión
+            {t("title")}
           </Typography>
           <Typography
             variant="h6"
@@ -89,9 +83,7 @@ export function AboutUs() {
               lineHeight: 1.6,
             }}
           >
-            Conectar gamers de todo el mundo en una plataforma donde puedan
-            encontrar compañeros de equipo, compartir experiencias y crecer
-            juntos en el mundo del gaming
+            {t("description")}
           </Typography>
         </Box>
 

@@ -360,5 +360,20 @@
         "successTitle": "Tournament created",
         "successMessage": "The tournament was created successfully.",
         "errorTitle": "Could not create the tournament"
+    },
+    "AboutUs": {
+        "chipLabel": "ABOUT US",
+        "title": "Our Mission",
+        "description": "Connect gamers from around the world on a platform where they can find teammates, share experiences and grow together in the gaming world",
+        "team": {
+            "sebastian": {
+                "role": "Co-Founder & CEO",
+                "description": "Frontend Developer"
+            },
+            "marcos": {
+                "role": "Co-Founder & CTO",
+                "description": "Backend Developer"
+            }
+        }
     }
 }
