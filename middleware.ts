@@ -13,6 +13,11 @@ const PUBLIC_ROUTE_PREFIXES = [
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Allow static assets to pass through without processing
+  if (pathname.startsWith("/assets/") || pathname.startsWith("/images/") || pathname.startsWith("/_next/")) {
+    return NextResponse.next();
+  }
+
   const token = request.cookies.get("token")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
   const isAuthenticated = Boolean(token && refreshToken);
@@ -49,5 +54,5 @@ export const config = {
   // Match everything, including root path, except API routes, _next, and static assets
   matcher: [
     "/",
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|gltf|glb|bin|hdr|exr)).*)"],
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|gltf|glb|bin|hdr|exr|lottie)).*)"],
 };
