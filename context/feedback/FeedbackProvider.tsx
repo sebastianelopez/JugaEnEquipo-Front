@@ -37,6 +37,13 @@ export const FeedbackProvider: FC<PropsWithChildren> = ({ children }) => {
     dispatch({ type: "Feedback - HideSuccess" });
   };
 
+  const handleSuccessClose = () => {
+    if (state.successOptions.onClose) {
+      state.successOptions.onClose();
+    }
+    hideSuccess();
+  };
+
   return (
     <FeedbackContext.Provider
       value={{
@@ -64,7 +71,7 @@ export const FeedbackProvider: FC<PropsWithChildren> = ({ children }) => {
         open={state.successOpen}
         title={state.successOptions.title}
         message={state.successOptions.message}
-        onClose={hideSuccess}
+        onClose={handleSuccessClose}
         closeLabel={state.successOptions.closeLabel}
       />
     </FeedbackContext.Provider>

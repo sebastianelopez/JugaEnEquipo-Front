@@ -29,7 +29,7 @@ import {
   Cancel,
 } from "@mui/icons-material";
 import Image from "next/image";
-import { useMemo, useState, useContext } from "react";
+import { useMemo, useState } from "react";
 import {
   passwordValidationSchema,
   confirmPasswordValidationSchema,
@@ -37,10 +37,7 @@ import {
 } from "../../../utils/passwordValidation";
 import { userService } from "../../../services/user.service";
 import { useFeedback } from "../../../hooks/useFeedback";
-import { loginSafe } from "../../../services/auth.service";
 import { useRouter } from "next/router";
-import { UserContext } from "../../../context/user";
-import { decodeUserIdByToken } from "../../../utils/decodeIdByToken";
 import {
   firstNameValidationSchema,
   lastNameValidationSchema,
@@ -81,7 +78,6 @@ export const RegisterForm = () => {
   const tValidation = useTranslations("Validation");
   const { showError, showSuccess } = useFeedback();
   const router = useRouter();
-  const { setUser } = useContext(UserContext);
   const [showPassword, setShowPassword] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
 
@@ -117,31 +113,14 @@ export const RegisterForm = () => {
       return;
     }
 
-    const loginResult = await loginSafe(values.email, values.password);
-    if (loginResult.ok && loginResult.data) {
-      try {
-        const userId = decodeUserIdByToken(loginResult.data);
-        const user = await userService.getUserById(userId);
-        if (user) {
-          setUser(user);
-        }
-      } catch (error) {
-        console.error("Error loading user after registration:", error);
-      }
-      
-      showSuccess({
-        title: t("successTitle"),
-        message: t("successMessage"),
-        closeLabel: t("closeLabel"),
-      });
-      router.push("/home");
-    } else {
-      showError({
-        title: t("loginErrorTitle"),
-        message: loginResult.ok === false ? loginResult.errorMessage : t("loginErrorMessage"),
-      });
-      router.push("/auth/login");
-    }
+    showSuccess({
+      title: t("successTitle"),
+      message: t("successMessage"),
+      closeLabel: t("closeLabel"),
+      onClose: () => {
+        router.push("/auth/login");
+      },
+    });
   };
 
   return (

@@ -6,6 +6,7 @@ export interface FeedbackOptions {
   onRetry?: () => void;
   retryLabel?: string;
   closeLabel?: string;
+  onClose?: () => void;
 }
 
 interface ContextProps {
