@@ -97,7 +97,7 @@
         "loginLink": "Entre aqui",
         "existing-account": "Você já tem uma conta?",
         "successTitle": "Registro bem-sucedido",
-        "successMessage": "Sua conta foi criada com sucesso. Estamos te redirecionando para a home...",
+        "successMessage": "Sua conta foi criada com sucesso. Um e-mail foi enviado para o seu endereço de e-mail para verificar sua conta. Depois de verificar seu e-mail, você poderá fazer login.",
         "closeLabel": "Fechar",
         "errorTitle": "Erro ao registrar",
         "errorMessage": "Não foi possível criar a conta",

@@ -97,7 +97,7 @@
         "loginLink": "Sign in here",
         "existing-account": "Already have an account?",
         "successTitle": "Registration successful",
-        "successMessage": "Your account was created successfully. We are redirecting you to home...",
+        "successMessage": "Your account was created successfully. An email has been sent to your email address to verify your account. Once you verify your email, you will be able to log in.",
         "closeLabel": "Close",
         "errorTitle": "Registration error",
         "errorMessage": "Could not create account",
