@@ -1,12 +1,7 @@
 import { api } from "../lib/api";
 import { ServiceResult } from "./types";
-import type {
-  Tournament,
-  CreateTournamentPayload,
-  JoinTournamentPayload,
-} from "../interfaces";
-
-const basePath = "/tournaments";
+import { getToken } from "./auth.service";
+import type { Tournament, CreateTournamentPayload } from "../interfaces";
 
 async function safeCall<T>(fn: () => Promise<any>): Promise<ServiceResult<T>> {
   try {
@@ -22,25 +17,101 @@ async function safeCall<T>(fn: () => Promise<any>): Promise<ServiceResult<T>> {
 }
 
 export const tournamentService = {
-  list: (params?: { page?: number; pageSize?: number; search?: string }) =>
-    safeCall<Tournament[]>(() => api.get(basePath, params)),
+  /**
+   * Create or update a tournament
+   * POST /api/tournament/:tournamentId
+   */
+  create: async (
+    tournamentId: string,
+    payload: CreateTournamentPayload
+  ): Promise<ServiceResult<Tournament>> => {
+    const token = await getToken();
+    return safeCall<Tournament>(() =>
+      api.post(`/tournament/${tournamentId}`, payload, undefined, token)
+    );
+  },
 
-  getById: (id: string) =>
-    safeCall<Tournament>(() => api.get(`${basePath}/${id}`)),
+  /**
+   * Find a tournament by ID
+   * GET /api/tournament/:id
+   */
+  find: async (id: string): Promise<ServiceResult<Tournament>> => {
+    const token = await getToken();
+    return safeCall<Tournament>(() => api.get(`/tournament/${id}`, {}, token));
+  },
 
-  create: (payload: CreateTournamentPayload) =>
-    safeCall<Tournament>(() => api.post(basePath, payload)),
+  /**
+   * Delete a tournament
+   * DELETE /api/tournament/:id
+   */
+  delete: async (id: string): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    return safeCall<void>(() => api.delete(`/tournament/${id}`, token));
+  },
 
-  update: (id: string, payload: Partial<CreateTournamentPayload>) =>
-    safeCall<Tournament>(() => api.put(`${basePath}/${id}`, payload)),
+  /**
+   * Search tournaments
+   * GET /api/tournaments
+   */
+  search: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    [key: string]: any;
+  }): Promise<ServiceResult<Tournament[]>> => {
+    const token = await getToken();
+    return safeCall<Tournament[]>(() => api.get("/tournaments", params, token));
+  },
 
-  remove: (id: string) => safeCall<void>(() => api.delete(`${basePath}/${id}`)),
+  /**
+   * Add a team to a tournament
+   * POST /api/tournament/:tournament_id/team/:team_id
+   */
+  addTeam: async (
+    tournamentId: string,
+    teamId: string
+  ): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    return safeCall<void>(() =>
+      api.post(
+        `/tournament/${tournamentId}/team/${teamId}`,
+        undefined,
+        undefined,
+        token
+      )
+    );
+  },
 
-  join: (payload: JoinTournamentPayload) =>
-    safeCall<void>(() =>
-      api.post(`${basePath}/${payload.tournamentId}/join`, payload)
-    ),
+  /**
+   * Remove a team from a tournament
+   * DELETE /api/tournament/:tournament_id/team/:team_id
+   */
+  deleteTeam: async (
+    tournamentId: string,
+    teamId: string
+  ): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    return safeCall<void>(() =>
+      api.delete(`/tournament/${tournamentId}/team/${teamId}`, token)
+    );
+  },
 
-  leave: (tournamentId: string) =>
-    safeCall<void>(() => api.post(`${basePath}/${tournamentId}/leave`)),
+  /**
+   * Assign a responsible user to a tournament
+   * POST /api/tournament/:tournament_id/responsible/:user_id
+   */
+  assignResponsible: async (
+    tournamentId: string,
+    userId: string
+  ): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    return safeCall<void>(() =>
+      api.post(
+        `/tournament/${tournamentId}/responsible/${userId}`,
+        undefined,
+        undefined,
+        token
+      )
+    );
+  },
 };
