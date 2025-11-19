@@ -71,11 +71,9 @@ export const userService = {
     userData: CreateUserPayload
   ): Promise<ServiceResult<User>> => {
     try {
-      const payload = {
-        id: uuidv4(),
-        ...userData,
-      };
-      const response = await api.post<UserResponse>("/user", payload);
+      const id = uuidv4();
+
+      const response = await api.put<UserResponse>(`/user/${id}`, userData);
       return { ok: true, data: response.data };
     } catch (error: any) {
       const message =
