@@ -7,34 +7,35 @@ export type ParticipationMode = "individual" | "team";
 
 export interface Tournament {
   id: string;
+  gameId: string;
+  responsibleId: string | null;
   name: string;
-  description?: string;
-  type: TournamentType;
+  description: string;
+  maxTeams: number;
+  isOfficial: boolean;
+  image: string | null;
+  prize: string | null;
   region: string;
-  game: Game;
-  participationMode: ParticipationMode;
-  registeredTeams: number;
-  maxTeams?: number;
-  maxParticipants?: number;
-  startDate?: string; // ISO
-  endDate?: string; // ISO
-  createdBy: User | string;
-  rules?: string;
+  startAt: string; // ISO date string
+  endAt: string; // ISO date string
+  minGameRankId: string | null;
+  maxGameRankId: string | null;
 }
 
 export interface CreateTournamentPayload {
-  name: string;
-  description?: string;
-  type: TournamentType;
-  region: string;
   gameId: string;
-  participationMode: ParticipationMode;
-  // one of the two depending on participationMode
-  maxTeams?: number;
-  maxParticipants?: number;
-  startDate?: string;
-  endDate?: string;
-  rules?: string;
+  responsibleId: string | null;
+  name: string;
+  description: string;
+  maxTeams: number;
+  isOfficial: boolean;
+  image: string | null;
+  prize: string | null;
+  region: string;
+  startAt: string; // ISO date string
+  endAt: string; // ISO date string
+  minGameRankId: string | null;
+  maxGameRankId: string | null;
 }
 
 export interface JoinTournamentPayload {

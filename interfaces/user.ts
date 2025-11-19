@@ -8,7 +8,9 @@ export interface User {
   lastname: string;
   email: string;
   profileImage?: string;
+  description?: string;
   role?: string;
   country?: string;
   games?: UserGame[];
+  createdAt: string;
 }
