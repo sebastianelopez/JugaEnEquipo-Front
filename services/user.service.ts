@@ -147,6 +147,23 @@ export const userService = {
     );
   },
 
+  // User description
+  updateUserDescription: async (
+    description: string
+  ): Promise<ServiceResult<void>> => {
+    try {
+      const token = await getToken();
+      await api.patch<void>("/user/description", { description }, token);
+      return { ok: true, data: undefined };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update description";
+      return { ok: false, errorMessage: message, error };
+    }
+  },
+
   // User relationships
   followUser: async (
     id: string

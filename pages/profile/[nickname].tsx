@@ -70,11 +70,11 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
 
   const handleOnSave = useCallback(
     async ({
-      aboutText: newAbout,
+      description: newDescription,
       socialLinks: newLinks,
       profileImage,
     }: {
-      aboutText: string;
+      description: string;
       socialLinks: {
         twitter?: string;
         instagram?: string;
@@ -84,25 +84,35 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
       profileImage?: File;
     }) => {
       try {
-        // Subir imagen de perfil si hay una nueva
+        const promises: Promise<any>[] = [];
+
+        // Actualizar imagen de perfil si hay una nueva
         if (profileImage) {
-          const response = await userService.updateProfileImage(profileImage);
-          // Actualizar el usuario en el contexto con la nueva URL de imagen
-          if (user && response?.imageUrl) {
-            const updatedUser = {
-              ...user,
-              profileImage: response.imageUrl,
-            };
-            setUser(updatedUser);
-          }
+          promises.push(
+            userService.updateProfileImage(profileImage).then((response) => {
+              // Actualizar el usuario en el contexto con la nueva URL de imagen
+              if (user && response?.imageUrl) {
+                const updatedUser = {
+                  ...user,
+                  profileImage: response.imageUrl,
+                };
+                setUser(updatedUser);
+              }
+            })
+          );
         }
 
-        // TODO: Replace local assignment with server update and refresh
-        // For now, just console log. Integrate userService.updateUser when backend supports these fields.
-        console.log("Saving profile data", {
-          newAbout,
+        // Actualizar descripción si cambió
+        if (newDescription !== userFound.description) {
+          promises.push(userService.updateUserDescription(newDescription));
+        }
+
+        // Ejecutar ambas actualizaciones en paralelo si es necesario
+        await Promise.all(promises);
+
+        // TODO: Actualizar socialLinks cuando el backend lo soporte
+        console.log("Saving social links", {
           newLinks,
-          profileImage: profileImage ? "uploaded" : "none",
         });
 
         // Recargar la página para mostrar los cambios
@@ -117,8 +127,6 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
 
   // Derived data and visibility checks
   // MOCK DATA - Temporal until backend integration
-  const aboutText =
-    "Apasionado jugador de esports con más de 5 años de experiencia compitiendo en torneos internacionales. Especializado en estrategia de equipo y comunicación en línea. Busco formar parte de equipos competitivos para seguir mejorando y alcanzar nuevos objetivos.";
 
   const stats: { label: string; value: string | number; color?: any }[] = [
     { label: "Torneos", value: 24, color: "primary" },
@@ -255,8 +263,9 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   };
   const hasSocialLinks = Object.values(socialLinks).some(Boolean);
 
-  const hasAbout =
-    (aboutText?.trim?.() || "").length > 0 || (stats?.length || 0) > 0;
+  const hasDescription =
+    (userFound.description?.trim?.() || "").length > 0 ||
+    (stats?.length || 0) > 0;
 
   const currentTeams = teams.length;
   const activeGames = games.length;
@@ -286,7 +295,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
           bannerSrc={"/assets/images.jpg"}
           regionLabel={userFound.country}
           memberSinceLabel={t("memberSince", {
-            date: new Date().toLocaleDateString(),
+            date: new Date(userFound.createdAt).toLocaleDateString(),
           })}
           isOwnProfile={isLoggedUser}
           onEditClick={() => setIsEditOpen(true)}
@@ -312,7 +321,9 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
 
             {/* Right Column: About, Games, Teams, Tournaments, Achievements, Social Links, Quick Stats */}
             <Grid size={{ xs: 12, md: 6, lg: 8 }}>
-              {hasAbout && <AboutCard aboutText={aboutText} stats={stats} />}
+              {hasDescription && (
+                <AboutCard description={userFound.description!} stats={stats} />
+              )}
 
               {hasGames && (
                 <Card sx={{ borderRadius: 3, mb: 3 }}>
@@ -374,7 +385,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
         <ProfileEditModal
           open={isEditOpen}
           onClose={() => setIsEditOpen(false)}
-          initialAboutText={aboutText}
+          initialDescription={userFound.description || ""}
           initialSocialLinks={socialLinks}
           initialProfileImage={userFound.profileImage}
           initialUsername={userFound.username}

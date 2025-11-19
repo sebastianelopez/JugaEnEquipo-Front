@@ -9,11 +9,11 @@ interface StatItem {
 }
 
 interface AboutCardProps {
-  aboutText: string;
+  description: string;
   stats?: StatItem[];
 }
 
-export const AboutCard = ({ aboutText, stats = [] }: AboutCardProps) => {
+export const AboutCard = ({ description, stats = [] }: AboutCardProps) => {
   const theme = useTheme();
   const t = useTranslations("Profile");
 
@@ -32,7 +32,7 @@ export const AboutCard = ({ aboutText, stats = [] }: AboutCardProps) => {
         <Typography
           sx={{ color: theme.palette.text.secondary, lineHeight: 1.8, mb: 3 }}
         >
-          {aboutText}
+          {description}
         </Typography>
 
         {stats.length > 0 && (

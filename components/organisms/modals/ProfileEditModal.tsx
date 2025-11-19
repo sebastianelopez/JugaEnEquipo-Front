@@ -23,11 +23,11 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onSave: (data: {
-    aboutText: string;
+    description: string;
     socialLinks: SocialLinks;
     profileImage?: File;
   }) => void;
-  initialAboutText?: string;
+  initialDescription?: string;
   initialSocialLinks?: SocialLinks;
   initialProfileImage?: string;
   initialUsername?: string;
@@ -38,14 +38,14 @@ export const ProfileEditModal = ({
   open,
   onClose,
   onSave,
-  initialAboutText = "",
+  initialDescription = "",
   initialSocialLinks = {},
   initialProfileImage,
   initialUsername,
   sx = [],
 }: Props) => {
   const t = useTranslations("ProfileEditModal");
-  const [aboutText, setAboutText] = useState<string>(initialAboutText);
+  const [description, setDescription] = useState<string>(initialDescription);
   const [links, setLinks] = useState<SocialLinks>(initialSocialLinks);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | undefined>(
@@ -53,8 +53,8 @@ export const ProfileEditModal = ({
   );
 
   useEffect(() => {
-    setAboutText(initialAboutText);
-  }, [initialAboutText]);
+    setDescription(initialDescription);
+  }, [initialDescription]);
 
   useEffect(() => {
     setLinks(initialSocialLinks || {});
@@ -82,7 +82,7 @@ export const ProfileEditModal = ({
 
   const handleSave = () => {
     onSave({
-      aboutText,
+      description,
       socialLinks: links,
       profileImage: selectedImage || undefined,
     });
@@ -157,8 +157,8 @@ export const ProfileEditModal = ({
             multiline
             minRows={3}
             fullWidth
-            value={aboutText}
-            onChange={(e) => setAboutText(e.target.value)}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
 
           <Typography variant="subtitle1" sx={{ fontWeight: 700, mt: 1 }}>
