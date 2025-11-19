@@ -138,6 +138,8 @@ export const CreatePublicationModal = ({
     setMediaIds([]);
     setUploadedResources([]);
     setPostContent("");
+    setIsCreating(false);
+    setIsUploadingMedia(false);
   };
 
   const handleClose = () => {
