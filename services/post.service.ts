@@ -207,4 +207,50 @@ export const postService = {
       return { data: null, error: { message, status } };
     }
   },
+
+  /**
+   * Search popular hashtags
+   * GET /api/post/hashtag/popular
+   */
+  getPopularHashtags: async (): Promise<Result<string[]>> => {
+    try {
+      const token = await getToken();
+      const res = await api.get<{ data: string[] } | string[]>(
+        `/post/hashtag/popular`,
+        {},
+        token
+      );
+      const hashtags = Array.isArray(res) ? res : res.data || [];
+      return { data: hashtags, error: null };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || "Unknown error";
+      const status = error?.response?.status;
+      console.error("getPopularHashtags - API error:", { message, status });
+      return { data: null, error: { message, status } };
+    }
+  },
+
+  /**
+   * Search posts by popular hashtag
+   * GET /api/posts/popular/hashtag/:hashtag
+   */
+  getPostsByHashtag: async (hashtag: string): Promise<Result<Post[]>> => {
+    try {
+      const token = await getToken();
+      const res = await api.get<PostResponse>(
+        `/posts/popular/hashtag/${encodeURIComponent(hashtag)}`,
+        {},
+        token
+      );
+      const posts = Array.isArray(res.data) ? res.data : [res.data];
+      return { data: posts, error: null };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || "Unknown error";
+      const status = error?.response?.status;
+      console.error("getPostsByHashtag - API error:", { message, status });
+      return { data: null, error: { message, status } };
+    }
+  },
 };
