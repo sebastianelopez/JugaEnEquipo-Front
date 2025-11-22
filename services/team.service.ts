@@ -115,9 +115,7 @@ export const teamService = {
    */
   findAllGames: async (teamId: string): Promise<ServiceResult<Game[]>> => {
     const token = await getToken();
-    return safeCall<Game[]>(() =>
-      api.get(`/team/${teamId}/games`, {}, token)
-    );
+    return safeCall<Game[]>(() => api.get(`/team/${teamId}/games`, {}, token));
   },
 
   /**
@@ -162,9 +160,6 @@ export const teamService = {
    */
   findAllRequests: async (): Promise<ServiceResult<TeamRequest[]>> => {
     const token = await getToken();
-    return safeCall<TeamRequest[]>(() =>
-      api.get("/team/requests", {}, token)
-    );
+    return safeCall<TeamRequest[]>(() => api.get("/team/requests", {}, token));
   },
 };
-
