@@ -116,7 +116,7 @@ export const postService = {
   ): Promise<{ hasNewPosts: boolean; count: number; posts: Post[] }> => {
     try {
       const result = await postService.getMyFeed({ limit, offset: 0 });
-      
+
       if (result.error || !result.data) {
         return {
           hasNewPosts: false,
@@ -126,7 +126,7 @@ export const postService = {
       }
 
       const posts = result.data;
-      
+
       if (!lastVisiblePost) {
         return {
           hasNewPosts: posts.length > 0,
@@ -135,9 +135,11 @@ export const postService = {
         };
       }
 
-      const lastVisibleTimestamp = new Date(lastVisiblePost.createdAt).getTime();
-      
-      const newPosts = posts.filter(post => {
+      const lastVisibleTimestamp = new Date(
+        lastVisiblePost.createdAt
+      ).getTime();
+
+      const newPosts = posts.filter((post) => {
         const postTimestamp = new Date(post.createdAt).getTime();
         return postTimestamp > lastVisibleTimestamp;
       });
@@ -149,11 +151,11 @@ export const postService = {
       };
     } catch (error) {
       console.error("Error checking for new posts:", error);
-    return {
-      hasNewPosts: false,
-      count: 0,
-      posts: [],
-    };
+      return {
+        hasNewPosts: false,
+        count: 0,
+        posts: [],
+      };
     }
   },
 
@@ -235,15 +237,34 @@ export const postService = {
    * Search posts by popular hashtag
    * GET /api/posts/popular/hashtag/:hashtag
    */
-  getPostsByHashtag: async (hashtag: string): Promise<Result<Post[]>> => {
+  getPostsByHashtag: async (
+    hashtag: string,
+    params: { limit?: number; offset?: number } = {}
+  ): Promise<Result<Post[]>> => {
     try {
       const token = await getToken();
+
+      // Build query params - try direct params first, fallback to q format
+      const queryParams: any = {};
+      if (params.limit !== undefined) {
+        queryParams.limit = params.limit.toString();
+      }
+      if (params.offset !== undefined) {
+        queryParams.offset = params.offset.toString();
+      }
+
+      // If no direct params, use q format
+      const hasDirectParams = Object.keys(queryParams).length > 0;
+      const q = hasDirectParams ? undefined : buildQ(params);
+
       const res = await api.get<PostResponse>(
         `/posts/popular/hashtag/${encodeURIComponent(hashtag)}`,
-        {},
+        hasDirectParams ? queryParams : q ? { q } : undefined,
         token
       );
+
       const posts = Array.isArray(res.data) ? res.data : [res.data];
+
       return { data: posts, error: null };
     } catch (error: any) {
       const message =
