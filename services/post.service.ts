@@ -165,7 +165,7 @@ export const postService = {
   getPostsByUsername: async (username: string): Promise<Result<Post[]>> => {
     try {
       const res = await api.get<PostResponse>(`/posts`, {
-        q: `username:${username}`,
+        username: `${username}`,
       });
       const posts = Array.isArray(res.data) ? res.data : [res.data];
       return { data: posts, error: null };
