@@ -233,19 +233,7 @@ const HomePage = () => {
           }}
         >
           {user && <IdentityCard user={user} />}
-          <HashtagsCard
-            hashtags={[
-              "Overwatch",
-              "CS",
-              "KRU",
-              "Kun Aguero",
-              "LOL",
-              "Kings Row",
-              "Winston",
-              "Steam",
-              "OWTournament",
-            ]}
-          />
+          <HashtagsCard />
         </Grid>
         <Grid
           display="flex"
