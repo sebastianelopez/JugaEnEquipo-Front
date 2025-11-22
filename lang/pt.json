@@ -328,7 +328,7 @@
         "modalTitle": "Criar novo torneio",
         "title": "Torneios de Gaming",
         "subtitle": "Encontre e participe dos melhores torneios de esports",
-        "searchPlaceholder": "Pesquisar torneios por nome ou jogo...",
+        "searchPlaceholder": "Pesquisar torneios por nome...",
         "start": "Início:",
         "region": "Região:",
         "startDateTbd": "A definir",
@@ -346,7 +346,15 @@
             "maxParticipants": "Máximo de participantes",
             "startDate": "Início (ISO)",
             "endDate": "Fim (ISO)",
-            "rules": "Regras"
+            "rules": "Regras",
+            "isOfficial": "Torneio Oficial",
+            "image": "Imagem do Torneio",
+            "uploadImage": "Enviar Imagem",
+            "prize": "Prêmio",
+            "minRank": "Rank Mínimo (Opcional)",
+            "maxRank": "Rank Máximo (Opcional)",
+            "none": "Nenhum",
+            "maxTeamsInvalid": "Deve selecionar um número válido de equipes"
         },
         "modes": { "team": "Equipes", "individual": "Individual" },
         "table": {
@@ -373,11 +381,44 @@
             "tooltip": "Filtros"
         },
         "dateErrors": {
-            "minStart": "O início deve ser pelo menos +1h a partir de agora"
+            "minStart": "O início deve ser pelo menos +1h a partir de agora",
+            "endAfterStart": "A data de término deve ser posterior à data de início"
         },
         "successTitle": "Torneio criado",
         "successMessage": "O torneio foi criado com sucesso.",
-        "errorTitle": "Não foi possível criar o torneio"
+        "errorTitle": "Não foi possível criar o torneio",
+        "noTournaments": "Nenhum torneio encontrado",
+        "card": {
+            "official": "Oficial",
+            "amateur": "Amador",
+            "maxTeams": "Máximo: {count} equipes",
+            "start": "Início",
+            "region": "Região",
+            "organizer": "ORGANIZADOR"
+        },
+        "detail": {
+            "back": "Voltar aos Torneios",
+            "title": "Torneio",
+            "pageDescription": "Detalhes do torneio",
+            "tournamentInfo": "Informações do Torneio",
+            "official": "Torneio Oficial",
+            "amateur": "Torneio Amador",
+            "startDate": "Data de Início",
+            "endDate": "Data de Término",
+            "region": "Região",
+            "registeredTeams": "Equipes Registradas",
+            "prize": "Prêmio",
+            "description": "Descrição",
+            "rules": "Regras do Torneio",
+            "participatingTeams": "Equipes Participantes",
+            "joinTournament": "Juntar-se ao Torneio",
+            "availableSlots": "Vagas Disponíveis",
+            "teams": "equipes",
+            "registerTeam": "Registrar Equipe",
+            "acceptRules": "Ao se registrar você aceita as regras do torneio",
+            "teamMembers": "Membros da Equipe",
+            "member": "Membro"
+        }
     },
     "AboutUs": {
         "chipLabel": "SOBRE NÓS",

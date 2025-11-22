@@ -11,6 +11,7 @@ import { tournamentService } from "../../../services/tournament.service";
 import type { CreateTournamentPayload } from "../../../interfaces";
 import { useFeedback } from "../../../hooks/useFeedback";
 import { useTranslations } from "next-intl";
+import { v4 as uuidv4 } from "uuid";
 
 interface CreateTournamentModalProps {
   open: boolean;
@@ -29,7 +30,8 @@ export const CreateTournamentModal: FC<CreateTournamentModalProps> = ({
 
   const handleSubmit = async (values: CreateTournamentPayload) => {
     setSubmitting(true);
-    const result = await tournamentService.create(values);
+    const tournamentId = uuidv4();
+    const result = await tournamentService.create(tournamentId, values);
     setSubmitting(false);
     if (!result.ok) {
       showError({

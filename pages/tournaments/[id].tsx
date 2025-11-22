@@ -32,20 +32,25 @@ import {
   HowToReg as RegisterIcon,
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-import type { Tournament } from "../../interfaces";
+import { useTranslations } from "next-intl";
+import type { Game, Tournament } from "../../interfaces";
 import { tournamentService } from "../../services/tournament.service";
+import { formatDate } from "../../utils/formatDate";
+import { gameService } from "../../services/game.service";
+import { getGameImage } from "../../utils/gameImageUtils";
 
 interface Props {
   id: string;
 }
 
-// removed local color palette and inline mock; we now use theme + real data
-
 const TournamentDetailPage: NextPage<Props> = ({ id }) => {
   const router = useRouter();
   const theme = useTheme();
-  const [tournament, setTournament] = useState<Tournament | any | null>(null);
+  const t = useTranslations("Tournaments");
+  const [tournament, setTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
+  const [game, setGame] = useState<Game | null>(null);
+  const [loadingGame, setLoadingGame] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<any | null>(null);
 
@@ -53,22 +58,10 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
     let mounted = true;
     (async () => {
       setLoading(true);
-      const res = await tournamentService.getById(id);
+      const res = await tournamentService.find(id);
       if (!mounted) return;
-      if (res.ok) {
+      if (res.ok && res.data) {
         setTournament(res.data as any);
-        setLoading(false);
-        return;
-      }
-      if (process.env.NODE_ENV !== "production") {
-        try {
-          const { generateManyTournaments } = await import("./mocks");
-          const mocks = generateManyTournaments(100) as any[];
-          const found = mocks.find(
-            (m) => String(m.id) === id || encodeURIComponent(m.name) === id
-          );
-          if (found) setTournament(found);
-        } catch {}
       }
       setLoading(false);
     })();
@@ -76,6 +69,25 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
       mounted = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    if (tournament && tournament.gameId) {
+      setLoadingGame(true);
+      gameService
+        .getGameById(tournament.gameId)
+        .then((result) => {
+          if (result.ok && result.data) {
+            setGame(result.data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching game:", error);
+        })
+        .finally(() => {
+          setLoadingGame(false);
+        });
+    }
+  }, [tournament?.gameId]);
 
   const handleOpenModal = (team: any) => {
     setSelectedTeam(team);
@@ -87,41 +99,42 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
     setSelectedTeam(null);
   };
 
-  const isTeamMode = (tournament?.participationMode || "team") === "team";
-  const teams: any[] = useMemo(
-    () => (tournament?.teams ? (tournament as any).teams : []),
-    [tournament]
-  );
-  const users: any[] = useMemo(
-    () =>
-      tournament?.users
-        ? (tournament as any).users
-        : (tournament as any)?.participants || [],
-    [tournament]
-  );
-  const registeredCount =
-    tournament?.registeredTeams ??
-    (isTeamMode ? teams.length : users.length) ??
-    0;
-  const maxCapacity =
-    tournament?.maxTeams ?? tournament?.maxParticipants ?? undefined;
+  const registeredCount = tournament?.registeredTeams ?? 0;
+  const maxCapacity = tournament?.maxTeams ?? 0;
   const startDateLabel = useMemo(() => {
-    if (!tournament?.startDate) return "-";
+    if (!tournament?.startAt) return "-";
     try {
-      return new Date(tournament.startDate).toLocaleDateString("es-ES", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
+      const locale: "es" | "en" | "pt" =
+        router.locale === "es" ||
+        router.locale === "en" ||
+        router.locale === "pt"
+          ? (router.locale as "es" | "en" | "pt")
+          : "es";
+      return formatDate(tournament.startAt, { locale });
     } catch {
-      return String(tournament.startDate);
+      return String(tournament.startAt);
     }
-  }, [tournament]);
+  }, [tournament, router.locale]);
+
+  const endDateLabel = useMemo(() => {
+    if (!tournament?.endAt) return "-";
+    try {
+      const locale: "es" | "en" | "pt" =
+        router.locale === "es" ||
+        router.locale === "en" ||
+        router.locale === "pt"
+          ? (router.locale as "es" | "en" | "pt")
+          : "es";
+      return formatDate(tournament.endAt, { locale });
+    } catch {
+      return String(tournament.endAt);
+    }
+  }, [tournament, router.locale]);
 
   return (
     <MainLayout
-      pageDescription="Tournament detail"
-      title={tournament?.name || "Torneo"}
+      pageDescription={t("detail.pageDescription")}
+      title={tournament?.name || t("detail.title")}
     >
       <Box
         sx={{
@@ -136,9 +149,11 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
             position: "relative",
             height: { xs: "300px", md: "400px" },
             backgroundImage: tournament?.image
-              ? `linear-gradient(to bottom, rgba(15, 15, 30, 0.3), rgba(15, 15, 30, 0.9)), url(${
-                  (tournament as any).image
-                })`
+              ? `linear-gradient(to bottom, ${
+                  theme.palette.mode === "dark"
+                    ? "rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.9)"
+                    : "rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7)"
+                }), url(${(tournament as any).image})`
               : undefined,
             backgroundSize: "cover",
             backgroundPosition: "center",
@@ -159,11 +174,14 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                   : theme.palette.text.primary,
                 mb: 2,
                 "&:hover": {
-                  bgcolor: "rgba(108, 92, 231, 0.1)",
+                  bgcolor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.1)"
+                      : "rgba(0, 0, 0, 0.04)",
                 },
               }}
             >
-              Volver a Torneos
+              {t("detail.back")}
             </Button>
             <Typography
               variant="h2"
@@ -179,10 +197,10 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
               {tournament?.name}
             </Typography>
             <Stack direction="row" spacing={2} alignItems="center">
-              {tournament?.game?.image && (
+              {game && (
                 <Avatar
-                  src={(tournament as any).game?.image}
-                  alt={tournament?.game?.name}
+                  src={getGameImage(game.name)}
+                  alt={game.name}
                   sx={{ width: 48, height: 48 }}
                 />
               )}
@@ -193,7 +211,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                   fontWeight: 600,
                 }}
               >
-                {tournament?.game?.name}
+                {game?.name}
               </Typography>
             </Stack>
           </Container>
@@ -227,7 +245,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       mb: 3,
                     }}
                   >
-                    Información del Torneo
+                    {t("detail.tournamentInfo")}
                   </Typography>
 
                   <Stack spacing={3}>
@@ -236,27 +254,15 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       <Chip
                         icon={<TrophyIcon />}
                         label={
-                          tournament?.type === "Oficial"
-                            ? "Torneo Oficial"
-                            : "Torneo Amateur"
+                          tournament?.isOfficial
+                            ? t("detail.official")
+                            : t("detail.amateur")
                         }
                         sx={{
-                          bgcolor:
-                            tournament?.type === "Oficial"
-                              ? theme.palette.warning.main
-                              : theme.palette.info.main,
+                          bgcolor: tournament?.isOfficial
+                            ? theme.palette.warning.main
+                            : theme.palette.info.main,
                           color: theme.palette.common.black,
-                          fontWeight: 600,
-                          fontSize: "0.9rem",
-                          py: 2.5,
-                        }}
-                      />
-                      <Chip
-                        icon={isTeamMode ? <GroupsIcon /> : <PersonIcon />}
-                        label={isTeamMode ? "Modo Equipos" : "Modo Individual"}
-                        sx={{
-                          bgcolor: theme.palette.primary.main,
-                          color: theme.palette.primary.contrastText,
                           fontWeight: 600,
                           fontSize: "0.9rem",
                           py: 2.5,
@@ -286,7 +292,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                                 fontSize: "0.85rem",
                               }}
                             >
-                              Fecha de Inicio
+                              {t("detail.startDate")}
                             </Typography>
                             <Typography
                               sx={{
@@ -295,6 +301,29 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                               }}
                             >
                               {startDateLabel}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <CalendarIcon
+                            sx={{ color: theme.palette.info.main }}
+                          />
+                          <Box>
+                            <Typography
+                              sx={{
+                                color: theme.palette.text.secondary,
+                                fontSize: "0.85rem",
+                              }}
+                            >
+                              {t("detail.endDate")}
+                            </Typography>
+                            <Typography
+                              sx={{
+                                color: theme.palette.text.primary,
+                                fontWeight: 600,
+                              }}
+                            >
+                              {endDateLabel}
                             </Typography>
                           </Box>
                         </Stack>
@@ -310,7 +339,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                                 fontSize: "0.85rem",
                               }}
                             >
-                              Región
+                              {t("detail.region")}
                             </Typography>
                             <Typography
                               sx={{
@@ -334,9 +363,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                                 fontSize: "0.85rem",
                               }}
                             >
-                              {isTeamMode
-                                ? "Equipos Registrados"
-                                : "Participantes"}
+                              {t("detail.registeredTeams")}
                             </Typography>
                             <Typography
                               sx={{
@@ -363,7 +390,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                                 fontSize: "0.85rem",
                               }}
                             >
-                              Premio
+                              {t("detail.prize")}
                             </Typography>
                             <Typography
                               sx={{
@@ -391,7 +418,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                           mb: 2,
                         }}
                       >
-                        Descripción
+                        {t("detail.description")}
                       </Typography>
                       {tournament?.description && (
                         <Typography
@@ -415,7 +442,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                           mb: 2,
                         }}
                       >
-                        Reglas del Torneo
+                        {t("detail.rules")}
                       </Typography>
                       {Array.isArray((tournament as any)?.rules) ? (
                         <Stack spacing={1}>
@@ -468,116 +495,75 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       mb: 3,
                     }}
                   >
-                    {isTeamMode
-                      ? `Equipos Participantes (${teams.length})`
-                      : `Participantes (${users.length})`}
+                    {`${t("detail.participatingTeams")} (${
+                      tournament?.registeredTeams ?? 0
+                    })`}
                   </Typography>
 
-                  {isTeamMode ? (
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns: {
-                          xs: "1fr",
-                          sm: "1fr 1fr",
-                          md: "1fr 1fr 1fr",
-                        },
-                        gap: 2,
-                      }}
-                    >
-                      {teams.map((team: any) => (
-                        <Box key={team.id}>
-                          <Card
-                            sx={{
-                              bgcolor: theme.palette.secondary.dark,
-                              borderRadius: 2,
-                              cursor: "pointer",
-                              transition: "all 0.3s ease",
-                              border: `1px solid transparent`,
-                              "&:hover": {
-                                borderColor: theme.palette.primary.main,
-                                transform: "translateY(-4px)",
-                              },
-                            }}
-                            onClick={() => handleOpenModal(team)}
-                          >
-                            <CardContent sx={{ p: 2, textAlign: "center" }}>
-                              <Avatar
-                                src={team.profileImage || team.logo}
-                                alt={team.name}
-                                sx={{
-                                  width: 64,
-                                  height: 64,
-                                  mx: "auto",
-                                  mb: 1.5,
-                                  border: `2px solid ${theme.palette.primary.main}`,
-                                }}
-                              />
-                              <Typography
-                                sx={{
-                                  color: theme.palette.text.primary,
-                                  fontWeight: 600,
-                                  mb: 0.5,
-                                }}
-                              >
-                                {team.name}
-                              </Typography>
-                              <Typography
-                                sx={{
-                                  color: theme.palette.info.main,
-                                  fontSize: "0.85rem",
-                                }}
-                              >
-                                {team.users?.length ||
-                                  team.members?.length ||
-                                  0}{" "}
-                                miembros
-                              </Typography>
-                            </CardContent>
-                          </Card>
-                        </Box>
-                      ))}
-                    </Box>
-                  ) : (
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                        gap: 2,
-                      }}
-                    >
-                      {users.map((user: any, idx: number) => (
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: {
+                        xs: "1fr",
+                        sm: "1fr 1fr",
+                        md: "1fr 1fr 1fr",
+                      },
+                      gap: 2,
+                    }}
+                  >
+                    {/* 
+                    TODO: Add teams list when we have the teams endpoint
+                    teams.map((team: any) => (
+                      <Box key={team.id}>
                         <Card
-                          key={user.id || idx}
                           sx={{
                             bgcolor: theme.palette.secondary.dark,
                             borderRadius: 2,
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                            border: `1px solid transparent`,
+                            "&:hover": {
+                              borderColor: theme.palette.primary.main,
+                              transform: "translateY(-4px)",
+                            },
                           }}
+                          onClick={() => handleOpenModal(team)}
                         >
-                          <CardContent
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 2,
-                            }}
-                          >
+                          <CardContent sx={{ p: 2, textAlign: "center" }}>
                             <Avatar
-                              src={user.profileImage || user.avatar}
-                              alt={user.username || user.name}
+                              src={team.profileImage || team.logo}
+                              alt={team.name}
+                              sx={{
+                                width: 64,
+                                height: 64,
+                                mx: "auto",
+                                mb: 1.5,
+                                border: `2px solid ${theme.palette.primary.main}`,
+                              }}
                             />
                             <Typography
                               sx={{
                                 color: theme.palette.text.primary,
                                 fontWeight: 600,
+                                mb: 0.5,
                               }}
                             >
-                              {user.username || user.name}
+                              {team.name}
+                            </Typography>
+                            <Typography
+                              sx={{
+                                color: theme.palette.info.main,
+                                fontSize: "0.85rem",
+                              }}
+                            >
+                              {team.users?.length || team.members?.length || 0}{" "}
+                              miembros
                             </Typography>
                           </CardContent>
                         </Card>
-                      ))}
-                    </Box>
-                  )}
+                      </Box>
+                    )) */}
+                  </Box>
                 </CardContent>
               </Card>
             </Box>
@@ -603,12 +589,15 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       textAlign: "center",
                     }}
                   >
-                    Únete al Torneo
+                    {t("detail.joinTournament")}
                   </Typography>
 
                   <Box
                     sx={{
-                      bgcolor: theme.palette.secondary.dark,
+                      bgcolor:
+                        theme.palette.mode === "dark"
+                          ? theme.palette.action.hover
+                          : theme.palette.grey[100],
                       borderRadius: 2,
                       p: 3,
                       mb: 3,
@@ -622,7 +611,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                         mb: 1,
                       }}
                     >
-                      Cupos Disponibles
+                      {t("detail.availableSlots")}
                     </Typography>
                     <Typography
                       variant="h3"
@@ -638,8 +627,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                         fontSize: "0.85rem",
                       }}
                     >
-                      {maxCapacity ?? "-"}{" "}
-                      {isTeamMode ? "equipos" : "participantes"}
+                      {maxCapacity ?? "-"} {t("detail.teams")}
                     </Typography>
                   </Box>
 
@@ -659,7 +647,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       "&:hover": { bgcolor: theme.palette.primary.dark },
                     }}
                   >
-                    Registrar {isTeamMode ? "Equipo" : "Participación"}
+                    {t("detail.registerTeam")}
                   </Button>
 
                   <Typography
@@ -669,7 +657,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       textAlign: "center",
                     }}
                   >
-                    Al registrarte aceptas las reglas del torneo
+                    {t("detail.acceptRules")}
                   </Typography>
                 </CardContent>
               </Card>
@@ -738,7 +726,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
               variant="h6"
               sx={{ color: theme.palette.info.main, fontWeight: 600, mb: 2 }}
             >
-              Miembros del Equipo
+              {t("detail.teamMembers")}
             </Typography>
 
             <List>
@@ -776,7 +764,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                             fontSize: "0.85rem",
                           }}
                         >
-                          {member.role || "Miembro"}
+                          {member.role || t("detail.member")}
                         </Typography>
                       }
                     />

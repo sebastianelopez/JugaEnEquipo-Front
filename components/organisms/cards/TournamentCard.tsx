@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -10,13 +10,14 @@ import {
   Chip,
 } from "@mui/material";
 import TrophyIcon from "@mui/icons-material/EmojiEvents";
-import GroupsIcon from "@mui/icons-material/Groups";
-import PersonIcon from "@mui/icons-material/Person";
 import CalendarIcon from "@mui/icons-material/CalendarMonth";
 import PublicIcon from "@mui/icons-material/Public";
 import { useTheme, alpha } from "@mui/material/styles";
-import type { Tournament, User } from "../../../interfaces";
+import { useTranslations } from "next-intl";
+import type { Tournament, User, Game } from "../../../interfaces";
 import { formatFullName } from "../../../utils/textFormatting";
+import { getGameImage } from "../../../utils/gameImageUtils";
+import { gameService } from "../../../services/game.service";
 
 interface TournamentCardProps {
   tournament: Tournament & { image?: string; teams?: any[]; users?: any[] };
@@ -32,16 +33,44 @@ export const TournamentCard: FC<TournamentCardProps> = ({
   formatStartDate,
 }) => {
   const theme = useTheme();
-  const modeIsTeam = String(tournament.participationMode) === "team";
-  const maxCount = modeIsTeam
-    ? tournament.maxTeams
-    : tournament.maxParticipants;
+  const t = useTranslations("Tournaments");
+  const [game, setGame] = useState<Game | null>(null);
+  const [loadingGame, setLoadingGame] = useState(false);
+
+  // Fetch game information using gameId
+  useEffect(() => {
+    const tournamentAny = tournament as any;
+    if (tournament.gameId && !tournamentAny.game) {
+      setLoadingGame(true);
+      gameService
+        .getGameById(tournament.gameId)
+        .then((result) => {
+          if (result.ok && result.data) {
+            setGame(result.data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching game:", error);
+        })
+        .finally(() => {
+          setLoadingGame(false);
+        });
+    } else if (tournamentAny.game) {
+      setGame(tournamentAny.game);
+    }
+  }, [tournament.gameId]);
+
+  const tournamentAny = tournament as any;
+  const gameInfo = game || tournamentAny.game;
+  const gameName = gameInfo?.name || "";
+
   const image =
-    (tournament as any).image ||
-    tournament.game?.image ||
+    tournamentAny.image || gameInfo?.image || "/images/image-placeholder.png";
+
+  const gameIcon =
+    getGameImage(gameName) ||
+    gameInfo?.image ||
     "/images/image-placeholder.png";
-  const gameIcon = tournament.game?.image || "/images/image-placeholder.png";
-  const gameName = tournament.game?.name || "";
 
   return (
     <Card
@@ -95,29 +124,20 @@ export const TournamentCard: FC<TournamentCardProps> = ({
         >
           <Chip
             icon={<TrophyIcon />}
-            label={tournament.type === "Oficial" ? "Oficial" : "Amateur"}
+            label={
+              tournament.isOfficial ? t("card.official") : t("card.amateur")
+            }
             size="small"
             sx={{
-              bgcolor:
-                tournament.type === "Oficial"
-                  ? theme.palette.warning.main
-                  : theme.palette.info.main,
+              bgcolor: tournament.isOfficial
+                ? theme.palette.warning.main
+                : theme.palette.info.main,
               color: theme.palette.getContrastText(
-                tournament.type === "Oficial"
+                tournament.isOfficial
                   ? theme.palette.warning.main
                   : theme.palette.info.main
               ),
               fontWeight: 600,
-            }}
-          />
-          <Chip
-            icon={modeIsTeam ? <GroupsIcon /> : <PersonIcon />}
-            label={modeIsTeam ? "Equipos" : "Individual"}
-            size="small"
-            sx={{
-              bgcolor: theme.palette.background.default,
-              color: theme.palette.text.primary,
-              border: `1px solid ${alpha(theme.palette.info.main, 0.5)}`,
             }}
           />
         </Stack>
@@ -129,9 +149,7 @@ export const TournamentCard: FC<TournamentCardProps> = ({
             mb: 1,
           }}
         >
-          {modeIsTeam
-            ? `Máximo: ${maxCount ?? "-"} equipos`
-            : `Máximo: ${maxCount ?? "-"} participantes`}
+          {t("card.maxTeams", { count: tournament.maxTeams ?? 0 })}
         </Typography>
 
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
@@ -141,7 +159,7 @@ export const TournamentCard: FC<TournamentCardProps> = ({
           <Typography
             sx={{ color: theme.palette.text.secondary, fontSize: "0.85rem" }}
           >
-            Inicio: {formatStartDate(tournament.startDate)}
+            {t("card.start")}: {formatStartDate(tournament.startAt)}
           </Typography>
         </Stack>
 
@@ -152,7 +170,7 @@ export const TournamentCard: FC<TournamentCardProps> = ({
           <Typography
             sx={{ color: theme.palette.text.secondary, fontSize: "0.85rem" }}
           >
-            Región: {tournament.region}
+            {t("card.region")}: {tournament.region}
           </Typography>
         </Stack>
 
@@ -174,7 +192,7 @@ export const TournamentCard: FC<TournamentCardProps> = ({
                 mb: 1,
               }}
             >
-              ORGANIZADOR
+              {t("card.organizer")}
             </Typography>
             <Stack direction="row" spacing={1.5} alignItems="center">
               <Avatar

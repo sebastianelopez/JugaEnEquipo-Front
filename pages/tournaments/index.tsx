@@ -1,21 +1,33 @@
 import { GetServerSideProps, GetServerSidePropsContext, NextPage } from "next";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/router";
-import React, { useMemo, useState } from "react";
-import { Box, Container, Typography, Pagination } from "@mui/material";
+import React, {
+  useState,
+  useContext,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
+import {
+  Box,
+  Container,
+  Typography,
+  CircularProgress,
+  Skeleton,
+} from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useTheme } from "@mui/material/styles";
 
 import { MainLayout } from "../../layouts";
 import { CreateTournamentModal } from "../../components/organisms";
 import { tournamentService } from "../../services/tournament.service";
-import type { Tournament, User } from "../../interfaces";
+import { gameService } from "../../services/game.service";
+import type { Tournament, User, Game } from "../../interfaces";
+import { UserContext } from "../../context/user";
 
 import { TournamentCard } from "../../components/organisms/cards/TournamentCard";
 import { TournamentsHeader } from "../../components/organisms/headers/TournamentsHeader";
 import { TournamentFiltersDialog } from "../../components/organisms/modals/TournamentFiltersDialog";
-import { generateManyTournaments } from "./mocks";
-import { formatFullName } from "../../utils/textFormatting";
 
 interface Props {}
 
@@ -23,95 +35,145 @@ const TournamentsPage: NextPage<Props> = ({}) => {
   const t = useTranslations("Tournaments");
   const theme = useTheme();
   const router = useRouter();
+  const { user } = useContext(UserContext);
   const [openCreate, setOpenCreate] = useState(false);
-  const [tournaments, setTournaments] = useState<Tournament[]>([] as any);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState({
-    games: [] as string[],
-    types: [] as ("Oficial" | "Amateur")[],
-    modes: [] as ("team" | "individual")[],
-    organizer: "",
-    regions: [] as string[],
+  const [filters, setFilters] = useState<{
+    gameId?: string;
+    statusId?: string;
+    mine?: boolean;
+    open?: boolean;
+  }>({
+    gameId: undefined,
+    statusId: undefined,
+    mine: false,
+    open: undefined,
   });
 
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const itemsPerPage = 6;
+  const observerTarget = useRef<HTMLDivElement>(null);
 
-  const fetchTournaments = async () => {
-    try {
-      const result = await tournamentService.list();
-      if (result.ok) {
-        setTournaments(result.data as any);
-        return;
+  useEffect(() => {
+    const loadGames = async () => {
+      const result = await gameService.getAllGames();
+      if (result.ok && result.data) {
+        setGames(result.data);
       }
-    } catch {}
-    // Fallback to mocks while service is not ready
-    setTournaments(generateManyTournaments(24) as any);
-  };
-
-  React.useEffect(() => {
-    fetchTournaments();
+    };
+    loadGames();
   }, []);
 
-  const filteredTournaments = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    let data = tournaments || [];
-    if (q) {
-      data = data.filter((t) => {
-        const byName = t.name?.toLowerCase().includes(q);
-        const byGame = t.game?.name?.toLowerCase().includes(q);
-        return byName || byGame;
-      });
-    }
-    if (filters.games.length > 0) {
-      data = data.filter((t) => filters.games.includes(String(t.game?.name)));
-    }
-    if (filters.types.length > 0) {
-      data = data.filter((t) => (filters.types as any).includes(t.type));
-    }
-    if (filters.modes.length > 0) {
-      data = data.filter((t) =>
-        (filters.modes as any).includes(t.participationMode)
-      );
-    }
-    if (filters.regions.length > 0) {
-      data = data.filter((t) => filters.regions.includes(String(t.region)));
-    }
-    if (filters.organizer.trim()) {
-      const oq = filters.organizer.trim().toLowerCase();
-      data = data.filter((t) => {
-        if (typeof t.createdBy === "object" && t.createdBy) {
-          const u = t.createdBy as User;
-          return (
-            u.username?.toLowerCase().includes(oq) ||
-            formatFullName(u.firstname || "", u.lastname || "")
-              .toLowerCase()
-              .includes(oq)
-          );
+  const fetchTournaments = useCallback(
+    async (page: number = 1, append: boolean = false) => {
+      setIsLoading(true);
+      try {
+        const offset = (page - 1) * itemsPerPage;
+
+        const searchParams: any = {
+          limit: itemsPerPage,
+          offset: offset,
+        };
+
+        if (searchQuery.trim()) {
+          searchParams.name = searchQuery.trim();
         }
-        return String(t.createdBy || "")
-          .toLowerCase()
-          .includes(oq);
-      });
+
+        if (filters.gameId) {
+          searchParams.gameId = filters.gameId;
+        }
+
+        if (filters.statusId) {
+          searchParams.statusId = filters.statusId;
+        }
+
+        if (filters.mine && user?.id) {
+          searchParams.mine = true;
+        }
+
+        if (filters.open !== undefined) {
+          searchParams.open = filters.open;
+        }
+
+        const result = await tournamentService.search(searchParams);
+        if (result.ok && result.data) {
+          if (append) {
+            setTournaments((prev) => [...prev, ...result.data!]);
+          } else {
+            setTournaments(result.data);
+          }
+
+          setHasMore(result.data.length === itemsPerPage);
+          return;
+        }
+      } catch (error) {
+        console.error("Error fetching tournaments:", error);
+      } finally {
+        setIsLoading(false);
+      }
+
+      if (!append) {
+        setTournaments([]);
+        setHasMore(false);
+      }
+    },
+    [
+      searchQuery,
+      filters.gameId,
+      filters.statusId,
+      filters.mine,
+      filters.open,
+      user?.id,
+      itemsPerPage,
+    ]
+  );
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+    setTournaments([]);
+    setHasMore(true);
+    fetchTournaments(1, false);
+  }, [
+    searchQuery,
+    filters.gameId,
+    filters.statusId,
+    filters.mine,
+    filters.open,
+    user?.id,
+    fetchTournaments,
+  ]);
+
+  React.useEffect(() => {
+    if (currentPage === 1) return;
+    fetchTournaments(currentPage, true);
+  }, [currentPage, fetchTournaments]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoading) {
+          setCurrentPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
     }
-    return data;
-  }, [tournaments, searchQuery, filters]);
 
-  const totalPages =
-    Math.ceil((filteredTournaments?.length || 0) / itemsPerPage) || 1;
-  const paginatedTournaments = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = currentPage * itemsPerPage;
-    return filteredTournaments.slice(start, end);
-  }, [filteredTournaments, currentPage]);
-
-  const handlePageChange = (
-    _event: React.ChangeEvent<unknown>,
-    value: number
-  ) => {
-    setCurrentPage(value);
-  };
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, isLoading]);
 
   const handleTournamentClick = (tournament: Tournament) => {
     const key = tournament?.id || encodeURIComponent(tournament?.name || "");
@@ -128,9 +190,12 @@ const TournamentsPage: NextPage<Props> = ({}) => {
   };
 
   const getOrganizer = (tournament: Tournament) => {
-    if (tournament.type !== "Amateur") return undefined;
-    return typeof tournament.createdBy === "object"
-      ? (tournament.createdBy as User)
+    const tournamentAny = tournament as any;
+    const type =
+      tournamentAny.type || (tournament.isOfficial ? "Oficial" : "Amateur");
+    if (type !== "Amateur") return undefined;
+    return typeof tournamentAny.createdBy === "object"
+      ? (tournamentAny.createdBy as User)
       : undefined;
   };
 
@@ -181,7 +246,6 @@ const TournamentsPage: NextPage<Props> = ({}) => {
                 searchQuery={searchQuery}
                 onSearchChange={(v: string) => {
                   setSearchQuery(v);
-                  setCurrentPage(1);
                 }}
                 onOpenCreate={() => setOpenCreate(true)}
                 onOpenFilters={() => setFiltersOpen(true)}
@@ -198,45 +262,85 @@ const TournamentsPage: NextPage<Props> = ({}) => {
             </Box>
 
             {/* Tournaments Grid */}
-            <Grid container spacing={3}>
-              {paginatedTournaments.map((tournament) => {
-                const organizer = getOrganizer(tournament);
-                return (
-                  <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={tournament.id}>
-                    <TournamentCard
-                      tournament={tournament as any}
-                      organizer={organizer}
-                      formatStartDate={formatStartDate}
-                      onClick={handleTournamentClick}
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
-                <Pagination
-                  count={totalPages}
-                  page={currentPage}
-                  onChange={handlePageChange}
-                  size="large"
-                  sx={{
-                    "& .MuiPaginationItem-root": {
-                      color: theme.palette.text.primary,
-                      borderColor: theme.palette.divider,
-                    },
-                    "& .MuiPaginationItem-root.Mui-selected": {
-                      bgcolor: theme.palette.primary.main,
-                      color: theme.palette.primary.contrastText,
-                      "&:hover": {
-                        bgcolor: theme.palette.primary.dark,
-                      },
-                    },
-                  }}
-                />
+            {tournaments.length === 0 && !isLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 400,
+                  textAlign: "center",
+                }}
+              >
+                <Typography variant="h6" color="text.secondary">
+                  {t("noTournaments")}
+                </Typography>
               </Box>
+            ) : (
+              <>
+                <Grid container spacing={3}>
+                  {tournaments.map((tournament) => {
+                    const organizer = getOrganizer(tournament);
+                    return (
+                      <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={tournament.id}>
+                        <TournamentCard
+                          tournament={tournament as any}
+                          organizer={organizer}
+                          formatStartDate={formatStartDate}
+                          onClick={handleTournamentClick}
+                        />
+                      </Grid>
+                    );
+                  })}
+
+                  {/* Loading skeletons */}
+                  {isLoading && tournaments.length === 0 && (
+                    <>
+                      {[1, 2, 3, 4, 5, 6].map((item) => (
+                        <Grid
+                          size={{ xs: 12, sm: 6, lg: 4 }}
+                          key={`skeleton-${item}`}
+                        >
+                          <Box
+                            sx={{
+                              p: 2,
+                              border: `1px solid ${theme.palette.divider}`,
+                              borderRadius: 2,
+                            }}
+                          >
+                            <Skeleton
+                              variant="rectangular"
+                              height={200}
+                              sx={{ mb: 2 }}
+                            />
+                            <Skeleton variant="text" width="60%" height={30} />
+                            <Skeleton variant="text" width="80%" height={20} />
+                            <Skeleton variant="text" width="40%" height={20} />
+                          </Box>
+                        </Grid>
+                      ))}
+                    </>
+                  )}
+                </Grid>
+
+                {/* Intersection Observer target */}
+                {hasMore && (
+                  <Box
+                    ref={observerTarget}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      minHeight: 100,
+                      mt: 4,
+                    }}
+                  >
+                    {isLoading && tournaments.length > 0 && (
+                      <CircularProgress />
+                    )}
+                  </Box>
+                )}
+              </>
             )}
           </Container>
         </Box>
@@ -244,29 +348,30 @@ const TournamentsPage: NextPage<Props> = ({}) => {
         <CreateTournamentModal
           open={openCreate}
           onClose={() => setOpenCreate(false)}
-          onCreated={fetchTournaments}
+          onCreated={() => {
+            // Reset and reload tournaments after creating a new one
+            setCurrentPage(1);
+            setTournaments([]);
+            setHasMore(true);
+            fetchTournaments(1, false);
+          }}
         />
         <TournamentFiltersDialog
           open={filtersOpen}
           onClose={() => {
             setFiltersOpen(false);
-            setCurrentPage(1);
           }}
           filters={filters}
-          onChange={(next) => setFilters(next)}
+          games={games}
+          onChange={(next) => {
+            setFilters(next);
+          }}
           labels={{
             title: t("filters.title", { default: "Filtros" }) as string,
             game: t("filters.game", { default: "Juego" }) as string,
-            type: t("filters.type", { default: "Tipo" }) as string,
-            mode: t("filters.mode", { default: "Modo" }) as string,
-            organizer: t("filters.organizer", {
-              default: "Organizador",
-            }) as string,
-            region: t("filters.region", { default: "Región" }) as string,
             clear: t("filters.clear", { default: "Limpiar" }) as string,
             apply: t("filters.apply", { default: "Aplicar" }) as string,
           }}
-          regionOptions={["NA", "EU", "LATAM", "ASIA", "OCE"]}
         />
       </MainLayout>
     </>

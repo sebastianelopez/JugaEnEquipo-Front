@@ -27,7 +27,7 @@ export const tournamentService = {
   ): Promise<ServiceResult<Tournament>> => {
     const token = await getToken();
     return safeCall<Tournament>(() =>
-      api.post(`/tournament/${tournamentId}`, payload, undefined, token)
+      api.put(`/tournament/${tournamentId}`, payload, token)
     );
   },
 
@@ -54,9 +54,15 @@ export const tournamentService = {
    * GET /api/tournaments
    */
   search: async (params?: {
-    page?: number;
-    pageSize?: number;
-    search?: string;
+    total?: number;
+    count?: number;
+    limit?: number;
+    offset?: number;
+    name?: string;
+    gameId?: string;
+    statusId?: string;
+    open?: boolean;
+    mine?: boolean;
     [key: string]: any;
   }): Promise<ServiceResult<Tournament[]>> => {
     const token = await getToken();
@@ -73,12 +79,7 @@ export const tournamentService = {
   ): Promise<ServiceResult<void>> => {
     const token = await getToken();
     return safeCall<void>(() =>
-      api.post(
-        `/tournament/${tournamentId}/team/${teamId}`,
-        undefined,
-        undefined,
-        token
-      )
+      api.put(`/tournament/${tournamentId}/team/${teamId}`, token)
     );
   },
 
@@ -106,10 +107,9 @@ export const tournamentService = {
   ): Promise<ServiceResult<void>> => {
     const token = await getToken();
     return safeCall<void>(() =>
-      api.post(
+      api.put(
         `/tournament/${tournamentId}/responsible/${userId}`,
-        undefined,
-        undefined,
+
         token
       )
     );

@@ -328,7 +328,7 @@
         "modalTitle": "Create new tournament",
         "title": "Gaming Tournaments",
         "subtitle": "Find and join the best esports tournaments",
-        "searchPlaceholder": "Search tournaments by name or game...",
+        "searchPlaceholder": "Search tournaments by name...",
         "start": "Start:",
         "region": "Region:",
         "startDateTbd": "To be decided",
@@ -357,7 +357,15 @@
             "maxParticipants": "Max participants",
             "startDate": "Start (ISO)",
             "endDate": "End (ISO)",
-            "rules": "Rules"
+            "rules": "Rules",
+            "isOfficial": "Official Tournament",
+            "image": "Tournament Image",
+            "uploadImage": "Upload Image",
+            "prize": "Prize",
+            "minRank": "Minimum Rank (Optional)",
+            "maxRank": "Maximum Rank (Optional)",
+            "none": "None",
+            "maxTeamsInvalid": "Must select a valid number of teams"
         },
         "modes": { "team": "Teams", "individual": "Solo" },
         "table": {
@@ -373,11 +381,44 @@
         "noParticipants": "No participants yet",
         "organizer": "Organizer",
         "dateErrors": {
-            "minStart": "Start must be at least +1h"
+            "minStart": "Start must be at least +1h",
+            "endAfterStart": "End date must be after start date"
         },
         "successTitle": "Tournament created",
         "successMessage": "The tournament was created successfully.",
-        "errorTitle": "Could not create the tournament"
+        "errorTitle": "Could not create the tournament",
+        "noTournaments": "No tournaments found",
+        "card": {
+            "official": "Official",
+            "amateur": "Amateur",
+            "maxTeams": "Max: {count} teams",
+            "start": "Start",
+            "region": "Region",
+            "organizer": "ORGANIZER"
+        },
+        "detail": {
+            "back": "Back to Tournaments",
+            "title": "Tournament",
+            "pageDescription": "Tournament detail",
+            "tournamentInfo": "Tournament Information",
+            "official": "Official Tournament",
+            "amateur": "Amateur Tournament",
+            "startDate": "Start Date",
+            "endDate": "End Date",
+            "region": "Region",
+            "registeredTeams": "Registered Teams",
+            "prize": "Prize",
+            "description": "Description",
+            "rules": "Tournament Rules",
+            "participatingTeams": "Participating Teams",
+            "joinTournament": "Join Tournament",
+            "availableSlots": "Available Slots",
+            "teams": "teams",
+            "registerTeam": "Register Team",
+            "acceptRules": "By registering you accept the tournament rules",
+            "teamMembers": "Team Members",
+            "member": "Member"
+        }
     },
     "AboutUs": {
         "chipLabel": "ABOUT US",
