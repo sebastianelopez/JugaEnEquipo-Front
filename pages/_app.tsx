@@ -15,6 +15,8 @@ import { useRouter } from "next/router";
 import { UserProvider } from "../context/user";
 import { PostProvider } from "../context/post";
 import { FeedbackProvider } from "../context/feedback";
+import { NotificationProvider } from "../context/notification";
+import { NotificationPopup } from "../components/atoms/NotificationPopup";
 
 type CustomAppProps = AppProps & {
   pageProps: NextPageContext & { messages?: {} };
@@ -29,13 +31,16 @@ function MyApp({ Component, pageProps, initialTheme }: CustomAppProps) {
         <FeedbackProvider>
           <UserProvider>
             <PostProvider>
-              <NextIntlClientProvider
-                messages={pageProps.messages}
-                locale={router.locale}
-              >
-                <CssBaseline />
-                <Component {...pageProps} />
-              </NextIntlClientProvider>
+              <NotificationProvider>
+                <NextIntlClientProvider
+                  messages={pageProps.messages}
+                  locale={router.locale}
+                >
+                  <CssBaseline />
+                  <Component {...pageProps} />
+                  <NotificationPopup />
+                </NextIntlClientProvider>
+              </NotificationProvider>
             </PostProvider>
           </UserProvider>
         </FeedbackProvider>

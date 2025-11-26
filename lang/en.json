@@ -256,6 +256,14 @@
         "marketingNotifications": "Marketing notifications",
         "savePreferences": "Save preferences"
     },
+    "Notifications": {
+        "newMessage": "{username} sent you a message",
+        "newFollower": "{username} started following you",
+        "postCommented": "{username} commented on your post",
+        "postLiked": "{username} liked your post",
+        "postShared": "{username} shared your post",
+        "noNotifications": "No new notifications"
+    },
     "MobileApp": {
         "availableOn": "Available on",
         "androidAndIos": "Android & iOS",

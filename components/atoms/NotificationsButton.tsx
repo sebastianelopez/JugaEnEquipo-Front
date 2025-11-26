@@ -5,72 +5,81 @@ import {
   ListItemAvatar,
   ListItemText,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { Menu, MenuItem } from "@mui/material";
 import React from "react";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/router";
+import { NotificationContext } from "../../context/notification";
+import { renderNotificationMessage } from "../../utils/notificationUtils";
+import { NotificationType } from "../../interfaces/notification";
 
-interface Props {
-  notificationCount?: number;
-}
+interface Props {}
 
-export const NotificationsButton = ({ notificationCount = 0 }: Props) => {
+export const NotificationsButton = ({}: Props) => {
   const [pressed, setPressed] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [unreadNotifications, setUnreadNotifications] =
-    useState<number>(notificationCount);
+  const hasMarkedAsReadRef = useRef(false);
+  const t = useTranslations();
+  const router = useRouter();
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: "1",
-      avatar: "https://via.placeholder.com/40",
-      message: "A usuario le ha gustado tu publicacion",
-      read: false,
-    },
-    {
-      id: "2",
-      avatar: "https://via.placeholder.com/40",
-      message:
-        "Usuario te ha enviado una invitacion para unirte al team KruSports",
-      read: false,
-    },
-    {
-      id: "3",
-      avatar: "https://via.placeholder.com/40",
-      message: "A usuario le ha gustado tu publicacion",
-      read: false,
-    },
-    {
-      id: "4",
-      avatar: "https://via.placeholder.com/40",
-      message: "A usuario le ha gustado tu publicacion",
-      read: true,
-    },
-    {
-      id: "5",
-      avatar: "https://via.placeholder.com/40",
-      message: "A usuario le ha gustado tu publicacion",
-      read: true,
-    },
-  ]);
+  const { notifications, unreadCount, markAsRead, refreshNotifications } =
+    useContext(NotificationContext);
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setUnreadNotifications(0);
+  const handleClick = async (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
     setPressed(true);
+    hasMarkedAsReadRef.current = false;
+    await refreshNotifications();
   };
+
+  useEffect(() => {
+    if (anchorEl && !hasMarkedAsReadRef.current) {
+      const unreadNotifications = notifications.filter(
+        (n) => n.read === undefined || !n.read
+      );
+
+      if (unreadNotifications.length > 0) {
+        hasMarkedAsReadRef.current = true;
+
+        Promise.all(
+          unreadNotifications.map((notification) => markAsRead(notification.id))
+        ).catch((error) => {
+          console.error("Error marking notifications as read:", error);
+        });
+      }
+    }
+  }, [anchorEl, notifications, markAsRead]);
 
   const handleClose = () => {
     setAnchorEl(null);
     setPressed(false);
   };
 
-  const handleNotificationClick = (id: string) => {
-    setNotifications(
-      notifications.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
+  const handleNotificationClick = async (id: string) => {
+    const notification = notifications.find((n) => n.id === id);
+    if (!notification) {
+      handleClose();
+      return;
+    }
+
+    if (notification.read === undefined || !notification.read) {
+      await markAsRead(id);
+    }
+
+    const postTypes: NotificationType[] = [
+      "post_liked",
+      "post_shared",
+      "post_commented",
+    ];
+
+    if (postTypes.includes(notification.type) && notification.postId) {
+      router.push(`/post/${notification.postId}`);
+    } else if (notification.type === "new_follower") {
+      router.push(`/profile/${notification.username}`);
+    }
+
     handleClose();
   };
 
@@ -82,14 +91,14 @@ export const NotificationsButton = ({ notificationCount = 0 }: Props) => {
         onClick={handleClick}
       >
         <Badge
-          badgeContent={unreadNotifications}
+          badgeContent={unreadCount}
           sx={{
             "& .MuiBadge-badge": {
               backgroundColor: "#ffa599",
               color: "black",
             },
           }}
-          invisible={unreadNotifications === 0}
+          invisible={unreadCount === 0}
         >
           <NotificationsIcon />
         </Badge>
@@ -119,42 +128,56 @@ export const NotificationsButton = ({ notificationCount = 0 }: Props) => {
         }}
       >
         {notifications.length === 0 ? (
-          <MenuItem onClick={handleClose}>No new notifications</MenuItem>
+          <MenuItem onClick={handleClose}>
+            {t("Notifications.noNotifications")}
+          </MenuItem>
         ) : (
-          notifications.map((notification) => (
-            <MenuItem
-              key={notification.id}
-              onClick={() => handleNotificationClick(notification.id)}
-              sx={{
-                backgroundColor: notification.read
-                  ? "inherit"
-                  : "rgba(185, 117, 224, 0.71)",
-                whiteSpace: "normal",
-                width: "100%",
-                display: "flex",
-              }}
-            >
-              <ListItemAvatar>
-                <Avatar
-                  alt={`Avatar de team o usuario`}
-                  src={notification.avatar}
-                />
-              </ListItemAvatar>
-              <ListItemText
-                id={notification.id}
-                primary={notification.message}
-                slotProps={{
-                  primary: {
-                    style: {
-                      width: "100%",
-                      fontWeight: notification.read ? "normal" : "bold",
-                    },
-                  },
+          notifications.map((notification) => {
+            const isRead =
+              notification.read === undefined ? false : notification.read;
+
+            return (
+              <MenuItem
+                key={notification.id}
+                onClick={() => handleNotificationClick(notification.id)}
+                sx={{
+                  backgroundColor: isRead
+                    ? "inherit"
+                    : "rgba(185, 117, 224, 0.71)",
+                  whiteSpace: "normal",
+                  width: "100%",
+                  display: "flex",
                 }}
-                sx={{ flex: 1 }}
-              />
-            </MenuItem>
-          ))
+              >
+                <ListItemAvatar>
+                  <Avatar
+                    alt={notification.username}
+                    src="/images/user-placeholder.png"
+                  >
+                    {notification.username?.[0]?.toUpperCase()}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  id={notification.id}
+                  primary={renderNotificationMessage(
+                    notification.type,
+                    notification.username,
+                    notification.message,
+                    t,
+                    isRead
+                  )}
+                  slotProps={{
+                    primary: {
+                      style: {
+                        width: "100%",
+                      },
+                    },
+                  }}
+                  sx={{ flex: 1 }}
+                />
+              </MenuItem>
+            );
+          })
         )}
       </Menu>
     </>

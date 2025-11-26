@@ -256,6 +256,14 @@
         "marketingNotifications": "Notificaciones de marketing",
         "savePreferences": "Guardar preferencias"
     },
+    "Notifications": {
+        "newMessage": "{username} te envió un mensaje",
+        "newFollower": "{username} comenzó a seguirte",
+        "postCommented": "{username} comentó en tu publicación",
+        "postLiked": "A {username} le gustó tu publicación",
+        "postShared": "{username} compartió tu publicación",
+        "noNotifications": "No hay notificaciones nuevas"
+    },
     "MobileApp": {
         "availableOn": "Disponible en",
         "androidAndIos": "Android & iOS",
