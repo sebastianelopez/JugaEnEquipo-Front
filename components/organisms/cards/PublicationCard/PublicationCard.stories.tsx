@@ -14,9 +14,14 @@ const Template: StoryFn = (args) => (
     body={""}
     username={""}
     createdAt={""}
+    resources={[]}
+    sharedPost={null}
+    urlProfileImage={null}
     commentsQuantity={0}
     likesQuantity={0}
     sharesQuantity={0}
+    hasLiked={false}
+    hasShared={false}
     {...args}
   />
 );
@@ -30,6 +35,11 @@ Default.args = {
   resources: mockPostData.resources,
   sharedPost: mockPostData.sharedPost,
   urlProfileImage: mockPostData.urlProfileImage,
+  likesQuantity: mockPostData.likesQuantity,
+  sharesQuantity: mockPostData.sharesQuantity,
+  commentsQuantity: mockPostData.commentsQuantity,
+  hasLiked: mockPostData.hasLiked,
+  hasShared: mockPostData.hasShared,
 };
 
 export const WithMultipleResources = Template.bind({});
@@ -67,6 +77,12 @@ WithSharedPost.args = {
       { url: "/images/image-placeholder.png" },
       { url: "/images/image-placeholder.png" },
     ],
+    sharedPost: null,
     urlProfileImage: "/images/user-placeholder.png",
+    likesQuantity: 0,
+    sharesQuantity: 0,
+    commentsQuantity: 0,
+    hasLiked: false,
+    hasShared: false,
   },
 };

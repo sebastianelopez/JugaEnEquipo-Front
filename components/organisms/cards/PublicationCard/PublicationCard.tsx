@@ -19,7 +19,7 @@ import RepeatIcon from "@mui/icons-material/Repeat";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { LikeButton } from "../../../atoms";
 import { Post } from "../../../../interfaces/post";
@@ -72,7 +72,8 @@ export const PublicationCard = ({
   likesQuantity,
   commentsQuantity,
   sharesQuantity,
-  isLiked = false,
+  hasLiked,
+  hasShared,
   maxWidth,
   onPostCreated,
 }: PublicationCardProps) => {
@@ -107,7 +108,9 @@ export const PublicationCard = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
-  const [currentIsLiked, setCurrentIsLiked] = useState(isLiked);
+  const [currentIsLiked, setCurrentIsLiked] = useState(hasLiked);
+  const [currentLikesQuantity, setCurrentLikesQuantity] =
+    useState(likesQuantity);
 
   const { user } = useContext(UserContext);
 
@@ -149,13 +152,28 @@ export const PublicationCard = ({
     router.push(`/profile/${username}`);
   };
 
+  useEffect(() => {
+    setCurrentIsLiked(hasLiked);
+  }, [hasLiked]);
+
+  useEffect(() => {
+    setCurrentLikesQuantity(likesQuantity);
+  }, [likesQuantity]);
+
   const handleLikeClick = async () => {
     if (!user) return; // Don't allow liking if user is not logged in
 
     const previousIsLiked = currentIsLiked;
+    const previousLikesQuantity = currentLikesQuantity;
 
     try {
       const newIsLiked = !currentIsLiked;
+      setCurrentIsLiked(newIsLiked);
+
+      const newLikesQuantity = newIsLiked
+        ? currentLikesQuantity + 1
+        : Math.max(0, currentLikesQuantity - 1);
+      setCurrentLikesQuantity(newLikesQuantity);
 
       if (newIsLiked) {
         await postService.likePost(id);
@@ -164,8 +182,9 @@ export const PublicationCard = ({
       }
     } catch (error) {
       console.error("Error handling like:", error);
-      // Revert the optimistic update on error
+
       setCurrentIsLiked(previousIsLiked);
+      setCurrentLikesQuantity(previousLikesQuantity);
     }
   };
 
@@ -318,7 +337,9 @@ export const PublicationCard = ({
           </Box>
         )}
 
-        {(likesQuantity > 0 || sharesQuantity > 0 || commentsQuantity > 0) && (
+        {(currentLikesQuantity > 0 ||
+          sharesQuantity > 0 ||
+          commentsQuantity > 0) && (
           <Box
             component={"div"}
             sx={{
@@ -326,9 +347,9 @@ export const PublicationCard = ({
               paddingY: 0.5,
               display: "flex",
               justifyContent:
-                likesQuantity === 0 && sharesQuantity === 0
+                currentLikesQuantity === 0 && sharesQuantity === 0
                   ? "end"
-                  : likesQuantity > 0 &&
+                  : currentLikesQuantity > 0 &&
                     sharesQuantity > 0 &&
                     commentsQuantity === 0
                   ? "start"
@@ -343,7 +364,7 @@ export const PublicationCard = ({
                 gap: 1,
               }}
             >
-              {likesQuantity > 0 && (
+              {currentLikesQuantity > 0 && (
                 <Button
                   sx={{
                     minWidth: "auto",
@@ -357,7 +378,9 @@ export const PublicationCard = ({
                   size="small"
                 >
                   <FavoriteIcon sx={{ color: "#E17055", fontSize: "1rem" }} />
-                  <Typography variant="caption">{likesQuantity}</Typography>
+                  <Typography variant="caption">
+                    {currentLikesQuantity}
+                  </Typography>
                 </Button>
               )}
               {sharesQuantity > 0 && (
@@ -476,9 +499,12 @@ export const PublicationCard = ({
           username,
           resources,
           urlProfileImage,
-          likesQuantity,
+          sharedPost: null,
+          likesQuantity: currentLikesQuantity,
           commentsQuantity,
           sharesQuantity,
+          hasLiked: currentIsLiked,
+          hasShared,
         }}
         open={isModalOpen}
         onClose={() => handleCloseModal()}
