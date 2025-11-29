@@ -19,6 +19,7 @@ import { Rank } from "../../../interfaces/rank";
 import type { CreateTournamentPayload } from "../../../interfaces";
 import { useTranslations } from "next-intl";
 import dayjs from "dayjs";
+import { handleImageFileChange } from "../../../utils/imageFileUtils";
 
 interface TournamentFormProps {
   initialValues?: Partial<CreateTournamentPayload>;
@@ -117,32 +118,6 @@ export const TournamentForm: FC<TournamentFormProps> = ({
       setRanks(result.data);
     }
     setLoadingRanks(false);
-  };
-
-  const handleImageFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    setFieldValue: (field: string, value: any) => void
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        return;
-      }
-
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setImagePreview(base64String);
-        setFieldValue("image", base64String);
-        console.log(base64String);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const minStartISO = useMemo(() => {
@@ -352,7 +327,11 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                         accept="image/*"
                         type="file"
                         onChange={(e) =>
-                          handleImageFileChange(e, formik.setFieldValue)
+                          handleImageFileChange(
+                            e,
+                            formik.setFieldValue,
+                            setImagePreview
+                          )
                         }
                       />
                     </Button>

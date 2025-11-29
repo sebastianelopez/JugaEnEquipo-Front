@@ -11,6 +11,7 @@ import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import { SxProps, Theme } from "@mui/material/styles";
 import { useEffect, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { handleImagePreviewChange } from "../../../utils/imageFileUtils";
 
 interface SocialLinks {
   twitter?: string;
@@ -67,15 +68,11 @@ export const ProfileEditModal = ({
 
   const handleImageChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        setSelectedImage(file);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPreviewImage(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-      }
+      handleImagePreviewChange(
+        e,
+        (preview) => setPreviewImage(preview || undefined),
+        setSelectedImage
+      );
     },
     []
   );

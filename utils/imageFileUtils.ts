@@ -86,7 +86,7 @@ export const fileToBase64 = (
  * @param setPreview - State setter for preview image
  * @param options - Additional options for validation
  */
-export const c = (
+export const handleImageFileChange = (
   event: React.ChangeEvent<HTMLInputElement>,
   setFieldValue: (field: string, value: any) => void,
   setPreview?: (preview: string | null) => void,

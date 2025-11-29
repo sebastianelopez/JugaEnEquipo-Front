@@ -13,6 +13,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import { FC, useCallback, useContext, useState } from "react";
 import { useTranslations } from "next-intl";
 import { UserContext } from "../../../context/user";
+import { handleImagePreviewChange } from "../../../utils/imageFileUtils";
 
 interface SettingsProfileProps {
   onSave?: (data: ProfileFormData) => void;
@@ -35,14 +36,9 @@ export const SettingsProfile: FC<SettingsProfileProps> = ({ onSave }) => {
 
   const handleImageChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPreviewImage(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-      }
+      handleImagePreviewChange(e, (preview) =>
+        setPreviewImage(preview || undefined)
+      );
     },
     []
   );
@@ -71,9 +67,7 @@ export const SettingsProfile: FC<SettingsProfileProps> = ({ onSave }) => {
 
       <Grid container spacing={3}>
         <Grid
-          item
-          xs={12}
-          sm={4}
+          size={{ xs: 12, sm: 4 }}
           sx={{
             display: "flex",
             flexDirection: "column",
@@ -104,7 +98,7 @@ export const SettingsProfile: FC<SettingsProfileProps> = ({ onSave }) => {
           </Button>
         </Grid>
 
-        <Grid item xs={12} sm={8}>
+        <Grid size={{ xs: 12, sm: 8 }}>
           <Stack spacing={3}>
             <TextField
               fullWidth
