@@ -29,35 +29,54 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
       try {
         // 1. Buscar conversación existente por userId
-        const conversationId = await chatService.findConversationByUserId(
-          userId
-        );
+        const result = await chatService.findConversationByUserId(userId);
 
-        if (conversationId) {
-          // 2. Si existe, buscar en las conversaciones cargadas
-          const existingConversation = conversations.find(
-            (conv) => conv.id === conversationId
-          );
+        if (result.error) {
+          console.error("Error finding conversation:", result.error);
+          return;
+        }
 
-          if (existingConversation) {
-            // 3. Si ya está en la lista, seleccionarla
-            setSelectedConversation(existingConversation);
-          } else {
-            // 4. Si no está en la lista, crear objeto de conversación temporal
-            // (normalmente esto vendría de un endpoint dedicado)
-            const tempConversation: Conversation = {
-              id: conversationId,
-              username: "Usuario", // Esto debería venir del API
-              lastMessage: "",
-              unread: 0,
-              createdAt: new Date().toISOString(),
-              otherUserId: userId,
-            };
+        const conversationData = result.data;
+        if (conversationData && conversationData.id) {
+          const conversationId = conversationData.id;
+          
+          // 2. Si existe, buscar en las conversaciones cargadas usando función de actualización
+          setConversations((prevConversations) => {
+            const existingConversation = prevConversations.find(
+              (conv) => conv.id === conversationId
+            );
 
-            // Agregar a la lista y seleccionar
-            setConversations((prev) => [tempConversation, ...prev]);
-            setSelectedConversation(tempConversation);
-          }
+            if (existingConversation) {
+              // 3. Si ya está en la lista, seleccionarla
+              setSelectedConversation(existingConversation);
+              return prevConversations; // No cambiar el array
+            } else {
+              // 4. Si no está en la lista, crear objeto de conversación con los datos del API
+              const newConversation: Conversation = {
+                id: conversationId,
+                username: conversationData.otherUsername || "Usuario",
+                lastMessage: conversationData.lastMessageText || "",
+                unread: 0,
+                createdAt: conversationData.lastMessageDate 
+                  ? new Date(conversationData.lastMessageDate).toISOString()
+                  : new Date().toISOString(),
+                otherUserId: conversationData.otherUserId || userId,
+                otherUser: conversationData.otherUserId ? {
+                  id: conversationData.otherUserId,
+                  username: conversationData.otherUsername || "",
+                  firstname: conversationData.otherFirstname || undefined,
+                  lastname: conversationData.otherLastname || undefined,
+                  profileImage: conversationData.otherProfileImage || undefined,
+                } : undefined,
+              };
+
+              // Seleccionar la nueva conversación
+              setSelectedConversation(newConversation);
+              
+              // Agregar a la lista y retornar
+              return [newConversation, ...prevConversations];
+            }
+          });
         }
         // Si no existe conversación, no hacemos nada (el usuario debe crearla manualmente)
       } catch (error) {
@@ -66,7 +85,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     };
 
     handleUserIdFromQuery();
-  }, [router.query, user, conversations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.query.userId, user]);
 
   const handleSelectConversation = (conversation: Conversation | null) => {
     setSelectedConversation(conversation);

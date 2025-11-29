@@ -131,8 +131,15 @@ export const ConversationsList = forwardRef<
               maxHeight: "100%",
             }}
           >
-            {filteredConversations.map((conversation, index) => (
-              <Box key={conversation.id}>
+            {filteredConversations.map((conversation, index) => {
+              // Ensure conversation.id is a string and unique
+              const conversationId = 
+                typeof conversation.id === "string" 
+                  ? conversation.id 
+                  : String(conversation.id || index);
+              
+              return (
+              <Box key={conversationId}>
                 <ListItemButton
                   alignItems="flex-start"
                   onClick={() => handleSelectConversation(conversation)}
@@ -210,7 +217,8 @@ export const ConversationsList = forwardRef<
                   <Divider variant="inset" component="li" />
                 )}
               </Box>
-            ))}
+              );
+            })}
           </List>
         )}
       </Box>

@@ -45,8 +45,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const [eventSource, setEventSource] = useState<EventSource | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const conversationIdRef = useRef<string | null>(null);
   const { user } = useContext(UserContext);
   const timeTranslations = useTimeTranslations();
   const { showError } = useFeedback();
@@ -69,12 +70,22 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
+  // Helper function to load messages (used for retry)
   const loadMessages = useCallback(async () => {
     if (!conversation) return;
 
+    // Ensure conversation.id is a string
+    const conversationId =
+      typeof conversation.id === "string" ? conversation.id : String(conversation.id);
+    
+    if (!conversationId) {
+      console.error("Invalid conversation ID:", conversation.id);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const result = await chatService.getConversationMessages(conversation.id);
+      const result = await chatService.getConversationMessages(conversationId);
       if (result.error || !result.data) {
         showError({
           title: t("loadMessagesErrorTitle"),
@@ -99,17 +110,82 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [conversation, sortMessagesByDate, showError, t]);
+  }, [conversation?.id, sortMessagesByDate, showError, t]);
 
-  const setupSSE = useCallback(() => {
-    if (!conversation || !user) return;
-
-    // Close existing connection
-    if (eventSource) {
-      eventSource.close();
+  useEffect(() => {
+    if (!conversation || !user) {
+      // Cleanup if conversation or user is removed
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+      conversationIdRef.current = null;
+      return;
     }
 
-    const newEventSource = chatService.connectToChat(conversation.id);
+    // Ensure conversation.id is a string
+    const conversationId =
+      typeof conversation.id === "string" ? conversation.id : String(conversation.id);
+    
+    if (!conversationId) {
+      console.error("Invalid conversation ID:", conversation.id);
+      return;
+    }
+
+    // Only execute if conversationId actually changed
+    if (conversationIdRef.current === conversationId) {
+      return;
+    }
+
+    // Update the ref
+    conversationIdRef.current = conversationId;
+
+    // Close previous connection if exists
+    if (eventSourceRef.current) {
+      console.log(
+        "Cerrando conexión SSE anterior para conversación:",
+        conversationIdRef.current
+      );
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+
+    // Load messages and setup SSE
+    const loadMessagesAsync = async () => {
+      setIsLoading(true);
+      try {
+        const result = await chatService.getConversationMessages(conversationId);
+        if (result.error || !result.data) {
+          showError({
+            title: t("loadMessagesErrorTitle"),
+            message: result.error?.message || t("loadMessagesErrorMessage"),
+            onRetry: loadMessagesAsync,
+            retryLabel: t("retry"),
+          });
+          setMessages([]);
+          return;
+        }
+        // Sort messages by date (oldest first)
+        const sortedMessages = sortMessagesByDate(result.data);
+        setMessages(sortedMessages);
+      } catch (error) {
+        console.error("Error loading messages:", error);
+        showError({
+          title: t("loadMessagesErrorTitle"),
+          message: t("loadMessagesErrorMessage"),
+          onRetry: loadMessagesAsync,
+          retryLabel: t("retry"),
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadMessagesAsync();
+
+    // Setup SSE connection
+    const newEventSource = chatService.connectToChat(conversationId);
+    eventSourceRef.current = newEventSource;
 
     // Listen for new messages
     newEventSource.onmessage = (event) => {
@@ -159,7 +235,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     newEventSource.onopen = () => {
       console.log(
         "Conexión SSE establecida para conversación:",
-        conversation.id
+        conversationId
       );
     };
 
@@ -167,47 +243,106 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     newEventSource.onerror = (error) => {
       console.error("SSE Error:", error);
 
-      // Implement automatic reconnection
+      // Implement automatic reconnection only if connection is closed
       if (newEventSource.readyState === EventSource.CLOSED) {
         console.log(
           "Conexión SSE cerrada, intentando reconectar en 5 segundos..."
         );
         setTimeout(() => {
-          if (conversation && user) {
-            setupSSE();
+          // Only reconnect if still the same conversation and component is still mounted
+          if (conversationIdRef.current === conversationId && conversation && user) {
+            // Close old connection if exists
+            if (eventSourceRef.current) {
+              eventSourceRef.current.close();
+            }
+            
+            // Create new connection
+            const reconnectEventSource = chatService.connectToChat(conversationId);
+            eventSourceRef.current = reconnectEventSource;
+
+            // Re-attach message handler
+            reconnectEventSource.onmessage = (event) => {
+              try {
+                const messageData: Message = JSON.parse(event.data);
+                console.log("Nuevo mensaje recibido via SSE (reconexión):", messageData);
+
+                setMessages((prev) => {
+                  const isMyMessage = messageData.username === user?.username;
+
+                  if (isMyMessage) {
+                    const tempMessageIndex = prev.findIndex(
+                      (msg) =>
+                        msg.username === user?.username &&
+                        msg.content === messageData.content &&
+                        msg.id.startsWith("temp-")
+                    );
+
+                    if (tempMessageIndex !== -1) {
+                      const newMessages = [...prev];
+                      newMessages[tempMessageIndex] = messageData;
+                      return sortMessagesByDate(newMessages);
+                    }
+                    const exists = prev.some((msg) => msg.id === messageData.id);
+                    if (!exists) {
+                      const newMessages = [...prev, messageData];
+                      return sortMessagesByDate(newMessages);
+                    }
+                    return prev;
+                  } else {
+                    const exists = prev.some((msg) => msg.id === messageData.id);
+                    if (exists) return prev;
+                    const newMessages = [...prev, messageData];
+                    return sortMessagesByDate(newMessages);
+                  }
+                });
+              } catch (error) {
+                console.error("Error parsing SSE message:", error);
+              }
+            };
+
+            reconnectEventSource.onopen = () => {
+              console.log(
+                "Conexión SSE reestablecida para conversación:",
+                conversationId
+              );
+            };
+
+            reconnectEventSource.onerror = (reconnectError) => {
+              console.error("SSE Reconnection Error:", reconnectError);
+              // Will retry again if closed
+            };
           }
         }, 5000);
       }
     };
 
-    setEventSource(newEventSource);
-  }, [conversation, user, eventSource, sortMessagesByDate]);
-
-  useEffect(() => {
-    if (!conversation || !user) {
-      return;
-    }
-
-    loadMessages();
-    setupSSE();
-
     // Cleanup: close connection when component unmounts or conversation changes
     return () => {
-      if (eventSource) {
+      if (eventSourceRef.current && conversationIdRef.current === conversationId) {
         console.log(
           "Cerrando conexión SSE para conversación:",
-          conversation.id
+          conversationId
         );
-        eventSource.close();
-        setEventSource(null);
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+        conversationIdRef.current = null;
       }
     };
-  }, [conversation, user, loadMessages, setupSSE, eventSource]);
+  }, [conversation?.id, user?.id, sortMessagesByDate, showError, t]);
 
   const handleSendMessage = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       if (!newMessage.trim() || !conversation || !user || isSending) return;
+
+      // Ensure conversation.id is a string
+      const conversationId =
+        typeof conversation.id === "string" ? conversation.id : String(conversation.id);
+      
+      if (!conversationId) {
+        console.error("Invalid conversation ID:", conversation.id);
+        return;
+      }
 
       const messageContent = newMessage.trim();
       const messageId = uuidv4();
@@ -232,7 +367,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
         // Send message to server
         const result = await chatService.sendMessage(
-          conversation.id,
+          conversationId,
           messageId,
           messageContent
         );
@@ -253,7 +388,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           setIsSending(true);
           try {
             const retryResult = await chatService.sendMessage(
-              conversation.id,
+              conversationId,
               uuidv4(),
               messageContent
             );
@@ -289,7 +424,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     },
     [
       newMessage,
-      conversation,
+      conversation?.id,
       user,
       isSending,
       sortMessagesByDate,
