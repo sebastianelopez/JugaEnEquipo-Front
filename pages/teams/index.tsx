@@ -3,111 +3,35 @@ import { useTranslations } from "next-intl";
 import type { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { useTheme } from "@mui/material/styles";
 
-import { useState } from "react";
-import { Box, Container, Typography, Grid, Pagination } from "@mui/material";
+import { useState, useEffect } from "react";
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Pagination,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
 import { useRouter } from "next/navigation";
 import { MainLayout } from "../../layouts";
-import { TeamCard, TeamsHeader } from "../../components/organisms";
+import {
+  TeamCard,
+  TeamsHeader,
+  CreateTeamModal,
+} from "../../components/organisms";
+import { teamService } from "../../services/team.service";
+import type { Team } from "../../interfaces";
 
-// Mock data para los teams
-const mockTeams = [
-  {
-    id: 1,
-    name: "Thunder Gaming",
-    logo: "/esports-team-logo-thunder.jpg",
-    banner: "/team-banner-thunder.jpg",
-    members: [
-      { name: "Player1", avatar: "/gamer-avatar-1.png" },
-      { name: "Player2", avatar: "/gamer-avatar-2.png" },
-      { name: "Player3", avatar: "/gamer-avatar-3.png" },
-      { name: "Player4", avatar: "/gamer-avatar-4.png" },
-      { name: "Player5", avatar: "/gamer-avatar-5.png" },
-    ],
-    games: [
-      { name: "League of Legends", icon: "/league-of-legends-icon.png" },
-      { name: "Valorant", icon: "/valorant-icon.png" },
-    ],
-    achievements: ["Campeón Regional 2024", "Top 3 Nacional", "MVP del Torneo"],
-  },
-  {
-    id: 2,
-    name: "Phoenix Squad",
-    logo: "/esports-team-logo-phoenix.jpg",
-    banner: "/team-banner-phoenix.jpg",
-    members: [
-      { name: "ProGamer1", avatar: "/pro-gamer-1.jpg" },
-      { name: "ProGamer2", avatar: "/pro-gamer-2.jpg" },
-      { name: "ProGamer3", avatar: "/pro-gamer-3.jpg" },
-      { name: "ProGamer4", avatar: "/pro-gamer-4.jpg" },
-    ],
-    games: [{ name: "Counter-Strike 2", icon: "/counter-strike-icon.jpg" }],
-    achievements: ["Subcampeón Internacional", "Mejor Equipo 2023"],
-  },
-  {
-    id: 3,
-    name: "Cyber Warriors",
-    logo: "/esports-team-logo-cyber.jpg",
-    banner: "/team-banner-cyber.jpg",
-    members: [
-      { name: "Warrior1", avatar: "/warrior-gamer-1.jpg" },
-      { name: "Warrior2", avatar: "/warrior-gamer-2.jpg" },
-      { name: "Warrior3", avatar: "/warrior-gamer-3.jpg" },
-      { name: "Warrior4", avatar: "/warrior-gamer-4.jpg" },
-      { name: "Warrior5", avatar: "/warrior-gamer-5.jpg" },
-      { name: "Warrior6", avatar: "/warrior-gamer-6.jpg" },
-    ],
-    games: [
-      { name: "Valorant", icon: "/valorant-icon.png" },
-      { name: "Apex Legends", icon: "/apex-legends-inspired-icon.png" },
-    ],
-    achievements: ["Ganador Copa América", "5 Torneos Consecutivos"],
-  },
-  {
-    id: 4,
-    name: "Dragon Force",
-    logo: "/esports-team-logo-dragon.jpg",
-    banner: "/team-banner-dragon.jpg",
-    members: [
-      { name: "Dragon1", avatar: "/dragon-player-1.jpg" },
-      { name: "Dragon2", avatar: "/dragon-player-2.jpg" },
-      { name: "Dragon3", avatar: "/dragon-player-3.jpg" },
-      { name: "Dragon4", avatar: "/dragon-player-4.jpg" },
-      { name: "Dragon5", avatar: "/dragon-player-5.jpg" },
-    ],
-    games: [{ name: "League of Legends", icon: "/league-of-legends-icon.png" }],
-    achievements: ["Campeón Mundial Junior", "Mejor Roster 2024"],
-  },
-  {
-    id: 5,
-    name: "Neon Strikers",
-    logo: "/esports-team-logo-neon.jpg",
-    banner: "/team-banner-neon.jpg",
-    members: [
-      { name: "Neon1", avatar: "/neon-player-1.jpg" },
-      { name: "Neon2", avatar: "/neon-player-2.jpg" },
-      { name: "Neon3", avatar: "/neon-player-3.jpg" },
-    ],
-    games: [
-      { name: "Rocket League", icon: "/rocket-league-icon.jpg" },
-      { name: "Fortnite", icon: "/generic-battle-royale-icon.png" },
-    ],
-    achievements: ["Top 10 Mundial", "Revelación del Año"],
-  },
-  {
-    id: 6,
-    name: "Shadow Legends",
-    logo: "/esports-team-logo-shadow.jpg",
-    banner: "/team-banner-shadow.jpg",
-    members: [
-      { name: "Shadow1", avatar: "/shadow-player-1.jpg" },
-      { name: "Shadow2", avatar: "/shadow-player-2.jpg" },
-      { name: "Shadow3", avatar: "/shadow-player-3.jpg" },
-      { name: "Shadow4", avatar: "/shadow-player-4.jpg" },
-    ],
-    games: [{ name: "Counter-Strike 2", icon: "/counter-strike-icon.jpg" }],
-    achievements: ["Campeón Regional", "Mejor Estrategia 2024"],
-  },
-];
+interface TeamCardData {
+  id: number | string;
+  name: string;
+  logo: string;
+  banner: string;
+  members: Array<{ name: string; avatar: string }>;
+  games: Array<{ name: string; icon: string }>;
+  achievements: string[];
+}
 
 export default function TeamsPage() {
   const router = useRouter();
@@ -115,9 +39,67 @@ export default function TeamsPage() {
   const theme = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [teams, setTeams] = useState<TeamCardData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [openCreate, setOpenCreate] = useState(false);
   const itemsPerPage = 6;
 
-  const filteredTeams = mockTeams.filter(
+  const loadTeams = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await teamService.search();
+
+      if (result.ok && result.data) {
+        const transformedTeams: TeamCardData[] = await Promise.all(
+          result.data.map(async (team: Team) => {
+            const gamesResult = await teamService.findAllGames(team.id);
+            const games =
+              gamesResult.ok && gamesResult.data
+                ? gamesResult.data.map((game) => ({
+                    name: game.name,
+                    icon: game.image || "/default-game-icon.png",
+                  }))
+                : [];
+
+            const members =
+              (team as any).users?.map((user: any) => ({
+                name: user.username || `${user.firstname} ${user.lastname}`,
+                avatar: user.profileImage || "/default-avatar.png",
+              })) || [];
+
+            return {
+              id: team.id,
+              name: team.name,
+              logo: team.image || "/default-team-logo.png",
+              banner: team.image || "/default-team-banner.png",
+              members,
+              games,
+              achievements: (team as any).achievements || [],
+            };
+          })
+        );
+        setTeams(transformedTeams);
+      } else {
+        setError(
+          result.ok === false
+            ? result.errorMessage
+            : "Error al cargar los equipos"
+        );
+      }
+    } catch (err: any) {
+      setError(err?.message || "Error al cargar los equipos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTeams();
+  }, []);
+
+  const filteredTeams = teams.filter(
     (team) =>
       team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       team.games.some((game) =>
@@ -174,53 +156,107 @@ export default function TeamsPage() {
           <TeamsHeader
             searchQuery={searchQuery}
             onSearchChange={(v: string) => setSearchQuery(v)}
-            onOpenCreate={() => {}}
+            onOpenCreate={() => setOpenCreate(true)}
             placeholder={t("searchPlaceholder") as string}
             createLabel={t("create") as string}
           />
         </Box>
 
-        {/* Teams Grid */}
-        <Grid container spacing={3}>
-          {paginatedTeams.map((team) => (
-            <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={team.id}>
-              <TeamCard
-                team={team as any}
-                onClick={handleTeamClick}
-                membersLabel={t("members")}
-                gamesLabel={t("games")}
-                achievementsLabel={t("achievements")}
-                formatMore={(count) => t("more", { count }) as string}
-              />
-            </Grid>
-          ))}
-        </Grid>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
-            <Pagination
-              count={totalPages}
-              page={currentPage}
-              onChange={handlePageChange}
-              size="large"
-              sx={{
-                "& .MuiPaginationItem-root": {
-                  color: theme.palette.text.primary,
-                  borderColor: theme.palette.divider,
-                },
-                "& .MuiPaginationItem-root.Mui-selected": {
-                  bgcolor: theme.palette.primary.main,
-                  color: theme.palette.primary.contrastText,
-                  "&:hover": {
-                    bgcolor: theme.palette.primary.dark,
-                  },
-                },
-              }}
-            />
+        {/* Loading State */}
+        {loading && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "400px",
+            }}
+          >
+            <CircularProgress />
           </Box>
         )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <Box sx={{ mb: 4 }}>
+            <Alert severity="error">{error}</Alert>
+          </Box>
+        )}
+
+        {/* Teams Grid */}
+        {!loading && !error && (
+          <>
+            {paginatedTeams.length === 0 ? (
+              <Box
+                sx={{
+                  textAlign: "center",
+                  py: 8,
+                  color: theme.palette.text.secondary,
+                }}
+              >
+                <Typography variant="h6">
+                  {searchQuery
+                    ? t("noTeamsFound") || "No se encontraron equipos"
+                    : t("noTeams") || "No hay equipos disponibles"}
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <Grid container spacing={3}>
+                  {paginatedTeams.map((team) => (
+                    <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={team.id}>
+                      <TeamCard
+                        team={team}
+                        onClick={handleTeamClick}
+                        membersLabel={t("members")}
+                        gamesLabel={t("games")}
+                        achievementsLabel={t("achievements")}
+                        formatMore={(count) => t("more", { count }) as string}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", mt: 6 }}
+                  >
+                    <Pagination
+                      count={totalPages}
+                      page={currentPage}
+                      onChange={handlePageChange}
+                      size="large"
+                      sx={{
+                        "& .MuiPaginationItem-root": {
+                          color: theme.palette.text.primary,
+                          borderColor: theme.palette.divider,
+                        },
+                        "& .MuiPaginationItem-root.Mui-selected": {
+                          bgcolor: theme.palette.primary.main,
+                          color: theme.palette.primary.contrastText,
+                          "&:hover": {
+                            bgcolor: theme.palette.primary.dark,
+                          },
+                        },
+                      }}
+                    />
+                  </Box>
+                )}
+              </>
+            )}
+          </>
+        )}
       </Container>
+
+      <CreateTeamModal
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        onCreated={() => {
+          // Reload teams after creating a new one
+          loadTeams();
+        }}
+      />
     </MainLayout>
   );
 }

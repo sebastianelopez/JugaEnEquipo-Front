@@ -7,9 +7,13 @@ import {
   Avatar,
   Typography,
   Chip,
+  IconButton,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import StarIcon from "@mui/icons-material/Star";
+import EditIcon from "@mui/icons-material/Edit";
+import PersonIcon from "@mui/icons-material/Person";
+import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
 import { useTheme } from "@mui/material/styles";
 
 interface Props {
@@ -20,6 +24,12 @@ interface Props {
   region: string;
   backLabel: string;
   onBack: () => void;
+  showEditButton?: boolean;
+  onEdit?: () => void;
+  isCreator?: boolean;
+  isLeader?: boolean;
+  creatorLabel?: string;
+  leaderLabel?: string;
 }
 
 export const TeamHero: FC<Props> = ({
@@ -30,6 +40,12 @@ export const TeamHero: FC<Props> = ({
   region,
   backLabel,
   onBack,
+  showEditButton = false,
+  onEdit,
+  isCreator = false,
+  isLeader = false,
+  creatorLabel = "Creador",
+  leaderLabel = "Líder",
 }) => {
   const theme = useTheme();
   return (
@@ -71,18 +87,39 @@ export const TeamHero: FC<Props> = ({
               boxShadow: `0 0 20px ${theme.palette.primary.main}80`,
             }}
           />
-          <Box>
-            <Typography
-              variant="h2"
-              sx={{
-                color: theme.palette.common.white,
-                fontWeight: 800,
-                fontSize: { xs: "2rem", md: "3rem" },
-                mb: 1,
-              }}
+          <Box sx={{ flex: 1 }}>
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              flexWrap="wrap"
             >
-              {name}
-            </Typography>
+              <Typography
+                variant="h2"
+                sx={{
+                  color: theme.palette.common.white,
+                  fontWeight: 800,
+                  fontSize: { xs: "2rem", md: "3rem" },
+                  mb: 1,
+                }}
+              >
+                {name}
+              </Typography>
+              {showEditButton && onEdit && (
+                <IconButton
+                  onClick={onEdit}
+                  sx={{
+                    bgcolor: "rgba(255, 255, 255, 0.1)",
+                    color: theme.palette.common.white,
+                    "&:hover": {
+                      bgcolor: "rgba(255, 255, 255, 0.2)",
+                    },
+                  }}
+                >
+                  <EditIcon />
+                </IconButton>
+              )}
+            </Stack>
             <Stack direction="row" spacing={2} flexWrap="wrap" gap={1}>
               <Chip
                 icon={<StarIcon />}
@@ -101,6 +138,32 @@ export const TeamHero: FC<Props> = ({
                   fontWeight: 600,
                 }}
               />
+              {isCreator && (
+                <Chip
+                  icon={<PersonIcon />}
+                  label={creatorLabel}
+                  sx={{
+                    bgcolor: theme.palette.warning.main,
+                    color: theme.palette.getContrastText(
+                      theme.palette.warning.main
+                    ),
+                    fontWeight: 600,
+                  }}
+                />
+              )}
+              {isLeader && !isCreator && (
+                <Chip
+                  icon={<MilitaryTechIcon />}
+                  label={leaderLabel}
+                  sx={{
+                    bgcolor: theme.palette.success.main,
+                    color: theme.palette.getContrastText(
+                      theme.palette.success.main
+                    ),
+                    fontWeight: 600,
+                  }}
+                />
+              )}
             </Stack>
           </Box>
         </Stack>

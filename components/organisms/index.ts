@@ -20,6 +20,8 @@ export { TeamCard } from "./cards/TeamCard";
 //Modals
 export { CreatePublicationModal } from "./modals/CreatePublicationModal";
 export { CreateTournamentModal } from "./modals/CreateTournamentModal";
+export { CreateTeamModal } from "./modals/CreateTeamModal";
+export { EditTeamModal } from "./modals/EditTeamModal";
 export { TournamentFiltersDialog } from "./modals/TournamentFiltersDialog";
 export { ProfileEditModal } from "./modals/ProfileEditModal";
 export { FollowersModal } from "./modals/FollowersModal";
@@ -43,6 +45,7 @@ export { TeamStats } from "./team/TeamStats";
 export { TeamGamesGrid } from "./team/TeamGamesGrid";
 export { AchievementsList } from "./team/AchievementsList";
 export { JoinCard } from "./team/JoinCard";
+export { TeamRequestsAdmin } from "./team/TeamRequestsAdmin";
 // Profile
 export { ProfileHero } from "./profile/ProfileHero";
 export { AboutCard } from "./profile/AboutCard";

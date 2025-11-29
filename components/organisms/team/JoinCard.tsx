@@ -2,14 +2,21 @@ import { FC } from "react";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import { useTheme } from "@mui/material/styles";
+
+type JoinCardState = "request" | "pending" | "member" | "hidden";
 
 interface Props {
   title: string;
   membersCount: number;
   currentMembersLabel: string;
   requestJoinLabel: string;
+  waitingApprovalLabel: string;
+  leaveTeamLabel: string;
+  state: JoinCardState;
   onRequestJoin?: () => void;
+  onLeaveTeam?: () => void;
 }
 
 export const JoinCard: FC<Props> = ({
@@ -17,9 +24,18 @@ export const JoinCard: FC<Props> = ({
   membersCount,
   currentMembersLabel,
   requestJoinLabel,
+  waitingApprovalLabel,
+  leaveTeamLabel,
+  state,
   onRequestJoin,
+  onLeaveTeam,
 }) => {
   const theme = useTheme();
+
+  if (state === "hidden") {
+    return null;
+  }
+
   return (
     <>
       <Typography
@@ -63,15 +79,42 @@ export const JoinCard: FC<Props> = ({
         </Typography>
       </Box>
 
-      <Button
-        fullWidth
-        variant="contained"
-        size="large"
-        startIcon={<PersonAddIcon />}
-        onClick={onRequestJoin}
-      >
-        {requestJoinLabel}
-      </Button>
+      {state === "request" && (
+        <Button
+          fullWidth
+          variant="contained"
+          size="large"
+          startIcon={<PersonAddIcon />}
+          onClick={onRequestJoin}
+        >
+          {requestJoinLabel}
+        </Button>
+      )}
+
+      {state === "pending" && (
+        <Button
+          fullWidth
+          variant="outlined"
+          size="large"
+          disabled
+          startIcon={<PersonAddIcon />}
+        >
+          {waitingApprovalLabel}
+        </Button>
+      )}
+
+      {state === "member" && (
+        <Button
+          fullWidth
+          variant="outlined"
+          size="large"
+          color="error"
+          startIcon={<ExitToAppIcon />}
+          onClick={onLeaveTeam}
+        >
+          {leaveTeamLabel}
+        </Button>
+      )}
     </>
   );
 };

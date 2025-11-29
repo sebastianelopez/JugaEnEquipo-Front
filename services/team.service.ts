@@ -136,10 +136,13 @@ export const teamService = {
    * Request access to a team
    * PUT /api/team/:id/request-access
    */
-  requestAccess: async (teamId: string): Promise<ServiceResult<void>> => {
+  requestAccess: async (
+    teamId: string,
+    playerId: string
+  ): Promise<ServiceResult<void>> => {
     const token = await getToken();
     return safeCall<void>(() =>
-      api.put(`/team/${teamId}/request-access`, undefined, token)
+      api.put(`/team/${teamId}/request-access`, { playerId }, token)
     );
   },
 
@@ -161,5 +164,39 @@ export const teamService = {
   findAllRequests: async (): Promise<ServiceResult<TeamRequest[]>> => {
     const token = await getToken();
     return safeCall<TeamRequest[]>(() => api.get("/team/requests", {}, token));
+  },
+
+  /**
+   * Find all requests for a specific team
+   * GET /api/team/:id/requests
+   */
+  findTeamRequests: async (
+    teamId: string
+  ): Promise<ServiceResult<TeamRequest[]>> => {
+    const token = await getToken();
+    return safeCall<TeamRequest[]>(() =>
+      api.get(`/team/${teamId}/requests`, {}, token)
+    );
+  },
+
+  /**
+   * DELETE /api/team/:id/leave
+   */
+  leaveTeam: async (teamId: string): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+
+    return safeCall<void>(() => api.delete(`/team/${teamId}/leave`, token));
+  },
+
+  /**
+   * TODO: Reject a team access request
+   * PUT /api/team/request/:request_id/reject
+   * Endpoint not yet implemented in backend
+   */
+  rejectAccess: async (requestId: string): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    // TODO: Implement when backend endpoint is ready
+    // return safeCall<void>(() => api.put(`/team/request/${requestId}/reject`, undefined, token));
+    return { ok: false, errorMessage: "Endpoint not yet implemented" };
   },
 };
