@@ -5,12 +5,11 @@ import https from "https";
 // Determine if we're running on server or client
 const isServer = typeof window === "undefined";
 
-// Use absolute URL when on server, relative URL when on client in development
+// Use absolute URL when on server, relative URL when on client (both dev and prod)
+// Using proxy in client-side avoids CORS issues
 const baseURL = isServer
   ? process.env.NEXT_PUBLIC_API_URL || "https://api.jugaenequipo.com/api"
-  : process.env.NODE_ENV === "development"
-  ? "/api/proxy"
-  : process.env.NEXT_PUBLIC_API_URL || "https://api.jugaenequipo.com/api";
+  : "/api/proxy";
 
 // Create HTTPS agent for server-side requests
 const httpsAgent = isServer
