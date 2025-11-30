@@ -76,7 +76,6 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
     try {
       dispatch({ type: "[Notification] - Set loading", payload: true });
       const result = await notificationService.getNotifications(20, 0);
-      console.log("result", result);
       if (result.data) {
         // Separar notificaciones de mensajes del resto
         const allNotifications = result.data.notifications;
@@ -86,7 +85,7 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
         const otherNotifications = allNotifications.filter(
           (n) => n.type !== "new_message"
         );
-        
+
         dispatch({
           type: "[Notification] - Set notifications",
           payload: otherNotifications,
