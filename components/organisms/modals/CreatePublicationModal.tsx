@@ -43,22 +43,16 @@ export const CreatePublicationModal = ({
   const { user } = useContext(UserContext);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [postContent, setPostContent] = useState<string>("");
-  const [mediaIds, setMediaIds] = useState<string[]>([]);
-  const [uploadedResources, setUploadedResources] = useState<
-    Array<{ id: string; url: string; type: string }>
-  >([]);
   const [isCreating, setIsCreating] = useState(false);
-  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = async (
+  const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    if (postId === undefined) return;
     if (event.target.files && event.target.files.length > 0) {
       const filesArray = Array.from(event.target.files);
 
-      const maxSize = 1 * 1024 * 1024; // 1MB
+      const maxSize = 100 * 1024 * 1024; // 100MB (increased for videos)
       const oversizedFiles = filesArray.filter((file) => file.size > maxSize);
 
       if (oversizedFiles.length > 0) {
@@ -70,76 +64,18 @@ export const CreatePublicationModal = ({
         return;
       }
 
-      setIsUploadingMedia(true);
-
-      try {
-        const newMediaIds: string[] = [];
-        const uploadPromises = filesArray.map(async (file) => {
-          const mediaId = uuidv4();
-          newMediaIds.push(mediaId);
-          const resourceType = file.type.startsWith("video/")
-            ? "video"
-            : "image";
-
-          const response = await postService.addResource(postId, {
-            id: mediaId,
-            resource: file,
-            type: resourceType,
-          });
-
-          return {
-            id: mediaId,
-            url: URL.createObjectURL(file),
-            type: resourceType,
-            response: response,
-          };
-        });
-
-        const uploadedResults = await Promise.all(uploadPromises);
-
-        setSelectedFiles((prev) => [...prev, ...filesArray]);
-        setMediaIds((prev) => [...prev, ...newMediaIds]);
-        setUploadedResources((prev) => [...prev, ...uploadedResults]);
-
-        console.log("All resources uploaded successfully:", uploadedResults);
-      } catch (error: any) {
-        console.error("Error uploading resources:", error);
-
-        let errorMessage = t("uploadErrorGeneric");
-
-        if (error?.response?.status === 500) {
-          errorMessage = t("uploadErrorServerError");
-        } else if (error?.response?.status === 413) {
-          errorMessage = t("uploadErrorFileTooLarge");
-        } else if (error?.code === "ERR_NETWORK") {
-          errorMessage = t("uploadErrorNetwork");
-        }
-
-        showError({
-          title: t("uploadErrorTitle"),
-          message: errorMessage,
-          onRetry: () => handleFileChange(event),
-          retryLabel: t("retry"),
-        });
-      } finally {
-        setIsUploadingMedia(false);
-      }
+      setSelectedFiles((prev) => [...prev, ...filesArray]);
     }
   };
 
   const removeFile = (index: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
-    setMediaIds((prev) => prev.filter((_, i) => i !== index));
-    setUploadedResources((prev) => prev.filter((_, i) => i !== index));
   };
 
   const clearState = () => {
     setSelectedFiles([]);
-    setMediaIds([]);
-    setUploadedResources([]);
     setPostContent("");
     setIsCreating(false);
-    setIsUploadingMedia(false);
   };
 
   const handleClose = () => {
@@ -155,7 +91,7 @@ export const CreatePublicationModal = ({
     try {
       const response = await postService.createPost(postId, {
         body: postContent,
-        resources: mediaIds,
+        files: selectedFiles.length > 0 ? selectedFiles : undefined,
         sharedPostId: sharePost ? sharePost.id : null,
       });
 
@@ -168,16 +104,18 @@ export const CreatePublicationModal = ({
         body: postContent,
         username: user.username,
         createdAt: new Date().toISOString(),
-        urlProfileImage: user.profileImage,
-        resources: uploadedResources.map((resource) => ({
-          id: resource.id,
-          url: resource.url,
-          type: resource.type as "image" | "video",
+        urlProfileImage: user.profileImage || null,
+        resources: selectedFiles.map((file) => ({
+          id: uuidv4(),
+          url: URL.createObjectURL(file),
+          type: file.type.startsWith("video/") ? "video" : "image",
         })),
         sharedPost: sharePost || null,
         likesQuantity: 0,
         sharesQuantity: 0,
         commentsQuantity: 0,
+        hasLiked: false,
+        hasShared: false,
       };
 
       if (onPostCreated) {
@@ -348,15 +286,10 @@ export const CreatePublicationModal = ({
             onClick={handleSubmit}
             disabled={
               (!postContent.trim() && selectedFiles.length === 0) ||
-              isCreating ||
-              isUploadingMedia
+              isCreating
             }
           >
-            {isUploadingMedia
-              ? t("uploadingMedia", {
-                  defaultMessage: "Subiendo multimedia...",
-                })
-              : isCreating
+            {isCreating
               ? t("creating", { defaultMessage: "Creando..." })
               : t("createPost")}
           </Button>
