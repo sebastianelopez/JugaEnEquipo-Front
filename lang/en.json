@@ -452,7 +452,13 @@
             "maxTeams": "Max: {count} teams",
             "start": "Start",
             "region": "Region",
-            "organizer": "ORGANIZER"
+            "organizer": "ORGANIZER",
+            "teams": "Teams",
+            "status": {
+                "ongoing": "Ongoing",
+                "finished": "Finished",
+                "almostFull": "Almost full"
+            }
         },
         "detail": {
             "back": "Back to Tournaments",

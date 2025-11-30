@@ -174,13 +174,19 @@ export const ProfileHero = ({
         alignItems: "flex-end",
       }}
     >
-      <Container maxWidth="xl" sx={{ pb: 4 }}>
+      <Container
+        maxWidth="xl"
+        sx={{
+          pb: { xs: 2, md: 4 },
+          px: { xs: 1, sm: 2, md: 3 },
+        }}
+      >
         <Button
           startIcon={<ArrowBackIcon />}
           onClick={() => router.back()}
           sx={{
             color: theme.palette.text.primary,
-            mb: 2,
+            mb: { xs: 1.5, md: 2 },
             ":hover": { bgcolor: alpha(theme.palette.primary.main, 0.08) },
           }}
         >
@@ -189,7 +195,7 @@ export const ProfileHero = ({
 
         <Stack
           direction={{ xs: "column", sm: "row" }}
-          spacing={3}
+          spacing={{ xs: 2, sm: 3 }}
           alignItems={{ xs: "flex-start", sm: "flex-end" }}
         >
           <Avatar
@@ -197,11 +203,12 @@ export const ProfileHero = ({
             alt={username}
             onClick={() => avatarSrc && setMediaViewerOpen(true)}
             sx={{
-              width: { xs: 100, md: 140 },
-              height: { xs: 100, md: 140 },
+              width: { xs: 80, sm: 100, md: 140 },
+              height: { xs: 80, sm: 100, md: 140 },
               border: `4px solid ${theme.palette.primary.main}`,
               boxShadow: `0 0 30px ${alpha(theme.palette.primary.main, 0.5)}`,
               cursor: avatarSrc ? "pointer" : "default",
+              alignSelf: { sm: "flex-start" },
               "&:hover": avatarSrc
                 ? {
                     opacity: 0.9,
@@ -212,19 +219,21 @@ export const ProfileHero = ({
             }}
           />
 
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, width: { xs: "100%", sm: "auto" } }}>
             <Stack
               direction="row"
-              spacing={2}
+              spacing={1.5}
               alignItems="center"
               flexWrap="wrap"
+              sx={{ mb: { xs: 0.5, md: 0 } }}
             >
               <Typography
                 variant="h2"
                 sx={{
                   color: theme.palette.text.primary,
                   fontWeight: 800,
-                  fontSize: { xs: "1.8rem", md: "2.5rem" },
+                  fontSize: { xs: "1.5rem", sm: "1.8rem", md: "2.5rem" },
+                  wordBreak: "break-word",
                 }}
               >
                 {fullName}
@@ -233,16 +242,19 @@ export const ProfileHero = ({
               {isOwnProfile && (
                 <IconButton
                   onClick={onEditClick}
+                  size="small"
                   sx={{
                     bgcolor: theme.palette.background.paper,
                     color: theme.palette.text.primary,
+                    width: { xs: 32, md: 40 },
+                    height: { xs: 32, md: 40 },
                     ":hover": {
                       bgcolor: theme.palette.primary.main,
                       color: theme.palette.primary.contrastText,
                     },
                   }}
                 >
-                  <EditIcon />
+                  <EditIcon sx={{ fontSize: { xs: "1.2rem", md: "1.5rem" } }} />
                 </IconButton>
               )}
             </Stack>
@@ -250,40 +262,65 @@ export const ProfileHero = ({
             <Typography
               sx={{
                 color: theme.palette.info.main,
-                fontSize: { xs: "1rem", md: "1.2rem" },
+                fontSize: { xs: "0.9rem", sm: "1rem", md: "1.2rem" },
                 fontWeight: 600,
-                mb: 1,
+                mb: { xs: 0.5, md: 1 },
               }}
             >
               @{username}
             </Typography>
 
-            <Stack direction="row" spacing={2} flexWrap="wrap" gap={1}>
+            <Stack
+              direction="row"
+              spacing={{ xs: 1, sm: 2 }}
+              flexWrap="wrap"
+              gap={{ xs: 0.5, sm: 1 }}
+              sx={{ mb: { xs: 1, md: 0 } }}
+            >
               {regionLabel && (
                 <Chip
-                  icon={<LocationOnIcon />}
+                  icon={
+                    <LocationOnIcon
+                      sx={{ fontSize: { xs: "1rem", md: "1.25rem" } }}
+                    />
+                  }
                   label={regionLabel}
+                  size="small"
                   sx={{
                     bgcolor: theme.palette.background.paper,
                     color: theme.palette.text.primary,
                     fontWeight: 600,
+                    fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                    height: { xs: 24, md: 32 },
                   }}
                 />
               )}
               {memberSinceLabel && (
                 <Chip
-                  icon={<CalendarTodayIcon />}
+                  icon={
+                    <CalendarTodayIcon
+                      sx={{ fontSize: { xs: "1rem", md: "1.25rem" } }}
+                    />
+                  }
                   label={memberSinceLabel}
+                  size="small"
                   sx={{
                     bgcolor: theme.palette.background.paper,
                     color: theme.palette.text.primary,
                     fontWeight: 600,
+                    fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                    height: { xs: 24, md: 32 },
                   }}
                 />
               )}
             </Stack>
 
-            <Stack direction="row" spacing={3} sx={{ mt: 2 }}>
+            <Stack
+              direction="row"
+              spacing={{ xs: 2, sm: 3 }}
+              sx={{ mt: { xs: 1, md: 2 } }}
+              flexWrap="wrap"
+            >
               <Box
                 onClick={() => handleOpenModal("followers")}
                 sx={{
@@ -298,6 +335,7 @@ export const ProfileHero = ({
                   sx={{
                     fontWeight: 700,
                     color: theme.palette.text.primary,
+                    fontSize: { xs: "1rem", md: "1.25rem" },
                   }}
                 >
                   {followersCount}
@@ -307,7 +345,7 @@ export const ProfileHero = ({
                   sx={{
                     color: theme.palette.text.secondary,
                     textTransform: "uppercase",
-                    fontSize: "0.75rem",
+                    fontSize: { xs: "0.65rem", md: "0.75rem" },
                   }}
                 >
                   {t("followers")}
@@ -327,6 +365,7 @@ export const ProfileHero = ({
                   sx={{
                     fontWeight: 700,
                     color: theme.palette.text.primary,
+                    fontSize: { xs: "1rem", md: "1.25rem" },
                   }}
                 >
                   {followingsCount}
@@ -336,7 +375,7 @@ export const ProfileHero = ({
                   sx={{
                     color: theme.palette.text.secondary,
                     textTransform: "uppercase",
-                    fontSize: "0.75rem",
+                    fontSize: { xs: "0.65rem", md: "0.75rem" },
                   }}
                 >
                   {t("followings")}
@@ -346,10 +385,21 @@ export const ProfileHero = ({
           </Box>
 
           {!isOwnProfile && (
-            <Stack direction="row" spacing={1}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={1}
+              sx={{ width: { xs: "100%", sm: "auto" }, mt: { xs: 2, sm: 0 } }}
+            >
               <Button
                 variant={isFollowing ? "outlined" : "contained"}
-                sx={{ px: 3, py: 1.2, borderRadius: 2, fontWeight: 700 }}
+                fullWidth={true}
+                sx={{
+                  px: { xs: 2, md: 3 },
+                  py: { xs: 1, md: 1.2 },
+                  borderRadius: 2,
+                  fontWeight: 700,
+                  fontSize: { xs: "0.875rem", md: "1rem" },
+                }}
                 color="primary"
                 onClick={handleFollowClick}
                 disabled={isLoading || isCheckingFollowStatus}
@@ -362,7 +412,14 @@ export const ProfileHero = ({
               </Button>
               <Button
                 variant="outlined"
-                sx={{ px: 3, py: 1.2, borderRadius: 2, fontWeight: 700 }}
+                fullWidth={true}
+                sx={{
+                  px: { xs: 2, md: 3 },
+                  py: { xs: 1, md: 1.2 },
+                  borderRadius: 2,
+                  fontWeight: 700,
+                  fontSize: { xs: "0.875rem", md: "1rem" },
+                }}
                 color="primary"
                 onClick={onMessageClick}
               >

@@ -91,42 +91,67 @@ export const ProfileEditModal = ({
       open={open}
       onClose={onClose}
       aria-labelledby="edit-profile-modal-title"
-      sx={[...(Array.isArray(sx) ? sx : [sx]), { marginInline: 3 }]}
+      sx={[
+        ...(Array.isArray(sx) ? sx : [sx]),
+        {
+          marginInline: { xs: 1, sm: 3 },
+          display: "flex",
+          alignItems: { xs: "flex-end", sm: "center" },
+          justifyContent: "center",
+        },
+      ]}
     >
       <Box
         component="div"
         sx={{
           position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "100%",
+          top: { xs: "auto", sm: "50%" },
+          bottom: { xs: 0, sm: "auto" },
+          left: { xs: 0, sm: "50%" },
+          right: { xs: 0, sm: "auto" },
+          transform: { xs: "none", sm: "translate(-50%, -50%)" },
+          width: { xs: "100%", sm: "90%", md: "100%" },
           maxWidth: 600,
+          maxHeight: { xs: "90vh", sm: "90vh" },
           bgcolor: "background.paper",
           boxShadow: 24,
-          p: 4,
-          borderRadius: 2,
+          p: { xs: 2, sm: 3, md: 4 },
+          borderRadius: { xs: "16px 16px 0 0", sm: 2 },
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <Typography
           id="edit-profile-modal-title"
           variant="h6"
-          sx={{ mb: 2, fontWeight: 700 }}
+          sx={{
+            mb: { xs: 1.5, md: 2 },
+            fontWeight: 700,
+            fontSize: { xs: "1.1rem", md: "1.25rem" },
+          }}
         >
           {t("title")}
         </Typography>
 
-        <Stack spacing={2} sx={{ mb: 2 }}>
+        <Stack
+          spacing={{ xs: 1.5, md: 2 }}
+          sx={{ mb: { xs: 1.5, md: 2 }, flex: 1 }}
+        >
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              mb: 2,
+              mb: { xs: 1, md: 2 },
             }}
           >
             <Avatar
-              sx={{ width: 120, height: 120, mb: 2 }}
+              sx={{
+                width: { xs: 80, sm: 100, md: 120 },
+                height: { xs: 80, sm: 100, md: 120 },
+                mb: { xs: 1, md: 2 },
+              }}
               alt={initialUsername || t("profilePictureAlt")}
               src={previewImage || "/images/user-placeholder.png"}
             >
@@ -137,6 +162,10 @@ export const ProfileEditModal = ({
               component="label"
               startIcon={<PhotoCamera />}
               size="small"
+              sx={{
+                fontSize: { xs: "0.75rem", md: "0.875rem" },
+                px: { xs: 1.5, md: 2 },
+              }}
             >
               {t("changePhoto")}
               <input
@@ -156,9 +185,21 @@ export const ProfileEditModal = ({
             fullWidth
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            sx={{
+              "& .MuiInputBase-root": {
+                fontSize: { xs: "0.875rem", md: "1rem" },
+              },
+            }}
           />
 
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, mt: 1 }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 700,
+              mt: { xs: 0.5, md: 1 },
+              fontSize: { xs: "0.95rem", md: "1rem" },
+            }}
+          >
             {t("socialNetworks")}
           </Typography>
           <TextField
@@ -169,6 +210,11 @@ export const ProfileEditModal = ({
             onChange={(e) =>
               setLinks((prev) => ({ ...prev, twitch: e.target.value }))
             }
+            sx={{
+              "& .MuiInputBase-root": {
+                fontSize: { xs: "0.875rem", md: "1rem" },
+              },
+            }}
           />
           <TextField
             label={t("youtubeUrl")}
@@ -178,6 +224,11 @@ export const ProfileEditModal = ({
             onChange={(e) =>
               setLinks((prev) => ({ ...prev, youtube: e.target.value }))
             }
+            sx={{
+              "& .MuiInputBase-root": {
+                fontSize: { xs: "0.875rem", md: "1rem" },
+              },
+            }}
           />
           <TextField
             label={t("twitterUrl")}
@@ -187,6 +238,11 @@ export const ProfileEditModal = ({
             onChange={(e) =>
               setLinks((prev) => ({ ...prev, twitter: e.target.value }))
             }
+            sx={{
+              "& .MuiInputBase-root": {
+                fontSize: { xs: "0.875rem", md: "1rem" },
+              },
+            }}
           />
           <TextField
             label={t("instagramUrl")}
@@ -196,14 +252,45 @@ export const ProfileEditModal = ({
             onChange={(e) =>
               setLinks((prev) => ({ ...prev, instagram: e.target.value }))
             }
+            sx={{
+              "& .MuiInputBase-root": {
+                fontSize: { xs: "0.875rem", md: "1rem" },
+              },
+            }}
           />
         </Stack>
 
-        <Stack direction="row" spacing={2} justifyContent="flex-end">
-          <Button variant="text" onClick={onClose}>
+        <Stack
+          direction={{ xs: "column-reverse", sm: "row" }}
+          spacing={{ xs: 1, sm: 2 }}
+          justifyContent="flex-end"
+          sx={{
+            mt: { xs: 1, md: 0 },
+            pt: { xs: 2, md: 0 },
+            borderTop: { xs: "1px solid", sm: "none" },
+            borderColor: { xs: "divider", sm: "transparent" },
+          }}
+        >
+          <Button
+            variant="text"
+            onClick={onClose}
+            fullWidth={true}
+            sx={{
+              fontSize: { xs: "0.875rem", md: "1rem" },
+              py: { xs: 1.25, md: 0.75 },
+            }}
+          >
             {t("cancel")}
           </Button>
-          <Button variant="contained" onClick={handleSave}>
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            fullWidth={true}
+            sx={{
+              fontSize: { xs: "0.875rem", md: "1rem" },
+              py: { xs: 1.25, md: 0.75 },
+            }}
+          >
             {t("save")}
           </Button>
         </Stack>

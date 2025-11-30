@@ -90,14 +90,35 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   };
 
   return (
-    <Container maxWidth="xl" sx={{ height: "calc(100vh - 120px)", py: 2 }}>
-      <Grid container spacing={2} sx={{ height: "100%" }}>
+    <Container
+      maxWidth="xl"
+      sx={{
+        height: "100%",
+        minHeight: 0,
+        maxHeight: "100%",
+        py: { xs: 0, md: 2 },
+        px: { xs: 0, md: 2 },
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Grid container spacing={{ xs: 0, md: 2 }} sx={{ height: "100%", minHeight: 0, flex: 1 }}>
         <ConversationsList
           ref={conversationsListRef}
           conversations={conversations}
           onSelectConversation={handleSelectConversation}
+          selectedConversationId={
+            selectedConversation?.id
+              ? typeof selectedConversation.id === "string"
+                ? selectedConversation.id
+                : String(selectedConversation.id)
+              : null
+          }
         />
-        <ChatWindow conversation={selectedConversation} onBack={handleBack} />
+        <ChatWindow
+          conversation={selectedConversation}
+          onBack={handleBack}
+        />
       </Grid>
     </Container>
   );

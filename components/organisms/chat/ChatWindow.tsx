@@ -11,6 +11,9 @@ import {
   InputAdornment,
   CircularProgress,
   Divider,
+  useTheme,
+  alpha,
+  useMediaQuery,
 } from "@mui/material";
 import {
   Send as SendIcon,
@@ -48,12 +51,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [isSending, setIsSending] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string | null>(null);
   const { user } = useContext(UserContext);
   const timeTranslations = useTimeTranslations();
   const { showError } = useFeedback();
   const t = useTranslations("Chat");
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   // Helper function to sort messages by creation date (oldest first)
   const sortMessagesByDate = useCallback((messages: Message[]) => {
@@ -65,7 +71,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   }, []);
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      // Scroll within the messages container only, not the page
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -462,16 +474,23 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
   if (!conversation) {
     return (
-      <Grid size={{ xs: 12, md: 7 }} sx={{ height: "100%" }}>
+      <Grid
+        size={{ xs: 12, md: 7 }}
+        sx={{
+          height: "100%",
+          display: { xs: "none", md: "block" },
+        }}
+      >
         <Box
           sx={{
             padding: 2,
-            backgroundColor: "#f9f9f9",
+            bgcolor: "background.default",
             borderRadius: 1,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             height: "100%",
+            border: `1px solid ${theme.palette.divider}`,
           }}
         >
           <Typography variant="h6" color="text.secondary">
@@ -483,15 +502,31 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   }
 
   return (
-    <Grid size={{ xs: 12, md: 7 }} sx={{ height: "100%" }}>
+    <Grid
+      size={{ xs: 12, md: 7 }}
+      sx={{
+        height: "100%",
+        minHeight: { xs: 0, md: "auto" },
+        display: {
+          xs: conversation ? "flex" : "none",
+          md: "block",
+        },
+        flexDirection: { xs: "column", md: "row" },
+      }}
+    >
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
           height: "100%",
-          backgroundColor: "#fff",
-          borderRadius: 1,
+          minHeight: { xs: 0, md: "auto" },
+          maxHeight: "100%",
+          width: "100%",
+          bgcolor: "background.paper",
+          borderRadius: { xs: 0, md: 1 },
           overflow: "hidden",
+          border: { xs: "none", md: `1px solid ${theme.palette.divider}` },
+          position: "relative",
         }}
       >
         {/* Chat Header */}
@@ -499,13 +534,27 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           sx={{
             display: "flex",
             alignItems: "center",
-            padding: 2,
-            borderBottom: "1px solid #e0e0e0",
-            backgroundColor: "#f5f5f5",
+            padding: { xs: 1.5, md: 2 },
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            bgcolor: "background.default",
+            position: { xs: "sticky", md: "relative" },
+            top: { xs: 0, md: "auto" },
+            zIndex: { xs: 1000, md: "auto" },
+            boxShadow: { xs: `0 2px 4px ${alpha(theme.palette.common.black, 0.1)}`, md: "none" },
+            flexShrink: 0,
           }}
         >
-          {onBack && (
-            <IconButton onClick={onBack} sx={{ mr: 1 }}>
+          {(onBack || isMobile) && (
+            <IconButton
+              onClick={onBack}
+              sx={{
+                mr: 1,
+                color: "text.primary",
+                "&:hover": {
+                  bgcolor: alpha(theme.palette.primary.main, 0.08),
+                },
+              }}
+            >
               <ArrowBackIcon />
             </IconButton>
           )}
@@ -523,6 +572,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             }}
             sx={{
               cursor: "pointer",
+              fontSize: { xs: "1rem", md: "1.25rem" },
+              fontWeight: 600,
+              color: "text.primary",
+              flex: 1,
               "&:hover": {
                 textDecoration: "underline",
               },
@@ -534,11 +587,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
         {/* Messages Area */}
         <Box
+          ref={messagesContainerRef}
           sx={{
             flex: 1,
             overflow: "auto",
-            padding: 1,
-            backgroundColor: "#fafafa",
+            padding: { xs: 1, md: 1.5 },
+            paddingBottom: { 
+              xs: "calc(5.5rem + env(safe-area-inset-bottom, 0px))", 
+              md: 1.5 
+            },
+            bgcolor: "background.default",
+            minHeight: 0, // Allows flexbox to shrink properly
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {isLoading ? (
@@ -569,17 +631,22 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                       }}
                     >
                       <Paper
-                        elevation={1}
+                        elevation={isOwnMessage ? 2 : 1}
                         sx={{
-                          p: 2,
-                          maxWidth: "70%",
-                          bgcolor: isOwnMessage ? "primary.main" : "grey.100",
+                          p: { xs: 1.5, md: 2 },
+                          maxWidth: { xs: "85%", md: "70%" },
+                          bgcolor: isOwnMessage
+                            ? "primary.main"
+                            : "background.paper",
                           color: isOwnMessage
                             ? "primary.contrastText"
                             : "text.primary",
                           borderRadius: 2,
                           opacity: isOptimistic ? 0.7 : 1,
                           transition: "opacity 0.3s ease",
+                          border: isOwnMessage
+                            ? "none"
+                            : `1px solid ${theme.palette.divider}`,
                         }}
                       >
                         <Typography variant="body1" sx={{ mb: 0.5 }}>
@@ -613,9 +680,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           onSubmit={handleSendMessage}
           sx={{
             display: "flex",
-            padding: 2,
-            borderTop: "1px solid #e0e0e0",
-            backgroundColor: "#fff",
+            padding: { xs: 1.5, md: 2 },
+            paddingBottom: { 
+              xs: "calc(1.5rem + env(safe-area-inset-bottom, 0px))", 
+              md: 2 
+            },
+            borderTop: `1px solid ${theme.palette.divider}`,
+            bgcolor: "background.paper",
+            position: { xs: "absolute", md: "relative" },
+            bottom: { xs: 0, md: "auto" },
+            left: { xs: 0, md: "auto" },
+            right: { xs: 0, md: "auto" },
+            zIndex: { xs: 1000, md: "auto" },
+            boxShadow: { xs: `0 -2px 8px ${alpha(theme.palette.common.black, 0.15)}`, md: "none" },
+            flexShrink: 0,
+            width: "100%",
           }}
         >
           <TextField
@@ -627,6 +706,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             disabled={isSending}
             multiline
             maxRows={4}
+            size="small"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                bgcolor: "background.default",
+              },
+            }}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -634,8 +719,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     type="submit"
                     disabled={!newMessage.trim() || isSending}
                     color="primary"
+                    sx={{
+                      "&:disabled": {
+                        color: "text.disabled",
+                      },
+                    }}
                   >
-                    {isSending ? <CircularProgress size={24} /> : <SendIcon />}
+                    {isSending ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <SendIcon fontSize="small" />
+                    )}
                   </IconButton>
                 </InputAdornment>
               ),

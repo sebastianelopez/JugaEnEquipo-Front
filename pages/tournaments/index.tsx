@@ -209,19 +209,19 @@ const TournamentsPage: NextPage<Props> = ({}) => {
           sx={{
             bgcolor: theme.palette.background.default,
             minHeight: "100vh",
-            py: 4,
+            py: { xs: 2, md: 4 },
           }}
         >
-          <Container maxWidth="xl">
+          <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             {/* Header */}
-            <Box sx={{ mb: 6 }}>
+            <Box sx={{ mb: { xs: 3, md: 6 } }}>
               <Typography
                 variant="h2"
                 sx={{
                   color: theme.palette.text.primary,
                   fontWeight: 800,
-                  mb: 2,
-                  fontSize: { xs: "2rem", md: "3rem" },
+                  mb: { xs: 1, md: 2 },
+                  fontSize: { xs: "1.75rem", sm: "2rem", md: "3rem" },
                   textAlign: "center",
                 }}
               >
@@ -232,7 +232,9 @@ const TournamentsPage: NextPage<Props> = ({}) => {
                 sx={{
                   color: theme.palette.info.main,
                   textAlign: "center",
-                  mb: 4,
+                  mb: { xs: 2, md: 4 },
+                  fontSize: { xs: "0.95rem", md: "1.25rem" },
+                  px: { xs: 1, md: 0 },
                 }}
               >
                 {t("subtitle", {
@@ -278,7 +280,7 @@ const TournamentsPage: NextPage<Props> = ({}) => {
               </Box>
             ) : (
               <>
-                <Grid container spacing={3}>
+                <Grid container spacing={{ xs: 2, md: 3 }}>
                   {tournaments.map((tournament) => {
                     const organizer = getOrganizer(tournament);
                     return (
@@ -303,19 +305,42 @@ const TournamentsPage: NextPage<Props> = ({}) => {
                         >
                           <Box
                             sx={{
-                              p: 2,
+                              p: { xs: 1.5, md: 2 },
                               border: `1px solid ${theme.palette.divider}`,
                               borderRadius: 2,
                             }}
                           >
                             <Skeleton
                               variant="rectangular"
-                              height={200}
-                              sx={{ mb: 2 }}
+                              sx={{
+                                height: { xs: 150, md: 200 },
+                                mb: { xs: 1.5, md: 2 },
+                                borderRadius: 1,
+                              }}
                             />
-                            <Skeleton variant="text" width="60%" height={30} />
-                            <Skeleton variant="text" width="80%" height={20} />
-                            <Skeleton variant="text" width="40%" height={20} />
+                            <Skeleton
+                              variant="text"
+                              sx={{
+                                width: "60%",
+                                height: { xs: 24, md: 30 },
+                                mb: 1,
+                              }}
+                            />
+                            <Skeleton
+                              variant="text"
+                              sx={{
+                                width: "80%",
+                                height: { xs: 18, md: 20 },
+                                mb: 0.5,
+                              }}
+                            />
+                            <Skeleton
+                              variant="text"
+                              sx={{
+                                width: "40%",
+                                height: { xs: 18, md: 20 },
+                              }}
+                            />
                           </Box>
                         </Grid>
                       ))}

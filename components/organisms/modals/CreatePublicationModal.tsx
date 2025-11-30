@@ -8,6 +8,10 @@ import {
   Modal,
   SxProps,
   Theme,
+  Typography,
+  useTheme,
+  alpha,
+  Stack,
 } from "@mui/material";
 import { SetStateAction, useContext, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -38,6 +42,7 @@ export const CreatePublicationModal = ({
 }: Props) => {
   const t = useTranslations("Publication");
   const { showError } = useFeedback();
+  const theme = useTheme();
 
   const { postId } = useContext(PostContext);
   const { user } = useContext(UserContext);
@@ -46,9 +51,7 @@ export const CreatePublicationModal = ({
   const [isCreating, setIsCreating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       const filesArray = Array.from(event.target.files);
 
@@ -160,31 +163,84 @@ export const CreatePublicationModal = ({
         onClose={handleClose}
         aria-labelledby="modal-title"
         aria-describedby="modal-description"
-        sx={[...(Array.isArray(sx) ? sx : [sx]), { marginInline: 3 }]}
+        sx={[
+          ...(Array.isArray(sx) ? sx : [sx]),
+          {
+            marginInline: { xs: 1, sm: 3 },
+            display: "flex",
+            alignItems: { xs: "flex-end", sm: "center" },
+            justifyContent: "center",
+          },
+        ]}
       >
         <Box
           component="div"
           sx={{
             position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "100%",
+            top: { xs: "auto", sm: "50%" },
+            bottom: { xs: 0, sm: "auto" },
+            left: { xs: 0, sm: "50%" },
+            right: { xs: 0, sm: "auto" },
+            transform: { xs: "none", sm: "translate(-50%, -50%)" },
+            width: { xs: "100%", sm: "90%", md: "100%" },
             maxWidth: 550,
-            background: "white",
+            maxHeight: { xs: "90vh", sm: "90vh" },
+            bgcolor: "background.paper",
             boxShadow: 24,
-            p: 4,
-            borderRadius: 2,
+            p: { xs: 2, sm: 3, md: 4 },
+            borderRadius: { xs: "16px 16px 0 0", sm: 2 },
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
-          <h2 id="modal-title">{t("createPost")}</h2>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mb: { xs: 1.5, md: 2 } }}
+          >
+            <Typography
+              id="modal-title"
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                fontSize: { xs: "1.1rem", md: "1.25rem" },
+                color: "text.primary",
+              }}
+            >
+              {t("createPost")}
+            </Typography>
+            <IconButton
+              onClick={handleClose}
+              sx={{
+                color: "text.secondary",
+                "&:hover": {
+                  bgcolor: alpha(theme.palette.primary.main, 0.08),
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Stack>
 
-          <Box>
+          <Box sx={{ mb: { xs: 1.5, md: 2 } }}>
             <Button
               variant="outlined"
               component="label"
               startIcon={<PermMediaIcon />}
-              sx={{ mb: 1 }}
+              fullWidth={true}
+              sx={{
+                mb: 1,
+                fontSize: { xs: "0.875rem", md: "1rem" },
+                py: { xs: 1, md: 0.75 },
+                borderColor: "divider",
+                color: "text.primary",
+                "&:hover": {
+                  borderColor: "primary.main",
+                  bgcolor: alpha(theme.palette.primary.main, 0.04),
+                },
+              }}
             >
               {t("mediaButton")}
               <input
@@ -196,31 +252,31 @@ export const CreatePublicationModal = ({
                 ref={fileInputRef}
               />
             </Button>
-            <Box
-              component="p"
+            <Typography
+              variant="caption"
               sx={{
-                fontSize: "0.75rem",
+                fontSize: { xs: "0.7rem", md: "0.75rem" },
                 color: "text.secondary",
-                margin: 0,
-                mb: 2,
                 fontStyle: "italic",
+                display: "block",
               }}
             >
               {t("mediaButtonHint")}
-            </Box>
+            </Typography>
           </Box>
 
           {selectedFiles.length > 0 && (
-            <Box sx={{ mb: 2 }}>
-              <Grid container spacing={1}>
+            <Box sx={{ mb: { xs: 1.5, md: 2 } }}>
+              <Grid container spacing={{ xs: 1, sm: 1.5 }}>
                 {selectedFiles.map((file, index) => (
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
+                  <Grid size={{ xs: 6, sm: 6, md: 4 }} key={index}>
                     <Box
                       sx={{
                         position: "relative",
-                        border: "1px solid #eee",
+                        border: `1px solid ${theme.palette.divider}`,
                         borderRadius: 1,
                         overflow: "hidden",
+                        bgcolor: alpha(theme.palette.background.default, 0.5),
                       }}
                     >
                       {file.type.startsWith("image/") ? (
@@ -241,7 +297,9 @@ export const CreatePublicationModal = ({
                           style={{ width: "100%", height: 150 }}
                         />
                       ) : (
-                        <Box sx={{ p: 2 }}>{file.name}</Box>
+                        <Box sx={{ p: 2, color: "text.primary" }}>
+                          {file.name}
+                        </Box>
                       )}
                       <IconButton
                         size="small"
@@ -249,10 +307,16 @@ export const CreatePublicationModal = ({
                           position: "absolute",
                           top: 5,
                           right: 5,
-                          backgroundColor: "rgba(0,0,0,0.5)",
-                          color: "white",
+                          backgroundColor: alpha(
+                            theme.palette.common.black,
+                            0.6
+                          ),
+                          color: "common.white",
                           "&:hover": {
-                            backgroundColor: "rgba(0,0,0,0.7)",
+                            backgroundColor: alpha(
+                              theme.palette.common.black,
+                              0.8
+                            ),
                           },
                         }}
                         onClick={() => removeFile(index)}
@@ -266,19 +330,32 @@ export const CreatePublicationModal = ({
             </Box>
           )}
 
-          <Divider />
+          <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
           <Input
             placeholder={t("writeSomething")}
             multiline
             rows={4}
             fullWidth
-            sx={{ mt: 2 }}
+            sx={{
+              mt: { xs: 1, md: 2 },
+              fontSize: { xs: "0.875rem", md: "1rem" },
+              color: "text.primary",
+              "&::before": {
+                borderColor: "divider",
+              },
+              "&:hover:not(.Mui-disabled)::before": {
+                borderColor: "primary.main",
+              },
+              "&::after": {
+                borderColor: "primary.main",
+              },
+            }}
             value={postContent}
             onChange={(e) => setPostContent(e.target.value)}
           />
 
           {sharePost && (
-            <Box sx={{ mt: 2 }}>
+            <Box sx={{ mt: { xs: 1.5, md: 2 } }}>
               <SharedPostCard {...sharePost} />
             </Box>
           )}
@@ -287,11 +364,16 @@ export const CreatePublicationModal = ({
             variant="contained"
             color="primary"
             fullWidth
-            sx={{ mt: 2 }}
+            sx={{
+              mt: { xs: 1.5, md: 2 },
+              mb: { xs: 1, md: 0 },
+              py: { xs: 1.25, md: 0.75 },
+              fontSize: { xs: "0.875rem", md: "1rem" },
+              fontWeight: 600,
+            }}
             onClick={handleSubmit}
             disabled={
-              (!postContent.trim() && selectedFiles.length === 0) ||
-              isCreating
+              (!postContent.trim() && selectedFiles.length === 0) || isCreating
             }
           >
             {isCreating
