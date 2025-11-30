@@ -42,9 +42,10 @@ export const MainLayout: FC<Props> = ({
       sx={{
         display: "flex",
         flexDirection: "column",
-        height: "100%",
-        maxHeight: fillViewport ? "100vh" : "none",
+        height: fillViewport ? { xs: "100dvh", md: "100vh" } : "100%",
+        maxHeight: fillViewport ? { xs: "100dvh", md: "100vh" } : "none",
         overflow: fillViewport ? "hidden" : "visible",
+        position: "relative",
       }}
     >
       <Head>
@@ -65,9 +66,14 @@ export const MainLayout: FC<Props> = ({
         sx={{
           flexGrow: 1,
           marginX: "auto",
-          padding: "0 30px",
+          padding: "0",
+          paddingX: { xs: "8px", sm: "30px" },
           width: "100vw",
           marginTop: "75px",
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+          overflow: fillViewport ? "hidden" : "visible",
         }}
       >
         {children}

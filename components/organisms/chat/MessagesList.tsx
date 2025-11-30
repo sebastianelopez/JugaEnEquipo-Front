@@ -10,6 +10,8 @@ import {
   Avatar,
   ListItemText,
   Divider,
+  useTheme,
+  alpha,
 } from "@mui/material";
 import { formatTimeElapsed } from "../../../utils/formatTimeElapsed";
 import { Search as SearchIcon } from "@mui/icons-material";
@@ -26,12 +28,16 @@ export interface ConversationsListHandle {
 interface ConversationListProps {
   conversations: Array<Conversation>;
   onSelectConversation?: (conversation: Conversation | null) => void;
+  selectedConversationId?: string | null;
 }
 
 export const ConversationsList = forwardRef<
   ConversationsListHandle,
   ConversationListProps
->(function ConversationsList({ conversations, onSelectConversation }, ref) {
+>(function ConversationsList(
+  { conversations, onSelectConversation, selectedConversationId },
+  ref
+) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredConversations, setFilteredConversations] =
     useState(conversations);
@@ -41,6 +47,7 @@ export const ConversationsList = forwardRef<
   const timeTranslations = useTimeTranslations();
   const router = useRouter();
   const t = useTranslations("Chat");
+  const theme = useTheme();
 
   const handleSelectConversation = (conversation: Conversation | null) => {
     setSelectedConversation(conversation);
@@ -87,19 +94,38 @@ export const ConversationsList = forwardRef<
   }, [searchTerm, conversations]);
 
   return (
-    <Grid size={{ xs: 12, md: 5 }} sx={{ height: "100%" }}>
+    <Grid
+      size={{ xs: 12, md: 5 }}
+      sx={{
+        height: "100%",
+        display: {
+          xs: selectedConversationId ? "none" : "block",
+          md: "block",
+        },
+      }}
+    >
       <Box
         sx={{
-          padding: 2,
-          backgroundColor: "#f0f0f0",
+          padding: { xs: 1.5, md: 2 },
+          bgcolor: "background.default",
           borderRadius: 1,
           display: "flex",
           flexDirection: "column",
           height: "100%",
           overflow: "hidden",
+          border: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <Typography variant="h5" component="h2" gutterBottom>
+        <Typography
+          variant="h5"
+          component="h2"
+          gutterBottom
+          sx={{
+            fontSize: { xs: "1.25rem", md: "1.5rem" },
+            fontWeight: 700,
+            color: "text.primary",
+          }}
+        >
           {t("title")}
         </Typography>
 
@@ -110,14 +136,20 @@ export const ConversationsList = forwardRef<
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           margin="normal"
+          size="small"
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon />
+                <SearchIcon sx={{ color: "text.secondary" }} />
               </InputAdornment>
             ),
           }}
-          sx={{ mb: 3 }}
+          sx={{
+            mb: { xs: 2, md: 3 },
+            "& .MuiOutlinedInput-root": {
+              bgcolor: "background.paper",
+            },
+          }}
         />
 
         {filteredConversations.length === 0 ? (
@@ -149,13 +181,17 @@ export const ConversationsList = forwardRef<
                     onClick={() => handleSelectConversation(conversation)}
                     sx={{
                       position: "relative",
+                      py: { xs: 1, md: 1.5 },
                       ...(true && {
                         // conversation.unread > 0 && {
-                        bgcolor: "rgba(25, 118, 210, 0.08)",
+                        bgcolor: alpha(theme.palette.primary.main, 0.08),
                       }),
                       ...(selectedConversation?.id === conversation.id && {
-                        bgcolor: "rgba(25, 118, 210, 0.15)",
+                        bgcolor: alpha(theme.palette.primary.main, 0.15),
                       }),
+                      "&:hover": {
+                        bgcolor: alpha(theme.palette.primary.main, 0.12),
+                      },
                     }}
                   >
                     <ListItemAvatar>

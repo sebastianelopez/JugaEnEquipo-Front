@@ -72,7 +72,19 @@ const MessagesPage: NextPage = () => {
       pageDescription={"Sistema de mensajería en tiempo real"}
       fillViewport
     >
-      <ChatContainer initialConversations={conversations} />
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          height: "100%",
+          overflow: "hidden",
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <ChatContainer initialConversations={conversations} />
+      </Box>
     </MainLayout>
   );
 };

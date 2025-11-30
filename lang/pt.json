@@ -452,7 +452,13 @@
             "maxTeams": "Máximo: {count} equipes",
             "start": "Início",
             "region": "Região",
-            "organizer": "ORGANIZADOR"
+            "organizer": "ORGANIZADOR",
+            "teams": "Equipes",
+            "status": {
+                "ongoing": "Em andamento",
+                "finished": "Finalizado",
+                "almostFull": "Quase cheio"
+            }
         },
         "detail": {
             "back": "Voltar aos Torneios",

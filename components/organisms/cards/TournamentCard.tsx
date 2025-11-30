@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, useMemo } from "react";
 import {
   Box,
   Card,
@@ -8,10 +8,13 @@ import {
   Stack,
   Avatar,
   Chip,
+  LinearProgress,
+  useMediaQuery,
 } from "@mui/material";
 import TrophyIcon from "@mui/icons-material/EmojiEvents";
 import CalendarIcon from "@mui/icons-material/CalendarMonth";
 import PublicIcon from "@mui/icons-material/Public";
+import PeopleIcon from "@mui/icons-material/People";
 import { useTheme, alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
 import type { Tournament, User, Game } from "../../../interfaces";
@@ -34,8 +37,37 @@ export const TournamentCard: FC<TournamentCardProps> = ({
 }) => {
   const theme = useTheme();
   const t = useTranslations("Tournaments");
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [game, setGame] = useState<Game | null>(null);
   const [loadingGame, setLoadingGame] = useState(false);
+
+  // Determine tournament status based on dates
+  const tournamentStatus = useMemo(() => {
+    const now = new Date();
+    const startDate = new Date(tournament.startAt);
+    const endDate = new Date(tournament.endAt);
+
+    if (now < startDate) {
+      return "upcoming";
+    } else if (now >= startDate && now <= endDate) {
+      return "ongoing";
+    } else {
+      return "finished";
+    }
+  }, [tournament.startAt, tournament.endAt]);
+
+  // Calculate registration progress
+  const registrationProgress = useMemo(() => {
+    if (!tournament.maxTeams || tournament.maxTeams === 0) return 0;
+    const registered = (tournament as any).registeredTeams || 0;
+    return Math.min((registered / tournament.maxTeams) * 100, 100);
+  }, [tournament]);
+
+  // Check if tournament is almost full
+  const isAlmostFull = useMemo(() => {
+    const registered = (tournament as any).registeredTeams || 0;
+    return registrationProgress >= 80 && registrationProgress < 100;
+  }, [registrationProgress]);
 
   // Fetch game information using gameId
   useEffect(() => {
@@ -81,37 +113,123 @@ export const TournamentCard: FC<TournamentCardProps> = ({
         cursor: "pointer",
         transition: "all 0.3s ease",
         border: `1px solid ${alpha(theme.palette.divider, 0.6)}`,
+        position: "relative",
         "&:hover": {
-          transform: "translateY(-8px)",
-          boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.25)}`,
+          transform: isMobile ? "none" : "translateY(-8px)",
+          boxShadow: isMobile
+            ? `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}`
+            : `0 8px 24px ${alpha(theme.palette.primary.main, 0.25)}`,
           borderColor: theme.palette.primary.main,
+        },
+        "&:active": {
+          transform: isMobile ? "scale(0.98)" : "translateY(-6px)",
         },
       }}
       onClick={() => onClick(tournament)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick(tournament);
+        }
+      }}
+      aria-label={`${tournament.name} - ${gameName}`}
     >
+      {/* Status Badge */}
+      {tournamentStatus === "ongoing" && (
+        <Chip
+          label={t("card.status.ongoing") || "En curso"}
+          size="small"
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            zIndex: 1,
+            bgcolor: theme.palette.success.main,
+            color: theme.palette.getContrastText(theme.palette.success.main),
+            fontWeight: 700,
+            fontSize: { xs: "0.65rem", md: "0.75rem" },
+            height: { xs: 20, md: 24 },
+            boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.2)}`,
+          }}
+        />
+      )}
+      {tournamentStatus === "finished" && (
+        <Chip
+          label={t("card.status.finished") || "Finalizado"}
+          size="small"
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            zIndex: 1,
+            bgcolor: theme.palette.grey[600],
+            color: theme.palette.getContrastText(theme.palette.grey[600]),
+            fontWeight: 700,
+            fontSize: { xs: "0.65rem", md: "0.75rem" },
+            height: { xs: 20, md: 24 },
+            boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.2)}`,
+          }}
+        />
+      )}
+      {isAlmostFull && tournamentStatus === "upcoming" && (
+        <Chip
+          label={t("card.status.almostFull") || "Casi lleno"}
+          size="small"
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            zIndex: 1,
+            bgcolor: theme.palette.warning.main,
+            color: theme.palette.getContrastText(theme.palette.warning.main),
+            fontWeight: 700,
+            fontSize: { xs: "0.65rem", md: "0.75rem" },
+            height: { xs: 20, md: 24 },
+            boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.2)}`,
+          }}
+        />
+      )}
       <CardMedia
         component="img"
         height="200"
         image={image}
         alt={tournament.name}
-        sx={{ objectFit: "cover" }}
+        sx={{
+          objectFit: "cover",
+          height: { xs: 150, md: 200 },
+        }}
       />
-      <CardContent sx={{ p: 3 }}>
+      <CardContent sx={{ p: { xs: 2, md: 3 } }}>
         <Typography
           variant="h6"
-          sx={{ color: theme.palette.text.primary, fontWeight: 700, mb: 2 }}
+          sx={{
+            color: theme.palette.text.primary,
+            fontWeight: 700,
+            mb: { xs: 1.5, md: 2 },
+            fontSize: { xs: "1rem", md: "1.25rem" },
+          }}
         >
           {tournament.name}
         </Typography>
 
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          sx={{ mb: { xs: 1.5, md: 2 } }}
+        >
           <Avatar
             src={gameIcon}
             alt={gameName}
-            sx={{ width: 32, height: 32 }}
+            sx={{ width: { xs: 28, md: 32 }, height: { xs: 28, md: 32 } }}
           />
           <Typography
-            sx={{ color: theme.palette.text.secondary, fontSize: "0.9rem" }}
+            sx={{
+              color: theme.palette.text.secondary,
+              fontSize: { xs: "0.8rem", md: "0.9rem" },
+            }}
           >
             {gameName}
           </Typography>
@@ -120,10 +238,12 @@ export const TournamentCard: FC<TournamentCardProps> = ({
         <Stack
           direction="row"
           spacing={1}
-          sx={{ mb: 2, flexWrap: "wrap", gap: 1 }}
+          sx={{ mb: { xs: 1.5, md: 2 }, flexWrap: "wrap", gap: 1 }}
         >
           <Chip
-            icon={<TrophyIcon />}
+            icon={
+              <TrophyIcon sx={{ fontSize: { xs: "1rem", md: "1.25rem" } }} />
+            }
             label={
               tournament.isOfficial ? t("card.official") : t("card.amateur")
             }
@@ -138,37 +258,107 @@ export const TournamentCard: FC<TournamentCardProps> = ({
                   : theme.palette.info.main
               ),
               fontWeight: 600,
+              fontSize: { xs: "0.7rem", md: "0.875rem" },
+              height: { xs: 24, md: 32 },
             }}
           />
         </Stack>
 
-        <Typography
-          sx={{
-            color: theme.palette.text.secondary,
-            fontSize: "0.85rem",
-            mb: 1,
-          }}
-        >
-          {t("card.maxTeams", { count: tournament.maxTeams ?? 0 })}
-        </Typography>
+        {/* Registration Progress */}
+        <Box sx={{ mb: { xs: 1, md: 1.5 } }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mb: 0.5 }}
+          >
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <PeopleIcon
+                sx={{
+                  color: theme.palette.info.main,
+                  fontSize: { xs: "0.875rem", md: "1rem" },
+                }}
+              />
+              <Typography
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontSize: { xs: "0.75rem", md: "0.85rem" },
+                }}
+              >
+                {t("card.teams") || "Equipos"}:
+              </Typography>
+            </Stack>
+            <Typography
+              sx={{
+                color: theme.palette.text.primary,
+                fontSize: { xs: "0.75rem", md: "0.85rem" },
+                fontWeight: 600,
+              }}
+            >
+              {(tournament as any).registeredTeams || 0} /{" "}
+              {tournament.maxTeams ?? 0}
+            </Typography>
+          </Stack>
+          <LinearProgress
+            variant="determinate"
+            value={registrationProgress}
+            sx={{
+              height: { xs: 4, md: 6 },
+              borderRadius: 1,
+              bgcolor: alpha(theme.palette.info.main, 0.1),
+              "& .MuiLinearProgress-bar": {
+                bgcolor:
+                  registrationProgress >= 100
+                    ? theme.palette.error.main
+                    : isAlmostFull
+                    ? theme.palette.warning.main
+                    : theme.palette.info.main,
+                borderRadius: 1,
+              },
+            }}
+          />
+        </Box>
 
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          sx={{ mb: { xs: 0.75, md: 1 } }}
+        >
           <CalendarIcon
-            sx={{ color: theme.palette.info.main, fontSize: "1rem" }}
+            sx={{
+              color: theme.palette.info.main,
+              fontSize: { xs: "0.875rem", md: "1rem" },
+            }}
           />
           <Typography
-            sx={{ color: theme.palette.text.secondary, fontSize: "0.85rem" }}
+            sx={{
+              color: theme.palette.text.secondary,
+              fontSize: { xs: "0.75rem", md: "0.85rem" },
+            }}
           >
             {t("card.start")}: {formatStartDate(tournament.startAt)}
           </Typography>
         </Stack>
 
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          sx={{ mb: { xs: 1.5, md: 2 } }}
+        >
           <PublicIcon
-            sx={{ color: theme.palette.info.main, fontSize: "1rem" }}
+            sx={{
+              color: theme.palette.info.main,
+              fontSize: { xs: "0.875rem", md: "1rem" },
+            }}
           />
           <Typography
-            sx={{ color: theme.palette.text.secondary, fontSize: "0.85rem" }}
+            sx={{
+              color: theme.palette.text.secondary,
+              fontSize: { xs: "0.75rem", md: "0.85rem" },
+            }}
           >
             {t("card.region")}: {tournament.region}
           </Typography>
@@ -179,17 +369,17 @@ export const TournamentCard: FC<TournamentCardProps> = ({
             sx={{
               bgcolor: theme.palette.background.default,
               borderRadius: 2,
-              p: 1.5,
-              mt: 2,
+              p: { xs: 1, md: 1.5 },
+              mt: { xs: 1.5, md: 2 },
               border: `1px solid ${alpha(theme.palette.info.main, 0.25)}`,
             }}
           >
             <Typography
               sx={{
                 color: theme.palette.info.main,
-                fontSize: "0.75rem",
+                fontSize: { xs: "0.7rem", md: "0.75rem" },
                 fontWeight: 600,
-                mb: 1,
+                mb: { xs: 0.75, md: 1 },
               }}
             >
               {t("card.organizer")}
@@ -198,13 +388,13 @@ export const TournamentCard: FC<TournamentCardProps> = ({
               <Avatar
                 src={organizer.profileImage || "/images/user-placeholder.png"}
                 alt={organizer.username}
-                sx={{ width: 36, height: 36 }}
+                sx={{ width: { xs: 32, md: 36 }, height: { xs: 32, md: 36 } }}
               />
               <Box>
                 <Typography
                   sx={{
                     color: theme.palette.text.primary,
-                    fontSize: "0.85rem",
+                    fontSize: { xs: "0.8rem", md: "0.85rem" },
                     fontWeight: 600,
                   }}
                 >
@@ -213,7 +403,7 @@ export const TournamentCard: FC<TournamentCardProps> = ({
                 <Typography
                   sx={{
                     color: theme.palette.text.secondary,
-                    fontSize: "0.75rem",
+                    fontSize: { xs: "0.7rem", md: "0.75rem" },
                   }}
                 >
                   @{organizer.username}
