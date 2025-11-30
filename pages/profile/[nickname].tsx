@@ -111,9 +111,6 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
         await Promise.all(promises);
 
         // TODO: Actualizar socialLinks cuando el backend lo soporte
-        console.log("Saving social links", {
-          newLinks,
-        });
 
         // Recargar la página para mostrar los cambios
         router.reload();
@@ -422,7 +419,6 @@ export const getServerSideProps: GetServerSideProps = async ({
     );
 
     if (!userFound) {
-      console.log("User not found:", nickname);
       return {
         redirect: {
           destination: "/404",

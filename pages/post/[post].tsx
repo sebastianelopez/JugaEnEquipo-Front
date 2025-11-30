@@ -64,7 +64,6 @@ export const getServerSideProps: GetServerSideProps = async ({
     const postFound = await postService.getPostById(post, serverToken);
 
     if (!postFound) {
-      console.log("Post not found:", postFound);
       return {
         redirect: {
           destination: "/404",

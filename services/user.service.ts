@@ -166,8 +166,6 @@ export const userService = {
   ): Promise<ServiceResult<{ isFollowing: boolean }>> => {
     try {
       const token = await getToken();
-      console.log("Following user:", id);
-      console.log("Using token:", token);
       const response = await api.put<{
         isFollowing?: boolean;
         message?: string;

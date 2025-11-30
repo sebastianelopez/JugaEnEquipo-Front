@@ -52,7 +52,6 @@ const SettingsPage: NextPage = () => {
   );
 
   const handleProfileSave = useCallback((data: any) => {
-    console.log("Profile data:", data);
     // TODO: Implement profile update logic
   }, []);
 
@@ -78,7 +77,8 @@ const SettingsPage: NextPage = () => {
       });
 
       if (!result.ok) {
-        const errorMessage = result.errorMessage || t("passwordUpdateErrorMessage");
+        const errorMessage =
+          result.errorMessage || t("passwordUpdateErrorMessage");
         showError({
           title: t("passwordUpdateError"),
           message: errorMessage,
@@ -95,13 +95,11 @@ const SettingsPage: NextPage = () => {
   );
 
   const handleDeleteAccount = useCallback(() => {
-    console.log("Delete account");
     // TODO: Implement account deletion logic
   }, []);
 
   const handleNotificationsSave = useCallback(
     (preferences: NotificationPreferences) => {
-      console.log("Notification preferences:", preferences);
       // TODO: Implement notification preferences save logic
     },
     []
