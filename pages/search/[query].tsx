@@ -2,6 +2,7 @@ import type { NextPage } from "next";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/router";
 import { MainLayout } from "../../layouts";
 import { User, Team } from "../../interfaces";
 import {
@@ -21,7 +22,11 @@ import {
   ListItemButton,
   Avatar,
   ListItemText,
+  TextField,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import { SearchOutlined, Close } from "@mui/icons-material";
 import { mockSearchResults } from "../../mocks/search";
 
 interface Props {
@@ -38,7 +43,10 @@ const SearchPage: NextPage<Props> = ({
   query,
 }) => {
   const t = useTranslations("Search");
-  
+  const tNavbar = useTranslations("Navbar");
+  const router = useRouter();
+  const [searchValue, setSearchValue] = useState(query);
+
   // Separate users and teams
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [teams, setTeams] = useState<Team[]>(initialTeams);
@@ -55,6 +63,11 @@ const SearchPage: NextPage<Props> = ({
   const [availableGames, setAvailableGames] = useState<string[]>([]);
 
   useEffect(() => {
+    // Update search value when query changes (e.g., browser back/forward)
+    setSearchValue(query);
+  }, [query]);
+
+  useEffect(() => {
     // Split users and groups from the results
     const games = initialUsers.flatMap(
       (user) => user.games?.map((game) => game.name) || []
@@ -64,6 +77,31 @@ const SearchPage: NextPage<Props> = ({
     updateDisplayedUsers(initialUsers);
     updateDisplayedGroups(initialTeams);
   }, [initialUsers, initialTeams]);
+
+  const handleSearchSubmit = () => {
+    const trimmedValue = searchValue.trim();
+    if (trimmedValue && trimmedValue !== query) {
+      router.replace(`/search/${encodeURIComponent(trimmedValue)}`);
+    }
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearchSubmit();
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchValue("");
+    setUsers([]);
+    setTeams([]);
+    setDisplayedUsers([]);
+    setDisplayedTeams([]);
+    setHasMoreUsers(false);
+    setHasMoreGroups(false);
+    setSelectedGame("all");
+    setSelectedElo("all");
+  };
 
   const updateDisplayedUsers = (filteredUsers: User[]) => {
     setDisplayedUsers(filteredUsers.slice(0, 5));
@@ -139,12 +177,60 @@ const SearchPage: NextPage<Props> = ({
   };
 
   return (
-    <MainLayout
-      title={t("title")}
-      pageDescription={t("pageDescription")}
-    >
-      <Box sx={{ padding: 3, paddingTop: 2 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+    <MainLayout title={t("title")} pageDescription={t("pageDescription")}>
+      <Box sx={{ padding: { xs: 2, sm: 3 }, paddingTop: 2 }}>
+        {/* Search Input */}
+        <Box sx={{ mb: 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "stretch", sm: "center" },
+            }}
+          >
+            <TextField
+              fullWidth
+              placeholder={tNavbar("search")}
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyPress={handleSearchKeyPress}
+              size="medium"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                  bgcolor: "background.paper",
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchOutlined sx={{ color: "text.secondary" }} />
+                  </InputAdornment>
+                ),
+                endAdornment: searchValue ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={handleClearSearch}
+                      edge="end"
+                      sx={{ mr: -1 }}
+                    >
+                      <Close fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              }}
+            />
+          </Box>
+        </Box>
+
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={{ fontSize: { xs: "1.5rem", sm: "2rem" }, mb: 3 }}
+        >
           {t("resultsFor")} &quot;{query}&quot;
         </Typography>
 
@@ -230,9 +316,7 @@ const SearchPage: NextPage<Props> = ({
                   )}
                 </List>
               ) : (
-                <Typography>
-                  {t("noUsersFound")}
-                </Typography>
+                <Typography>{t("noUsersFound")}</Typography>
               )}
             </Paper>
           </Grid>
@@ -276,9 +360,7 @@ const SearchPage: NextPage<Props> = ({
                   )}
                 </Box>
               ) : (
-                <Typography>
-                  {t("noGroupsFound")}
-                </Typography>
+                <Typography>{t("noGroupsFound")}</Typography>
               )}
             </Paper>
           </Grid>

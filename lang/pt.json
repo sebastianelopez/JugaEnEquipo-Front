@@ -7,7 +7,11 @@
         "signUp": "Registrar",
         "features": "Características",
         "community": "Comunidade",
-        "about": "Sobre"
+        "about": "Sobre",
+        "advancedSearch": "Pesquisa Avançada",
+        "results": "Resultados",
+        "noResults": "Nenhum usuário encontrado",
+        "showingResults": "Mostrando {showing} de {total} resultados"
     },
     "Teams": {
         "title": "Equipes de Esports",
@@ -550,6 +554,7 @@
         "loadMoreUsers": "Carregar mais usuários",
         "loadMoreGroups": "Carregar mais grupos",
         "noUsersFound": "Nenhum usuário encontrado para sua pesquisa",
-        "noGroupsFound": "Nenhum grupo encontrado para sua pesquisa"
+        "noGroupsFound": "Nenhum grupo encontrado para sua pesquisa",
+        "clearSearch": "Limpar pesquisa"
     }
 }

@@ -7,7 +7,11 @@
         "signUp": "Registrarse",
         "features": "Características",
         "community": "Comunidad",
-        "about": "Nosotros"
+        "about": "Nosotros",
+        "advancedSearch": "Búsqueda Avanzada",
+        "results": "Resultados",
+        "noResults": "No se encontraron usuarios",
+        "showingResults": "Mostrando {showing} de {total} resultados"
     },
     "Teams": {
         "title": "Equipos Gaming",
@@ -550,6 +554,7 @@
         "loadMoreUsers": "Cargar más usuarios",
         "loadMoreGroups": "Cargar más grupos",
         "noUsersFound": "No se encontraron usuarios para tu búsqueda",
-        "noGroupsFound": "No se encontraron grupos para tu búsqueda"
+        "noGroupsFound": "No se encontraron grupos para tu búsqueda",
+        "clearSearch": "Limpiar búsqueda"
     }
 }
