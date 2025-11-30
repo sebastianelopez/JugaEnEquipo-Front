@@ -126,16 +126,16 @@ export default function TeamsPage() {
 
   return (
     <MainLayout pageDescription="Teams page" title={t("title")}>
-      <Container maxWidth="xl">
+      <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
         {/* Header */}
-        <Box sx={{ mb: 6 }}>
+        <Box sx={{ mb: { xs: 4, md: 6 }, mt: { xs: 2, md: 0 } }}>
           <Typography
             variant="h2"
             sx={{
               color: theme.palette.text.primary,
               fontWeight: 800,
-              mb: 2,
-              fontSize: { xs: "2rem", md: "3rem" },
+              mb: { xs: 1.5, md: 2 },
+              fontSize: { xs: "1.75rem", sm: "2.25rem", md: "3rem" },
               textAlign: "center",
             }}
           >
@@ -146,7 +146,9 @@ export default function TeamsPage() {
             sx={{
               color: theme.palette.info.main,
               textAlign: "center",
-              mb: 4,
+              mb: { xs: 3, md: 4 },
+              fontSize: { xs: "1rem", md: "1.25rem" },
+              px: { xs: 2, md: 0 },
             }}
           >
             {t("subtitle")}
@@ -169,7 +171,8 @@ export default function TeamsPage() {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              minHeight: "400px",
+              minHeight: { xs: "300px", md: "400px" },
+              py: { xs: 4, md: 0 },
             }}
           >
             <CircularProgress />
@@ -178,8 +181,13 @@ export default function TeamsPage() {
 
         {/* Error State */}
         {error && !loading && (
-          <Box sx={{ mb: 4 }}>
-            <Alert severity="error">{error}</Alert>
+          <Box sx={{ mb: { xs: 3, md: 4 }, px: { xs: 1, md: 0 } }}>
+            <Alert
+              severity="error"
+              sx={{ fontSize: { xs: "0.875rem", md: "1rem" } }}
+            >
+              {error}
+            </Alert>
           </Box>
         )}
 
@@ -190,19 +198,39 @@ export default function TeamsPage() {
               <Box
                 sx={{
                   textAlign: "center",
-                  py: 8,
+                  py: { xs: 6, md: 10 },
+                  px: { xs: 2, md: 0 },
                   color: theme.palette.text.secondary,
                 }}
               >
-                <Typography variant="h6">
+                <Typography
+                  variant="h5"
+                  sx={{
+                    mb: 2,
+                    color: theme.palette.text.primary,
+                    fontWeight: 600,
+                  }}
+                >
                   {searchQuery
                     ? t("noTeamsFound") || "No se encontraron equipos"
                     : t("noTeams") || "No hay equipos disponibles"}
                 </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    maxWidth: "400px",
+                    mx: "auto",
+                  }}
+                >
+                  {searchQuery
+                    ? "Intenta con otros términos de búsqueda"
+                    : "Sé el primero en crear un equipo"}
+                </Typography>
               </Box>
             ) : (
               <>
-                <Grid container spacing={3}>
+                <Grid container spacing={{ xs: 2, sm: 3 }}>
                   {paginatedTeams.map((team) => (
                     <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={team.id}>
                       <TeamCard
@@ -220,17 +248,25 @@ export default function TeamsPage() {
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <Box
-                    sx={{ display: "flex", justifyContent: "center", mt: 6 }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      mt: { xs: 4, md: 6 },
+                      mb: { xs: 2, md: 0 },
+                    }}
                   >
                     <Pagination
                       count={totalPages}
                       page={currentPage}
                       onChange={handlePageChange}
-                      size="large"
+                      size="medium"
                       sx={{
                         "& .MuiPaginationItem-root": {
                           color: theme.palette.text.primary,
                           borderColor: theme.palette.divider,
+                          fontSize: { xs: "0.875rem", md: "1rem" },
+                          minWidth: { xs: "32px", md: "40px" },
+                          height: { xs: "32px", md: "40px" },
                         },
                         "& .MuiPaginationItem-root.Mui-selected": {
                           bgcolor: theme.palette.primary.main,
@@ -238,6 +274,9 @@ export default function TeamsPage() {
                           "&:hover": {
                             bgcolor: theme.palette.primary.dark,
                           },
+                        },
+                        "& .MuiPaginationItem-root:hover": {
+                          bgcolor: theme.palette.action.hover,
                         },
                       }}
                     />

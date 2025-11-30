@@ -46,6 +46,7 @@ export default function TeamDetailPage({ id }: Props) {
   const { showSuccess, showError } = useFeedback();
   const [team, setTeam] = useState<Team | null>(null);
   const [teamGames, setTeamGames] = useState<Game[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [canEdit, setCanEdit] = useState(false);
@@ -80,9 +81,12 @@ export default function TeamDetailPage({ id }: Props) {
             setTeamGames(teamData.games);
           }
 
-          // Check user's membership and request status
+          // Load team members first, then check user status
+          const loadedMembers = await loadMembers(id, teamData);
+
+          // Check user's membership and request status after members are loaded
           if (user?.id) {
-            await checkUserStatus(teamData, user.id);
+            await checkUserStatus(teamData, user.id, loadedMembers);
           } else {
             setJoinCardState("request");
           }
@@ -101,13 +105,56 @@ export default function TeamDetailPage({ id }: Props) {
     }
   }, [id, user?.id]);
 
-  const checkUserStatus = async (teamData: Team, userId: string) => {
+  const loadMembers = async (teamId: string, teamData?: Team): Promise<any[]> => {
+    try {
+      const result = await teamService.findMembers(teamId);
+      if (result.ok && result.data) {
+        // Transform API response to MembersList format using the actual data structure
+        const transformedMembers = result.data.map((member: any) => {
+          const fullName = `${member.firstname || ""} ${member.lastname || ""}`.trim();
+          
+          return {
+            id: member.id,
+            name: fullName || member.username,
+            username: member.username,
+            avatar: member.profileImage || "/default-avatar.png",
+            role: member.isCreator || member.isLeader ? "Capitán" : undefined,
+            position: "",
+            joinDate: member.joinedAt,
+          };
+        });
+        setMembers(transformedMembers);
+        return transformedMembers;
+      }
+      return [];
+    } catch (err) {
+      console.error("Error loading members:", err);
+      // Don't set error state, just log it - members are not critical
+      return [];
+    }
+  };
+
+  const checkUserStatus = async (teamData: Team, userId: string, membersList?: any[]) => {
     try {
       // Check if user is leader or creator (should hide join card)
       if (userId === teamData.leaderId || userId === teamData.creatorId) {
         setJoinCardState("hidden");
         setIsMember(false);
         setHasPendingRequest(false);
+        return;
+      }
+
+      // Use provided members list or current state
+      const currentMembers = membersList || members;
+
+      // Check if user is a member of the team by checking members list
+      const isUserMember = currentMembers.some(
+        (member) => member.id === userId
+      );
+      
+      if (isUserMember) {
+        setIsMember(true);
+        setJoinCardState("member");
         return;
       }
 
@@ -127,9 +174,7 @@ export default function TeamDetailPage({ id }: Props) {
         }
       }
 
-      // TODO: Check if user is a member of the team
-      // For now, we'll assume they're not a member if they're not leader/creator and have no pending request
-      // This should be replaced with an actual check when the endpoint is available
+      // User is not a member and has no pending request
       setIsMember(false);
       setJoinCardState("request");
     } catch (err) {
@@ -149,9 +194,11 @@ export default function TeamDetailPage({ id }: Props) {
         if (gamesResult.ok && gamesResult.data) {
           setTeamGames(gamesResult.data);
         }
+        // Reload members
+        const reloadedMembers = await loadMembers(id, result.data);
         // Recheck user status
         if (user?.id) {
-          await checkUserStatus(result.data, user.id);
+          await checkUserStatus(result.data, user.id, reloadedMembers);
         }
       }
     }
@@ -223,13 +270,14 @@ export default function TeamDetailPage({ id }: Props) {
   if (loading) {
     return (
       <MainLayout pageDescription="Team detail" title="Loading...">
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
           <Box
             sx={{
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              minHeight: "400px",
+              minHeight: { xs: "300px", md: "400px" },
+              py: { xs: 4, md: 0 },
             }}
           >
             <CircularProgress />
@@ -242,8 +290,10 @@ export default function TeamDetailPage({ id }: Props) {
   if (error || !team) {
     return (
       <MainLayout pageDescription="Team detail" title="Error">
-        <Container maxWidth="xl">
-          <Alert severity="error">{error || "Equipo no encontrado"}</Alert>
+        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
+          <Alert severity="error" sx={{ fontSize: { xs: "0.875rem", md: "1rem" } }}>
+            {error || "Equipo no encontrado"}
+          </Alert>
         </Container>
       </MainLayout>
     );
@@ -255,8 +305,7 @@ export default function TeamDetailPage({ id }: Props) {
     icon: getGameImage(game.name),
   }));
 
-  // Mock data for members and achievements (until API provides them)
-  const members: any[] = [];
+  // Mock data for achievements (until API provides them)
   const achievements: any[] = [];
   const stats = {
     totalTournaments: 0,
@@ -287,26 +336,27 @@ export default function TeamDetailPage({ id }: Props) {
         leaderLabel={t("leader") as string}
       />
 
-      <Container maxWidth="xl" sx={{ mt: 4 }}>
-        <Grid container spacing={4}>
+      <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 4 }, px: { xs: 2, sm: 3 } }}>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
           {/* Main Content */}
           <Grid size={{ xs: 12, lg: 8 }}>
             {/* About Section */}
             <Card
               sx={{
                 bgcolor: theme.palette.background.paper,
-                borderRadius: 3,
+                borderRadius: { xs: 2, md: 3 },
                 border: `1px solid ${theme.palette.divider}`,
-                mb: 3,
+                mb: { xs: 2, md: 3 },
               }}
             >
-              <CardContent sx={{ p: 4 }}>
+              <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
                 <Typography
                   variant="h5"
                   sx={{
                     color: theme.palette.text.primary,
                     fontWeight: 700,
-                    mb: 3,
+                    mb: { xs: 2, md: 3 },
+                    fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
                   }}
                 >
                   {t("about")}
@@ -315,7 +365,8 @@ export default function TeamDetailPage({ id }: Props) {
                   sx={{
                     color: theme.palette.text.secondary,
                     lineHeight: 1.8,
-                    mb: 3,
+                    mb: { xs: 2, md: 3 },
+                    fontSize: { xs: "0.875rem", md: "1rem" },
                   }}
                 >
                   {team.description ||
@@ -323,26 +374,31 @@ export default function TeamDetailPage({ id }: Props) {
                 </Typography>
 
                 {/* Stats */}
-                <Grid container spacing={2}>
+                <Grid container spacing={{ xs: 1, sm: 2 }}>
                   <Grid size={{ xs: 4 }}>
                     <Paper
                       sx={{
                         bgcolor: theme.palette.background.default,
-                        p: 2,
+                        p: { xs: 1.5, sm: 2 },
                         textAlign: "center",
                         borderRadius: 2,
                       }}
                     >
                       <Typography
                         variant="h4"
-                        sx={{ color: theme.palette.info.main, fontWeight: 800 }}
+                        sx={{
+                          color: theme.palette.info.main,
+                          fontWeight: 800,
+                          fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
+                        }}
                       >
                         {stats.totalTournaments}
                       </Typography>
                       <Typography
                         sx={{
                           color: theme.palette.text.secondary,
-                          fontSize: "0.85rem",
+                          fontSize: { xs: "0.75rem", sm: "0.85rem" },
+                          mt: { xs: 0.5, sm: 0 },
                         }}
                       >
                         {t("tournamentsLabel", { default: "Torneos" })}
@@ -353,7 +409,7 @@ export default function TeamDetailPage({ id }: Props) {
                     <Paper
                       sx={{
                         bgcolor: theme.palette.background.default,
-                        p: 2,
+                        p: { xs: 1.5, sm: 2 },
                         textAlign: "center",
                         borderRadius: 2,
                       }}
@@ -363,6 +419,7 @@ export default function TeamDetailPage({ id }: Props) {
                         sx={{
                           color: theme.palette.success.main,
                           fontWeight: 800,
+                          fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
                         }}
                       >
                         {stats.wins}
@@ -370,7 +427,8 @@ export default function TeamDetailPage({ id }: Props) {
                       <Typography
                         sx={{
                           color: theme.palette.text.secondary,
-                          fontSize: "0.85rem",
+                          fontSize: { xs: "0.75rem", sm: "0.85rem" },
+                          mt: { xs: 0.5, sm: 0 },
                         }}
                       >
                         {t("winsLabel", { default: "Victorias" })}
@@ -381,7 +439,7 @@ export default function TeamDetailPage({ id }: Props) {
                     <Paper
                       sx={{
                         bgcolor: theme.palette.background.default,
-                        p: 2,
+                        p: { xs: 1.5, sm: 2 },
                         textAlign: "center",
                         borderRadius: 2,
                       }}
@@ -391,6 +449,7 @@ export default function TeamDetailPage({ id }: Props) {
                         sx={{
                           color: theme.palette.warning.main,
                           fontWeight: 800,
+                          fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
                         }}
                       >
                         {stats.winRate}%
@@ -398,7 +457,8 @@ export default function TeamDetailPage({ id }: Props) {
                       <Typography
                         sx={{
                           color: theme.palette.text.secondary,
-                          fontSize: "0.85rem",
+                          fontSize: { xs: "0.75rem", sm: "0.85rem" },
+                          mt: { xs: 0.5, sm: 0 },
                         }}
                       >
                         {t("winRateLabel", { default: "Win Rate" })}
@@ -413,12 +473,12 @@ export default function TeamDetailPage({ id }: Props) {
             <Card
               sx={{
                 bgcolor: theme.palette.background.paper,
-                borderRadius: 3,
+                borderRadius: { xs: 2, md: 3 },
                 border: `1px solid ${theme.palette.divider}`,
-                mb: 3,
+                mb: { xs: 2, md: 3 },
               }}
             >
-              <CardContent sx={{ p: 4 }}>
+              <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
                 <TeamGamesGrid
                   games={gamesForDisplay as any}
                   title={t("gamesTitle") as string}
@@ -430,12 +490,12 @@ export default function TeamDetailPage({ id }: Props) {
             <Card
               sx={{
                 bgcolor: theme.palette.background.paper,
-                borderRadius: 3,
+                borderRadius: { xs: 2, md: 3 },
                 border: `1px solid ${theme.palette.divider}`,
-                mb: 3,
+                mb: { xs: 2, md: 3 },
               }}
             >
-              <CardContent sx={{ p: 4 }}>
+              <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
                 <MembersList
                   members={members as any}
                   title={
@@ -457,11 +517,11 @@ export default function TeamDetailPage({ id }: Props) {
             <Card
               sx={{
                 bgcolor: theme.palette.background.paper,
-                borderRadius: 3,
+                borderRadius: { xs: 2, md: 3 },
                 border: `1px solid ${theme.palette.divider}`,
               }}
             >
-              <CardContent sx={{ p: 4 }}>
+              <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
                 <AchievementsList
                   achievements={achievements as any}
                   title={t("achievementsTitle") as string}
@@ -481,13 +541,14 @@ export default function TeamDetailPage({ id }: Props) {
             <Card
               sx={{
                 bgcolor: theme.palette.background.paper,
-                borderRadius: 3,
+                borderRadius: { xs: 2, md: 3 },
                 border: `1px solid ${theme.palette.divider}`,
-                position: "sticky",
-                top: 20,
+                position: { xs: "static", lg: "sticky" },
+                top: { lg: 20 },
+                mb: { xs: 2, lg: 0 },
               }}
             >
-              <CardContent sx={{ p: 4 }}>
+              <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
                 <JoinCard
                   title={t("joinCta") as string}
                   membersCount={members.length}
@@ -501,13 +562,13 @@ export default function TeamDetailPage({ id }: Props) {
                 />
                 {!(isCreator || isLeader || joinCardState === "member") && (
                   <>
-                    <Divider sx={{ bgcolor: theme.palette.divider, my: 3 }} />
+                    <Divider sx={{ bgcolor: theme.palette.divider, my: { xs: 2, md: 3 } }} />
                     <Typography
                       sx={{
                         color: theme.palette.text.secondary,
-                        fontSize: "0.85rem",
+                        fontSize: { xs: "0.8rem", md: "0.85rem" },
                         textAlign: "center",
-                        mb: 2,
+                        mb: { xs: 1.5, md: 2 },
                       }}
                     >
                       {t("requirementsTitle")}
@@ -518,7 +579,7 @@ export default function TeamDetailPage({ id }: Props) {
                           key={idx}
                           sx={{
                             color: theme.palette.text.secondary,
-                            fontSize: "0.8rem",
+                            fontSize: { xs: "0.75rem", md: "0.8rem" },
                           }}
                         >
                           • {req}

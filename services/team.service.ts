@@ -189,6 +189,15 @@ export const teamService = {
   },
 
   /**
+   * Find all members of a team
+   * GET /api/team/:team_id/members
+   */
+  findMembers: async (teamId: string): Promise<ServiceResult<any[]>> => {
+    const token = await getToken();
+    return safeCall<any[]>(() => api.get(`/team/${teamId}/members`, {}, token));
+  },
+
+  /**
    * TODO: Reject a team access request
    * PUT /api/team/request/:request_id/reject
    * Endpoint not yet implemented in backend

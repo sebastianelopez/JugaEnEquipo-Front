@@ -51,7 +51,24 @@ export const EditTeamModal: FC<EditTeamModalProps> = ({
       const allGames: Game[] =
         allGamesResult.ok && allGamesResult.data ? allGamesResult.data : [];
 
-      // TODO: update team name and description when endpoint is ready
+      const updatePayload: EditTeamPayload = {
+        name: values.name,
+        description: values.description,
+        image:
+          values.image && values.image.startsWith("data:image")
+            ? values.image
+            : undefined,
+      };
+
+      const updateResult = await teamService.create(updatePayload, team.id);
+      if (!updateResult.ok) {
+        showError({
+          title: t("errorTitle") || "Error",
+          message: updateResult.errorMessage || "Error al actualizar el equipo",
+        });
+        setSubmitting(false);
+        return;
+      }
 
       // Update games
       const currentGameIds = teamGames.map((g) => g.id);
