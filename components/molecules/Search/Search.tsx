@@ -1,6 +1,7 @@
 import {
   Avatar,
   Box,
+  Button,
   CircularProgress,
   IconButton,
   Input,
@@ -11,8 +12,9 @@ import {
   ListItemText,
   SxProps,
   Theme,
+  Typography,
 } from "@mui/material";
-import { SearchOutlined } from "@mui/icons-material";
+import { Close, SearchOutlined } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/router";
@@ -30,8 +32,11 @@ export const Search = ({ sx }: SearchProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [totalResults, setTotalResults] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -60,6 +65,7 @@ export const Search = ({ sx }: SearchProps) => {
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
+    setSelectedIndex(-1);
 
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
@@ -67,27 +73,59 @@ export const Search = ({ sx }: SearchProps) => {
 
     if (value.trim()) {
       setIsLoading(true);
+      setHasSearched(false);
 
       searchTimeoutRef.current = setTimeout(() => {
         searchUsers(value);
-      }, 500);
+      }, 300);
     } else {
       setSearchResults([]);
       setShowResults(false);
       setIsLoading(false);
+      setHasSearched(false);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    setSearchResults([]);
+    setTotalResults(0);
+    setShowResults(false);
+    setHasSearched(false);
+    setSelectedIndex(-1);
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
   };
 
   const searchUsers = async (term: string) => {
     try {
-      const users = (await userService.searchUsers(term)).data;
+      const response = await userService.searchUsers(term);
+      const users = response || [];
+      const total = users.length;
+      setHasSearched(true);
       setShowResults(true);
-      setSearchResults(users || []);
-      console.log("Search results:", users);
+      // Limit to maximum 3 results
+      setSearchResults(users.slice(0, 3));
+      setTotalResults(total);
+      setSelectedIndex(-1);
     } catch (error) {
       console.error("Error searching users:", error);
+      setHasSearched(true);
+      setShowResults(true);
+      setSearchResults([]);
+      setTotalResults(0);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleAdvancedSearch = () => {
+    if (searchTerm.trim()) {
+      router.push(`/search/${encodeURIComponent(searchTerm.trim())}`);
+      setShowResults(false);
+      setIsExpanded(false);
+      setSearchTerm("");
     }
   };
 
@@ -110,11 +148,42 @@ export const Search = ({ sx }: SearchProps) => {
       }
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isExpanded || !showResults) return;
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedIndex((prev) =>
+          prev < searchResults.length - 1 ? prev + 1 : prev
+        );
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+      } else if (
+        e.key === "Enter" &&
+        selectedIndex >= 0 &&
+        searchResults[selectedIndex]
+      ) {
+        e.preventDefault();
+        const selectedUser = searchResults[selectedIndex];
+        router.push(`/profile/${selectedUser.username}`);
+        setShowResults(false);
+        setIsExpanded(false);
+        setSearchTerm("");
+      } else if (e.key === "Escape") {
+        setShowResults(false);
+        setIsExpanded(false);
+        setSearchTerm("");
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [isExpanded, showResults, selectedIndex, searchResults, router]);
 
   return (
     <Box
@@ -140,18 +209,29 @@ export const Search = ({ sx }: SearchProps) => {
           backgroundColor: "background.paper",
         }}
         onBlur={handleCollapse}
+        onFocus={() => {
+          if (searchTerm.trim() && searchResults.length > 0) {
+            setShowResults(true);
+          }
+        }}
         endAdornment={
-          isLoading ? (
-            <CircularProgress size={20} />
-          ) : (
-            <IconButton onClick={handleExpand}>
-              <SearchOutlined />
-            </IconButton>
-          )
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            {isLoading ? (
+              <CircularProgress size={20} />
+            ) : searchTerm && isExpanded ? (
+              <IconButton size="small" onClick={handleClearSearch} edge="end">
+                <Close fontSize="small" />
+              </IconButton>
+            ) : (
+              <IconButton onClick={handleExpand} edge="end">
+                <SearchOutlined />
+              </IconButton>
+            )}
+          </Box>
         }
       />
 
-      {showResults && searchResults.length > 0 && (
+      {showResults && (
         <Box
           sx={{
             position: "absolute",
@@ -162,48 +242,104 @@ export const Search = ({ sx }: SearchProps) => {
             borderRadius: "8px",
             bgcolor: "background.paper",
             overflow: "hidden",
+            maxHeight: 400,
+            overflowY: "auto",
           }}
         >
-          <List sx={{ py: 0 }}>
-            {searchResults.map((user, index) => (
-              <ListItem
-                key={user.id || index}
-                disablePadding
+          {searchResults.length > 0 ? (
+            <>
+              <Box
                 sx={{
-                  borderBottom:
-                    index < searchResults.length - 1
-                      ? "1px solid #eee"
-                      : "none",
+                  px: 2,
+                  py: 1,
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
+                  bgcolor: "action.hover",
                 }}
               >
-                <ListItemButton
-                  onClick={() => handleResultClick(user)}
-                  sx={{
-                    py: 1,
-                    "&:hover": {
-                      bgcolor: "rgba(0,0,0,0.04)",
-                    },
-                    color: "text.primary",
-                  }}
-                >
-                  <ListItemAvatar>
-                    <Avatar
-                      alt={`Avatar de ${user.username}`}
-                      src={user.profileImage}
-                      sx={{ width: 40, height: 40 }}
+                <Typography variant="caption" color="text.secondary">
+                  {totalResults > 3
+                    ? t("showingResults", {
+                        showing: searchResults.length,
+                        total: totalResults,
+                      })
+                    : t("results") + ` (${totalResults})`}
+                </Typography>
+              </Box>
+              <List sx={{ py: 0 }}>
+                {searchResults.map((user, index) => (
+                  <ListItem
+                    key={user.id || index}
+                    disablePadding
+                    sx={{
+                      borderBottom:
+                        index < searchResults.length - 1 ? "1px solid" : "none",
+                      borderColor: "divider",
+                    }}
+                  >
+                    <ListItemButton
+                      onClick={() => handleResultClick(user)}
+                      selected={selectedIndex === index}
+                      sx={{
+                        py: 1.5,
+                        "&:hover": {
+                          bgcolor: "action.hover",
+                        },
+                        "&.Mui-selected": {
+                          bgcolor: "action.selected",
+                          "&:hover": {
+                            bgcolor: "action.selected",
+                          },
+                        },
+                        color: "text.primary",
+                      }}
                     >
-                      {!user.profileImage &&
-                        user.username.charAt(0).toUpperCase()}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={user.username}
-                    secondary={`${user.firstname} ${user.lastname}`}
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
+                      <ListItemAvatar>
+                        <Avatar
+                          alt={`Avatar de ${user.username}`}
+                          src={user.profileImage}
+                          sx={{ width: 40, height: 40 }}
+                        >
+                          {!user.profileImage &&
+                            user.username.charAt(0).toUpperCase()}
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={user.username}
+                        secondary={`${user.firstname} ${user.lastname}`}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+              <Box
+                sx={{ p: 1, borderTop: "1px solid", borderColor: "divider" }}
+              >
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={handleAdvancedSearch}
+                  sx={{ textTransform: "none" }}
+                >
+                  {t("advancedSearch")}
+                </Button>
+              </Box>
+            </>
+          ) : hasSearched && !isLoading ? (
+            <Box sx={{ p: 3, textAlign: "center" }}>
+              <Typography variant="body2" color="text.secondary">
+                {t("noResults")}
+              </Typography>
+              <Button
+                variant="outlined"
+                onClick={handleAdvancedSearch}
+                sx={{ mt: 2, textTransform: "none" }}
+                fullWidth
+              >
+                {t("advancedSearch")}
+              </Button>
+            </Box>
+          ) : null}
         </Box>
       )}
     </Box>

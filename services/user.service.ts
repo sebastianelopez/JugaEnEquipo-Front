@@ -9,11 +9,9 @@ interface UserResponse {
 }
 
 interface SearchUsersResponse {
-  data: {
-    data: User[];
-    metadata: {
-      quantity: number;
-    };
+  data: User[];
+  metadata: {
+    quantity: number;
   };
 }
 
@@ -168,8 +166,6 @@ export const userService = {
   ): Promise<ServiceResult<{ isFollowing: boolean }>> => {
     try {
       const token = await getToken();
-      console.log("Following user:", id);
-      console.log("Using token:", token);
       const response = await api.put<{
         isFollowing?: boolean;
         message?: string;
@@ -257,11 +253,7 @@ export const userService = {
   searchUsers: async (query: string) => {
     const token = await getToken();
     return (
-      await api.get<SearchUsersResponse>(
-        `/users`,
-        { q: `username:${encodeURIComponent(query)}` },
-        token
-      )
+      await api.get<SearchUsersResponse>(`/users`, { username: query }, token)
     ).data;
   },
 

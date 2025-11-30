@@ -7,7 +7,11 @@
         "signUp": "Registrar",
         "features": "Características",
         "community": "Comunidade",
-        "about": "Sobre"
+        "about": "Sobre",
+        "advancedSearch": "Pesquisa Avançada",
+        "results": "Resultados",
+        "noResults": "Nenhum usuário encontrado",
+        "showingResults": "Mostrando {showing} de {total} resultados"
     },
     "Teams": {
         "title": "Equipes de Esports",
@@ -533,5 +537,24 @@
         "comingSoon": "Em breve",
         "workingOnFeature": "Estamos trabalhando nesta funcionalidade",
         "availableSoon": "Esta funcionalidade estará disponível em breve"
+    },
+    "Search": {
+        "title": "Juga en Equipo - Pesquisa",
+        "pageDescription": "Encontre jogadores ou sua equipe",
+        "resultsFor": "Resultados para:",
+        "users": "Usuários",
+        "groups": "Grupos",
+        "game": "Jogo",
+        "allGames": "Todos os jogos",
+        "ranking": "Ranking",
+        "allRankings": "Todos os rankings",
+        "low": "Baixo (< 1000)",
+        "medium": "Médio (1000-2000)",
+        "high": "Alto (> 2000)",
+        "loadMoreUsers": "Carregar mais usuários",
+        "loadMoreGroups": "Carregar mais grupos",
+        "noUsersFound": "Nenhum usuário encontrado para sua pesquisa",
+        "noGroupsFound": "Nenhum grupo encontrado para sua pesquisa",
+        "clearSearch": "Limpar pesquisa"
     }
 }

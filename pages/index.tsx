@@ -10,12 +10,10 @@ import mobileBackground from "../assets/mobile-background.png";
 import { AboutUs } from "../components/organisms/sections/AboutUs";
 
 const Home: NextPage = (props) => {
-  console.log(props);
   const t = useTranslations("MobileApp");
 
   const handleDownloadApp = () => {
     // TODO: Implementar lógica de descarga o redirección a la tienda
-    console.log("Descargar app móvil");
   };
 
   return (
