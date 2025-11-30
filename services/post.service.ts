@@ -2,6 +2,7 @@ import { Comment } from "../interfaces/comment";
 import { Post } from "../interfaces/post";
 import { api } from "../lib/api";
 import { getToken } from "./auth.service";
+import { buildQ } from "../utils/buildQ";
 
 interface Resource {
   id: string;
@@ -11,6 +12,11 @@ interface Resource {
 interface PostResponse {
   data: Post | Post[];
 }
+
+type Result<T> = {
+  data: T | null;
+  error: { message: string; status?: number } | null;
+};
 
 interface CommentResponse {
   data: Comment | Comment[];
@@ -24,7 +30,15 @@ export const postService = {
       resources?: string[];
       sharedPostId?: string | null;
     }
-  ) => await api.put<PostResponse>(`/post/${postId}`, postData),
+  ) => {
+    try {
+      const result = await api.put<PostResponse>(`/post/${postId}`, postData);
+      return result;
+    } catch (error) {
+      console.error("❌ createPost - Error:", error);
+      throw error;
+    }
+  },
 
   addResource: async (
     postId: string,
@@ -41,11 +55,33 @@ export const postService = {
     formData.append("resource", resourceData.resource);
     formData.append("type", resourceData.type);
 
-    return await api.post<Resource>(`/post/${postId}/resource`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+    // Log FormData contents (using Array.from for compatibility)
+    const formDataEntries = Array.from(formData.entries());
+    formDataEntries.forEach(([key, value]) => {
+      if (value instanceof File) {
+        console.log(
+          `  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`
+        );
+      } else {
+        console.log(`  ${key}: ${value}`);
+      }
     });
+
+    try {
+      const result = await api.post<Resource>(
+        `/post/${postId}/resource`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return result;
+    } catch (error) {
+      console.error("❌ addResource - Error:", error);
+      throw error;
+    }
   },
 
   likePost: async (postId: string) =>
@@ -74,17 +110,75 @@ export const postService = {
     }
   },
 
+  checkForNewPosts: async (
+    lastVisiblePost: Post | null,
+    limit: number = 10
+  ): Promise<{ hasNewPosts: boolean; count: number; posts: Post[] }> => {
+    try {
+      const result = await postService.getMyFeed({ limit, offset: 0 });
+
+      if (result.error || !result.data) {
+        return {
+          hasNewPosts: false,
+          count: 0,
+          posts: [],
+        };
+      }
+
+      const posts = result.data;
+
+      if (!lastVisiblePost) {
+        return {
+          hasNewPosts: posts.length > 0,
+          count: posts.length,
+          posts: posts,
+        };
+      }
+
+      const lastVisibleTimestamp = new Date(
+        lastVisiblePost.createdAt
+      ).getTime();
+
+      const newPosts = posts.filter((post) => {
+        const postTimestamp = new Date(post.createdAt).getTime();
+        return postTimestamp > lastVisibleTimestamp;
+      });
+
+      return {
+        hasNewPosts: newPosts.length > 0,
+        count: newPosts.length,
+        posts: newPosts,
+      };
+    } catch (error) {
+      console.error("Error checking for new posts:", error);
+      return {
+        hasNewPosts: false,
+        count: 0,
+        posts: [],
+      };
+    }
+  },
+
   searchPosts: (query: string) =>
     api.get<Post[]>(`/posts`, {
       params: { q: query },
     }),
 
-  getPostsByUsername: async (username: string) =>
-    (
-      await api.get<PostResponse>(`/posts`, {
-        q: `username:${username}`,
-      })
-    ).data,
+  getPostsByUsername: async (username: string): Promise<Result<Post[]>> => {
+    try {
+      const res = await api.get<PostResponse>(`/posts`, {
+        username: `${username}`,
+      });
+      const posts = Array.isArray(res.data) ? res.data : [res.data];
+      return { data: posts, error: null };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || "Unknown error";
+      const status = error?.response?.status;
+      console.error("getPostsByUsername - API error:", { message, status });
+      return { data: null, error: { message, status } };
+    }
+  },
 
   addComment: async (
     postId: string,
@@ -94,8 +188,90 @@ export const postService = {
   getPostComments: async (postId: string) =>
     (await api.get<CommentResponse>(`/post/${postId}/comments`)).data,
 
-  getMyFeed: async () => {
-    const token = await getToken();
-    return (await api.get<PostResponse>(`/my-feed`, {}, token)).data;
+  getMyFeed: async (
+    params: { limit?: number; offset?: number } = {}
+  ): Promise<Result<Post[]>> => {
+    try {
+      const token = await getToken();
+      const q = buildQ(params);
+      const res = await api.get<PostResponse>(
+        `/my-feed`,
+        q ? { q } : undefined,
+        token
+      );
+      const posts = Array.isArray(res.data) ? res.data : [res.data];
+      return { data: posts, error: null };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || "Unknown error";
+      const status = error?.response?.status;
+      console.error("getMyFeed - API error:", { message, status });
+      return { data: null, error: { message, status } };
+    }
+  },
+
+  /**
+   * Search popular hashtags
+   * GET /api/post/hashtag/popular
+   */
+  getPopularHashtags: async (): Promise<Result<string[]>> => {
+    try {
+      const token = await getToken();
+      const res = await api.get<{ data: string[] } | string[]>(
+        `/post/hashtag/popular`,
+        {},
+        token
+      );
+      const hashtags = Array.isArray(res) ? res : res.data || [];
+      return { data: hashtags, error: null };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || "Unknown error";
+      const status = error?.response?.status;
+      console.error("getPopularHashtags - API error:", { message, status });
+      return { data: null, error: { message, status } };
+    }
+  },
+
+  /**
+   * Search posts by popular hashtag
+   * GET /api/posts/popular/hashtag/:hashtag
+   */
+  getPostsByHashtag: async (
+    hashtag: string,
+    params: { limit?: number; offset?: number } = {}
+  ): Promise<Result<Post[]>> => {
+    try {
+      const token = await getToken();
+
+      // Build query params - try direct params first, fallback to q format
+      const queryParams: any = {};
+      if (params.limit !== undefined) {
+        queryParams.limit = params.limit.toString();
+      }
+      if (params.offset !== undefined) {
+        queryParams.offset = params.offset.toString();
+      }
+
+      // If no direct params, use q format
+      const hasDirectParams = Object.keys(queryParams).length > 0;
+      const q = hasDirectParams ? undefined : buildQ(params);
+
+      const res = await api.get<PostResponse>(
+        `/posts/popular/hashtag/${encodeURIComponent(hashtag)}`,
+        hasDirectParams ? queryParams : q ? { q } : undefined,
+        token
+      );
+
+      const posts = Array.isArray(res.data) ? res.data : [res.data];
+
+      return { data: posts, error: null };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || "Unknown error";
+      const status = error?.response?.status;
+      console.error("getPostsByHashtag - API error:", { message, status });
+      return { data: null, error: { message, status } };
+    }
   },
 };

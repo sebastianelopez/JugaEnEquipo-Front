@@ -3,82 +3,56 @@ import {
   Box,
   Button,
   IconButton,
-  Input,
   Link,
   Toolbar,
   Typography,
+  Tooltip,
 } from "@mui/material";
 import Image from "next/image";
 import NextLink from "next/link";
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect } from "react";
 import { UiContext } from "../../../context";
 import { gsap } from "gsap";
 import { useTranslations } from "next-intl";
 import HomeIcon from "@mui/icons-material/Home";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import MessageIcon from "@mui/icons-material/Message";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import MenuIcon from "@mui/icons-material/Menu";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import GroupsIcon from "@mui/icons-material/Groups";
 import { Search } from "../../molecules/Search/Search";
-
-import logo from "./../../../assets/logo.png";
 import { NotificationsButton } from "../../atoms/NotificationsButton";
+import { MessagesButton } from "../../atoms/MessagesButton";
+import { ResponsiveLogo } from "../../atoms/ResponsiveLogo";
 
 export const MainNavbar = () => {
-  const { toggleSideMenu } = useContext(UiContext);
+  const { toggleSideMenu, themeMode, toggleTheme } = useContext(UiContext);
 
   const t = useTranslations("Navbar");
-
-  const logotitle = ".logotitle";
-
-  useEffect(() => {
-    gsap.from(logotitle, {
-      opacity: 1,
-      x: 100,
-      duration: 2,
-    });
-  }, []);
+  const tGlobal = useTranslations("Global");
 
   return (
     <AppBar component="nav">
-      <Toolbar>
+      <Toolbar
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          minHeight: "64px",
+          paddingInline: "24px",
+        }}
+      >
         <NextLink href={"/home"} passHref>
           <Link component="span">
-            <Box
-              display={"flex"}
-              justifyContent={"center"}
-              alignItems="center"
-              component="div"
-            >
-              <Image
-                src={logo}
-                height={40}
-                width={70}
-                alt="Juga en Equipo logo"
-              />
-              <Typography
-                className="logotitle"
-                sx={{ display: { xs: "none" } }}
-              >
-                Juga en equipo
-              </Typography>
-            </Box>
+            <ResponsiveLogo size="medium" />
           </Link>
         </NextLink>
 
         <Box
           component="div"
-          sx={{
-            minWidth: { xs: "5%", sm: "15%", md: "40%" },
-            transition: "min-width 0.5s ease",
-          }}
-        />
-
-        <Box
-          component="div"
           position="relative"
           sx={{
-            display: "block",
+            display: "flex",
+            gap: 1,
           }}
         >
           <NextLink href={"/home"} passHref>
@@ -88,10 +62,11 @@ export const MainNavbar = () => {
               </IconButton>
             </Link>
           </NextLink>
-          <NextLink href={"/messages"} passHref>
+          <MessagesButton />
+          <NextLink href={"/teams"} passHref>
             <Link component="span">
               <IconButton>
-                <MessageIcon />
+                <GroupsIcon />
               </IconButton>
             </Link>
           </NextLink>
@@ -102,15 +77,47 @@ export const MainNavbar = () => {
               </IconButton>
             </Link>
           </NextLink>
-          <NotificationsButton notificationCount={3} />
+          <NotificationsButton />
 
-          <Search />
+          <Search
+            sx={{
+              display: "none",
+              "@media (min-width: 450px)": {
+                display: "inline-block",
+              },
+            }}
+          />
         </Box>
-        <Box component="div" flex={1} />
 
-        <Button color="info" onClick={toggleSideMenu}>
-          <MenuIcon />
-        </Button>
+        <Box>
+          <Tooltip
+            title={
+              themeMode === "dark"
+                ? tGlobal("switchToLightMode")
+                : tGlobal("switchToDarkMode")
+            }
+          >
+            <IconButton
+              onClick={toggleTheme}
+              aria-label={tGlobal("toggleTheme")}
+              sx={{
+                display: "none",
+                "@media (min-width: 680px)": {
+                  display: "inline-flex",
+                },
+              }}
+            >
+              {themeMode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
+          </Tooltip>
+          <Button
+            color="secondary"
+            onClick={toggleSideMenu}
+            aria-label={tGlobal("toggleSideMenu")}
+          >
+            <MenuIcon />
+          </Button>
+        </Box>
       </Toolbar>
     </AppBar>
   );

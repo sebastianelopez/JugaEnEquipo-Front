@@ -1,81 +1,34 @@
-import {
-  AppBar,
-  Box,
-  Link,
-  MenuItem,
-  Select,
-  Toolbar,
-  Typography,
-} from "@mui/material";
-import Image from "next/image";
+import { AppBar, Box, Link, Toolbar } from "@mui/material";
+
 import NextLink from "next/link";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 
-import { gsap } from "gsap";
-
-import logo from "./../../../assets/logo.png";
+import { ResponsiveLogo, ThemeToggleButton } from "../../atoms";
+import { SelectCountry } from "../../molecules/SelectCountry/SelectCountry";
+import { itemsHeight } from "./constants";
 
 export const AuthNavbar = () => {
-  const { asPath, push, locale, query, pathname } = useRouter();
-
-  const [selectValue, setSelectValue] = useState(locale ? locale : "en");
-
-  const onSelectChange = (newLocale: string) => {
-    setSelectValue(newLocale);
-    push({ pathname, query }, asPath, { locale: newLocale });
-  };
-
-  const logotitle = ".logotitle";
-
-  useEffect(() => {
-    gsap.from(logotitle, {
-      opacity: 1,
-      x: 100,
-      duration: 2,
-    });
-  }, []);
-
   return (
     <AppBar component="nav">
       <Toolbar>
         <NextLink href={"/"} passHref>
           <Link component="span">
-            <Box
-              component="div"
-              display={"flex"}
-              justifyContent={"center"}
-              alignItems="center"
-            >
-              <Image
-                src={logo}
-                height={40}
-                width={70}
-                alt="Juga en Equipo logo"
-              />
-              <Typography className="logotitle">Juga en equipo</Typography>
-            </Box>
+            <ResponsiveLogo size="medium" />
           </Link>
         </NextLink>
 
         <Box flex={1} component="div" />
 
-        <Box flex={1} component="div" />
-        <Select
-          variant="outlined"
-          value={selectValue}
-          onChange={(e) => onSelectChange(e.target.value)}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+          }}
         >
-          <MenuItem value={"es"}>
-            <span className="fi fi-ar" />
-          </MenuItem>
-          <MenuItem value={"en"}>
-            <span className="fi fi-us" />
-          </MenuItem>
-          <MenuItem value={"pt"}>
-            <span className="fi fi-br" />
-          </MenuItem>
-        </Select>
+          <ThemeToggleButton />
+
+          <SelectCountry height={itemsHeight} />
+        </Box>
       </Toolbar>
     </AppBar>
   );

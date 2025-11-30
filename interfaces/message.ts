@@ -1,7 +1,7 @@
 export interface Message {
   id: string;
-  body: string;
+  content: string;
+  username: string;
+  mine: boolean;
   createdAt: string;
-  senderId: string;
-  senderUsername: string;
-}        
+}

@@ -60,14 +60,18 @@ export const SharedPostCard = ({
     >
       <CardActionArea onClick={() => handleNavigateToPost(id)}>
         <CardHeader
-          avatar={<Avatar src={urlProfileImage} alt="Profile Picture" />}
+          avatar={
+            <Avatar src={urlProfileImage || undefined} alt="Profile Picture" />
+          }
           title={username}
           subheader={formatTimeElapsed(new Date(createdAt), timeTranslations)}
         />
-        <CardContent>
-          <Typography variant="body2" color="text.secondary">
-            {body}
-          </Typography>
+        <CardContent sx={{ paddingY: 0 }}>
+          {body && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {body}
+            </Typography>
+          )}
 
           {
             resources && resources.length > 0 ? (
@@ -110,7 +114,6 @@ export const SharedPostCard = ({
                       width: "100%",
                       height: "100%",
                       transition: "width 0.5s ease, height 0.5s ease",
-                      marginTop: 5,
                       borderRadius: 5,
                     }}
                   />

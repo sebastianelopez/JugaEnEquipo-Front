@@ -1,5 +1,9 @@
-export interface Game{
-    _id: string;
-    name: string;
-    isVisible: boolean;
+export interface Game {
+  id: string;
+  name: string;
+  description?: string;
+  minPlayersQuantity: number;
+  maxPlayersQuantity: number;
+  isVisible: boolean;
+  image?: string;
 }

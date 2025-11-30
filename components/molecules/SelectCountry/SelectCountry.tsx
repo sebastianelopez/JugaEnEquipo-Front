@@ -4,10 +4,11 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 
 interface Props {
+  height?: number;
   fullWidth?: boolean;
 }
 
-export const SelectCountry = ({ fullWidth = false }: Props) => {
+export const SelectCountry = ({ height, fullWidth = false }: Props) => {
   const t = useTranslations("Global");
   const { asPath, locale, push, query, pathname } = useRouter();
   const [selectValue, setSelectValue] = useState(locale ? locale : "en");
@@ -44,7 +45,8 @@ export const SelectCountry = ({ fullWidth = false }: Props) => {
           </Box>
         );
       }}
-      inputProps={{ "aria-label": t("selectLanguage",) }}
+      inputProps={{ "aria-label": t("selectLanguage") }}
+      sx={{ height }}
     >
       {languages.map((language) => (
         <MenuItem key={language.code} value={language.code} sx={menuItemStyle}>

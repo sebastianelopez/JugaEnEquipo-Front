@@ -1,20 +1,30 @@
 import {
+  Avatar,
   Box,
   CircularProgress,
   IconButton,
   Input,
   List,
   ListItem,
+  ListItemAvatar,
   ListItemText,
+  SxProps,
+  Theme,
 } from "@mui/material";
 import { SearchOutlined } from "@mui/icons-material";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/router";
 import { userService } from "../../../services/user.service";
 import { User } from "../../../interfaces";
 
-export const Search = () => {
+interface SearchProps {
+  sx?: SxProps<Theme>;
+}
+
+export const Search = ({ sx }: SearchProps) => {
   const t = useTranslations("Navbar");
+  const router = useRouter();
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,8 +37,10 @@ export const Search = () => {
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const handleResultClick = (user: User) => {
-    console.log("Selected user:", user);
+    router.push(`/profile/${user.username}`);
     setShowResults(false);
+    setIsExpanded(false);
+    setSearchTerm("");
   };
 
   const handleExpand = () => {
@@ -106,7 +118,10 @@ export const Search = () => {
   return (
     <Box
       ref={searchContainerRef}
-      sx={{ position: "relative", display: "inline-block", zIndex: 1000 }}
+      sx={[
+        { position: "relative", display: "inline-block", zIndex: 1000 },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
       <Input
         placeholder={t("search")}
@@ -121,6 +136,7 @@ export const Search = () => {
           maxWidth: isExpanded ? 300 : 0,
           boxShadow: "inset 2px 5px 10px rgba(0,0,0,0.3)",
           transition: "max-width 0.3s ease",
+          backgroundColor: "background.paper",
         }}
         onBlur={handleCollapse}
         endAdornment={
@@ -150,7 +166,7 @@ export const Search = () => {
           <List sx={{ py: 0 }}>
             {searchResults.map((user, index) => (
               <ListItem
-                key={user._id || index}
+                key={user.id || index}
                 button
                 onClick={() => handleResultClick(user)}
                 sx={{
@@ -165,7 +181,20 @@ export const Search = () => {
                   color: "text.primary",
                 }}
               >
-                <ListItemText primary={user.username} secondary={`${user.firstname} ${user.lastname}`} />
+                <ListItemAvatar>
+                  <Avatar
+                    alt={`Avatar de ${user.username}`}
+                    src={user.profileImage}
+                    sx={{ width: 40, height: 40 }}
+                  >
+                    {!user.profileImage &&
+                      user.username.charAt(0).toUpperCase()}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={user.username}
+                  secondary={`${user.firstname} ${user.lastname}`}
+                />
               </ListItem>
             ))}
           </List>

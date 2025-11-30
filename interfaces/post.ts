@@ -4,11 +4,13 @@ export interface Post {
   id: string;
   body: string;
   username: string;
-  resources?: Resource[];
+  resources: Resource[];
   createdAt: string;
-  urlProfileImage?: string | null;
-  sharedPost?: Post | null;
+  urlProfileImage: string | null;
+  sharedPost: Post | null;
   likesQuantity: number;
   sharesQuantity: number;
   commentsQuantity: number;
+  hasLiked: boolean;
+  hasShared: boolean;
 }

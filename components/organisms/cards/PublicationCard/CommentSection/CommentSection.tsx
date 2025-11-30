@@ -20,6 +20,7 @@ import {
   useState,
 } from "react";
 import { UserContext } from "../../../../../context/user";
+import { FeedbackContext } from "../../../../../context/feedback";
 import { useTranslations } from "next-intl";
 
 import { v4 as uuidv4 } from "uuid";
@@ -38,6 +39,7 @@ interface Props {
 export const CommentSection = forwardRef<CommentSectionHandle, Props>(
   ({ postId, expanded }, ref) => {
     const { user } = useContext(UserContext);
+    const { showError } = useContext(FeedbackContext);
     const [comments, setComments] = useState<Comment[]>([]);
     const [newCommentId, setNewCommentId] = useState<string | null>(null);
     const [commentInput, setCommentInput] = useState("");
@@ -48,7 +50,7 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
 
     const timeTranslations = useTimeTranslations();
 
-    const inputRef = useRef<HTMLInputElement>();
+    const inputRef = useRef<HTMLInputElement | null>(null);
 
     useImperativeHandle(ref, () => ({
       focus: (onFocus: () => void) => {
@@ -64,25 +66,47 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
 
       if (!commentInput.trim() || submittingComment || !user) return;
 
+      const commentText = commentInput.trim();
       setSubmittingComment(true);
+
+      setCommentInput("");
 
       try {
         const commentId = uuidv4();
-        const newComment = await postService.addComment(postId, {
+
+        await postService.addComment(postId, {
           commentId: commentId,
-          commentBody: commentInput,
+          commentBody: commentText,
         });
 
-        if (!newComment) return;
+        const localComment: Comment = {
+          id: commentId,
+          user: user.username,
+          comment: commentText,
+          createdAt: new Date().toISOString(),
+        };
 
-        setComments((prev) => [...prev, newComment]);
-        setNewCommentId(newComment.id);
-        setCommentInput("");
+        setComments((prev) => [localComment, ...prev]);
+        setNewCommentId(commentId);
+
         setTimeout(() => {
           setNewCommentId(null);
         }, 1000);
-      } catch (error) {
-        console.error("Error submitting comment:", error);
+      } catch (error: any) {
+        setCommentInput(commentText);
+
+        const errorMessage =
+          error?.response?.data?.message ||
+          error?.message ||
+          "Error al enviar el comentario";
+        showError({
+          title: "Error",
+          message: errorMessage,
+          onRetry: () => {
+            setCommentInput(commentText);
+          },
+          retryLabel: "Reintentar",
+        });
       } finally {
         setSubmittingComment(false);
       }
@@ -108,13 +132,17 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
           setLoading(true);
           try {
             const fetchedComments = await postService.getPostComments(postId);
-            setComments(
-              Array.isArray(fetchedComments)
-                ? fetchedComments
-                : [fetchedComments]
+            const commentsArray = Array.isArray(fetchedComments)
+              ? fetchedComments
+              : [fetchedComments];
+
+            const sortedComments = commentsArray.sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
             );
 
-            console.log("Fetched comments:", fetchedComments);
+            setComments(sortedComments);
           } catch (error) {
             console.error("Error cargando comentarios:", error);
           } finally {
@@ -160,12 +188,8 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
                       paddingX: 2,
                       marginBottom: 1,
                       width: "100%",
-                      opacity: isNewComment ? 0 : 1,
-                      transform: isNewComment
-                        ? "translateY(20px)"
-                        : "translateY(0)",
                       animation: isNewComment
-                        ? "fadeSlideIn 0.5s ease-out forwards"
+                        ? "fadeSlideIn 0.5s ease-out"
                         : "none",
                       "@keyframes fadeSlideIn": {
                         "0%": {
@@ -226,6 +250,7 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
               fullWidth
               placeholder={t("comment")}
               inputRef={inputRef}
+              value={commentInput}
               onChange={handleCommentInputChange}
               onKeyPress={handleCommentKeyPress}
               disabled={submittingComment}

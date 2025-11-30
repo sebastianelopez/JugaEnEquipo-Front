@@ -9,4 +9,9 @@ export const mockPostData = {
   ],
   sharedPost: null,
   urlProfileImage: "/images/user-placeholder.png",
+  likesQuantity: 0,
+  sharesQuantity: 0,
+  commentsQuantity: 0,
+  hasLiked: false,
+  hasShared: false,
 };

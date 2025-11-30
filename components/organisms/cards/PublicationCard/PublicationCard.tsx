@@ -13,12 +13,13 @@ import {
   styled,
   Typography,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import ShareIcon from "@mui/icons-material/Share";
+import RepeatIcon from "@mui/icons-material/Repeat";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import AddCommentRoundedIcon from "@mui/icons-material/AddCommentRounded";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { LikeButton } from "../../../atoms";
 import { Post } from "../../../../interfaces/post";
@@ -37,6 +38,8 @@ import {
   CommentSection,
   CommentSectionHandle,
 } from "./CommentSection/CommentSection";
+import { postService } from "../../../../services/post.service";
+import { parseHashtags } from "../../../../utils/parseHashtags";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -55,6 +58,7 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
 
 interface PublicationCardProps extends Post {
   maxWidth?: number;
+  onPostCreated?: (newPost: Post) => void;
 }
 
 export const PublicationCard = ({
@@ -68,9 +72,13 @@ export const PublicationCard = ({
   likesQuantity,
   commentsQuantity,
   sharesQuantity,
+  hasLiked,
+  hasShared,
   maxWidth,
+  onPostCreated,
 }: PublicationCardProps) => {
   const timeT = useTranslations("Time");
+  const publicationT = useTranslations("Publication");
 
   const timeTranslations = {
     timePrefixText: timeT("timePrefixText"),
@@ -91,6 +99,8 @@ export const PublicationCard = ({
   };
 
   const matches = useMediaQuery("(min-width:650px)");
+  const isSmallScreen = useMediaQuery("(max-width:480px)");
+  const theme = useTheme();
 
   const router = useRouter();
 
@@ -98,6 +108,9 @@ export const PublicationCard = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
+  const [currentIsLiked, setCurrentIsLiked] = useState(hasLiked);
+  const [currentLikesQuantity, setCurrentLikesQuantity] =
+    useState(likesQuantity);
 
   const { user } = useContext(UserContext);
 
@@ -139,6 +152,42 @@ export const PublicationCard = ({
     router.push(`/profile/${username}`);
   };
 
+  useEffect(() => {
+    setCurrentIsLiked(hasLiked);
+  }, [hasLiked]);
+
+  useEffect(() => {
+    setCurrentLikesQuantity(likesQuantity);
+  }, [likesQuantity]);
+
+  const handleLikeClick = async () => {
+    if (!user) return; // Don't allow liking if user is not logged in
+
+    const previousIsLiked = currentIsLiked;
+    const previousLikesQuantity = currentLikesQuantity;
+
+    try {
+      const newIsLiked = !currentIsLiked;
+      setCurrentIsLiked(newIsLiked);
+
+      const newLikesQuantity = newIsLiked
+        ? currentLikesQuantity + 1
+        : Math.max(0, currentLikesQuantity - 1);
+      setCurrentLikesQuantity(newLikesQuantity);
+
+      if (newIsLiked) {
+        await postService.likePost(id);
+      } else {
+        await postService.dislikePost(id);
+      }
+    } catch (error) {
+      console.error("Error handling like:", error);
+
+      setCurrentIsLiked(previousIsLiked);
+      setCurrentLikesQuantity(previousLikesQuantity);
+    }
+  };
+
   return (
     <>
       <Card
@@ -152,7 +201,7 @@ export const PublicationCard = ({
         <CardHeader
           avatar={
             <Avatar
-              src={urlProfileImage}
+              src={urlProfileImage || undefined}
               alt="Profile Picture"
               sx={{ cursor: "pointer" }}
               onClick={() => handleNavigateToProfile(username)}
@@ -170,10 +219,12 @@ export const PublicationCard = ({
           }
           subheader={formatTimeElapsed(new Date(createdAt), timeTranslations)}
         />
-        <CardContent sx={{ paddingBottom: 0 }}>
-          <Typography variant="body2" color="text.secondary">
-            {body}
-          </Typography>
+        <CardContent sx={{ paddingY: 0 }}>
+          {body && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {parseHashtags(body, theme)}
+            </Typography>
+          )}
 
           <Box
             width="100%"
@@ -228,12 +279,11 @@ export const PublicationCard = ({
                           <Image
                             src={mediaItem.url || ""}
                             alt={`Image ${index + 1}`}
-                            layout="fill"
+                            fill
+                            sizes="(max-width: 650px) 50vw, 164px"
                             style={{
                               borderRadius: "6px",
                               objectFit: "cover",
-                              maxWidth: matches ? 164 : 300,
-                              maxHeight: 164,
                             }}
                           />
                         </ImageListItem>
@@ -245,7 +295,6 @@ export const PublicationCard = ({
                     sx={{
                       width: "100%",
                       height: "100%",
-                      marginTop: 2,
                       display: "flex",
                       justifyContent: "center",
                       cursor: "pointer",
@@ -288,17 +337,19 @@ export const PublicationCard = ({
           </Box>
         )}
 
-        {(likesQuantity > 0 || sharesQuantity > 0 || commentsQuantity > 0) && (
+        {(currentLikesQuantity > 0 ||
+          sharesQuantity > 0 ||
+          commentsQuantity > 0) && (
           <Box
             component={"div"}
             sx={{
               paddingX: 2,
-              paddingY: 1,
+              paddingY: 0.5,
               display: "flex",
               justifyContent:
-                likesQuantity === 0 && sharesQuantity === 0
+                currentLikesQuantity === 0 && sharesQuantity === 0
                   ? "end"
-                  : likesQuantity > 0 &&
+                  : currentLikesQuantity > 0 &&
                     sharesQuantity > 0 &&
                     commentsQuantity === 0
                   ? "start"
@@ -307,47 +358,117 @@ export const PublicationCard = ({
           >
             <Box
               sx={{
-                paddingX: 2,
-                paddingY: 1,
                 display: "flex",
                 justifyContent: "space-between",
+                alignItems: "center",
+                gap: 1,
               }}
             >
-              {likesQuantity > 0 && (
-                <Button>
-                  <FavoriteIcon color="red" />
-                  <Typography>{likesQuantity}</Typography>
+              {currentLikesQuantity > 0 && (
+                <Button
+                  sx={{
+                    minWidth: "auto",
+                    paddingX: 0.5,
+                    paddingY: 0.25,
+                    "& .MuiButton-startIcon": {
+                      margin: 0,
+                      marginRight: 0.5,
+                    },
+                  }}
+                  size="small"
+                >
+                  <FavoriteIcon sx={{ color: "#E17055", fontSize: "1rem" }} />
+                  <Typography variant="caption">
+                    {currentLikesQuantity}
+                  </Typography>
                 </Button>
               )}
               {sharesQuantity > 0 && (
-                <Box
+                <Button
                   sx={{
+                    minWidth: "auto",
+                    paddingX: 0.5,
+                    paddingY: 0.25,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
+                    gap: 0.5,
                   }}
+                  size="small"
                 >
-                  <ShareIcon />
-                  <Typography>{sharesQuantity}</Typography>
-                </Box>
+                  <RepeatIcon sx={{ fontSize: "1rem" }} />
+                  <Typography variant="caption">{sharesQuantity}</Typography>
+                </Button>
               )}
             </Box>
             {commentsQuantity > 0 && (
-              <Button variant="text" onClick={() => setExpanded(true)}>
-                <Typography>{`${commentsQuantity} comments`}</Typography>
+              <Button
+                variant="text"
+                onClick={() => setExpanded(true)}
+                size="small"
+                sx={{
+                  paddingX: 0.5,
+                  paddingY: 0.25,
+                }}
+              >
+                <Typography variant="caption">{`${commentsQuantity} comments`}</Typography>
               </Button>
             )}
           </Box>
         )}
 
-        <CardActions disableSpacing>
-          <IconButton aria-label="like" onClick={handleCommentClick}>
-            <AddCommentRoundedIcon />
-          </IconButton>
-          <LikeButton />
-          <IconButton aria-label="share" onClick={handleOpenModal}>
-            <ShareIcon />
-          </IconButton>
+        <CardActions disableSpacing sx={{ display: "flex", gap: 1 }}>
+          <>
+            <Button
+              startIcon={<ChatBubbleOutlineIcon />}
+              onClick={handleCommentClick}
+              sx={{
+                flex: 1,
+                color: theme.palette.text.primary,
+                "&:hover": {
+                  backgroundColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.08)"
+                      : "rgba(0, 0, 0, 0.04)",
+                },
+              }}
+              variant="text"
+            >
+              {!isSmallScreen && publicationT("commentButton")}
+            </Button>
+            <LikeButton
+              onClick={handleLikeClick}
+              isPressed={currentIsLiked}
+              sx={{
+                flex: 1,
+                color: theme.palette.text.primary,
+                "&:hover": {
+                  backgroundColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.08)"
+                      : "rgba(0, 0, 0, 0.04)",
+                },
+              }}
+              isSmallScreen={isSmallScreen}
+            />
+            <Button
+              startIcon={<RepeatIcon />}
+              onClick={handleOpenModal}
+              sx={{
+                flex: 1,
+                color: theme.palette.text.primary,
+                "&:hover": {
+                  backgroundColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.08)"
+                      : "rgba(0, 0, 0, 0.04)",
+                },
+              }}
+              variant="text"
+            >
+              {!isSmallScreen && publicationT("shareButton")}
+            </Button>
+          </>
+
           <ExpandMore
             expand={expanded}
             onClick={handleExpandClick}
@@ -378,12 +499,16 @@ export const PublicationCard = ({
           username,
           resources,
           urlProfileImage,
-          likesQuantity,
+          sharedPost: null,
+          likesQuantity: currentLikesQuantity,
           commentsQuantity,
           sharesQuantity,
+          hasLiked: currentIsLiked,
+          hasShared,
         }}
         open={isModalOpen}
         onClose={() => handleCloseModal()}
+        onPostCreated={onPostCreated}
       />
     </>
   );

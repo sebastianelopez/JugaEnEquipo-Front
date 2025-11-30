@@ -10,9 +10,10 @@ import {
   Button,
 } from "@mui/material";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { postService } from "../../../services/post.service";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { useFeedback } from "../../../hooks/useFeedback";
 
 interface SettingsMenuProps {
   postId: string;
@@ -22,34 +23,46 @@ export const SettingsMenu = ({ postId }: SettingsMenuProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const t = useTranslations("Publication");
+  const { showError, showSuccess } = useFeedback();
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleClick = useCallback((event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
-  };
+  }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setAnchorEl(null);
-  };
+  }, []);
 
-  const handleDeleteClick = () => {
+  const handleDeleteClick = useCallback(() => {
     setAnchorEl(null);
     setOpenConfirmDialog(true);
-  };
+  }, []);
 
-  const handleCancelDelete = () => {
+  const handleCancelDelete = useCallback(() => {
     setOpenConfirmDialog(false);
-  };
+  }, []);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     try {
       await postService.deletePost(postId);
       setOpenConfirmDialog(false);
-      // TODO: add some feedback that post was deleted and refresh the posts list after deletion
+      showSuccess({
+        title: t("deletePostSuccessTitle"),
+        message: t("deletePostSuccessMessage"),
+        closeLabel: t("close"),
+      });
+      // TODO: refresh the posts list after deletion
     } catch (error) {
       console.error("Error deleting post:", error);
-      // Handle error (maybe show an error message)
+      setOpenConfirmDialog(false);
+      showError({
+        title: t("deletePostErrorTitle"),
+        message: t("deletePostErrorMessage"),
+        onRetry: () => setOpenConfirmDialog(true),
+        retryLabel: t("retry"),
+      });
     }
-  };
+  }, [postId, showError, showSuccess, t]);
 
   return (
     <>
@@ -57,7 +70,7 @@ export const SettingsMenu = ({ postId }: SettingsMenuProps) => {
         <MoreVertIcon />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleDeleteClick}>Eliminar publicacion</MenuItem>
+        <MenuItem onClick={handleDeleteClick}>{t("deletePost")}</MenuItem>
       </Menu>
 
       <Dialog
@@ -67,18 +80,19 @@ export const SettingsMenu = ({ postId }: SettingsMenuProps) => {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"¿Eliminar publicación?"}
+          {t("deletePostTitle")}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            ¿Estás seguro que deseas eliminar esta publicación? Esta acción no
-            se puede deshacer.
+            {t("deletePostConfirmation")}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelDelete}>Cancelar</Button>
+          <Button onClick={handleCancelDelete} variant="outlined">
+            {t("cancel")}
+          </Button>
           <Button onClick={handleConfirmDelete} color="error" autoFocus>
-            Eliminar
+            {t("delete")}
           </Button>
         </DialogActions>
       </Dialog>

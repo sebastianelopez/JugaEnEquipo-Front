@@ -1,0 +1,147 @@
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Paper,
+  Typography,
+} from "@mui/material";
+import { FC, useMemo } from "react";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/router";
+import { formatEventDateTime } from "../../../utils/formatDate";
+import { ComingSoon } from "../../atoms/ComingSoon";
+
+interface UpcomingEventItem {
+  id: string;
+  title: string;
+  game: string;
+  startAt: string;
+}
+
+interface Props {
+  events?: UpcomingEventItem[];
+}
+
+export const UpcomingEventsCard: FC<Props> = ({ events }) => {
+  const t = useTranslations("Events");
+  const router = useRouter();
+  const locale = (router.locale as "es" | "en" | "pt") || "es";
+
+  const fallbackEvents: UpcomingEventItem[] = useMemo(
+    () => [
+      {
+        id: "1",
+        title: "Valorant Showdown",
+        game: "Valorant",
+        startAt: "2025-10-06T14:00:00.000Z", // Fixed date
+      },
+      {
+        id: "2",
+        title: "League Clash Cup",
+        game: "League of Legends",
+        startAt: "2025-10-07T16:00:00.000Z",
+      },
+      {
+        id: "3",
+        title: "Overwatch Community Night",
+        game: "Overwatch",
+        startAt: "2025-10-08T20:00:00.000Z",
+      },
+      {
+        id: "4",
+        title: "CS2 Weekend Cup",
+        game: "Counter-Strike 2",
+        startAt: "2025-10-10T12:00:00.000Z",
+      },
+    ],
+    []
+  );
+
+  const displayEvents = events && events.length > 0 ? events : fallbackEvents;
+
+  return (
+    <Paper
+      sx={{
+        p: 2,
+        textAlign: "start",
+        width: "100%",
+        maxWidth: "250px",
+        position: "relative",
+      }}
+    >
+      <Box
+        sx={{
+          opacity: 0.6,
+          filter: "grayscale(20%)",
+          pointerEvents: "none",
+        }}
+      >
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={1}
+        >
+          <Typography variant="h5" fontWeight="bold" sx={{ opacity: 0.8 }}>
+            {t("upcomingEvents")}
+          </Typography>
+          <Button
+            size="small"
+            sx={{
+              textTransform: "none",
+              cursor: "not-allowed",
+              pointerEvents: "none",
+            }}
+          >
+            {t("seeAll")}
+          </Button>
+        </Box>
+
+        <List dense>
+          {displayEvents.map((event) => (
+            <ListItem key={event.id} alignItems="flex-start" sx={{ px: 0 }}>
+              <ListItemAvatar>
+                <Avatar
+                  alt={event.game}
+                  src="/images/image-placeholder.png"
+                  sx={{ width: 36, height: 36 }}
+                />
+              </ListItemAvatar>
+              <ListItemText
+                disableTypography
+                primary={
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Typography variant="body1" fontWeight="bold">
+                      {event.title}
+                    </Typography>
+                  </Box>
+                }
+                secondary={
+                  <Box
+                    display="flex"
+                    alignItems="flex-start"
+                    flexDirection="column"
+                    gap={1}
+                  >
+                    <Chip label={event.game} size="small" />
+                    <Typography variant="caption" color="text.secondary">
+                      {formatEventDateTime(event.startAt, locale)}
+                    </Typography>
+                  </Box>
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+      <Box sx={{ mt: 2, opacity: 1, filter: "none", pointerEvents: "auto" }}>
+        <ComingSoon variant="minimal" />
+      </Box>
+    </Paper>
+  );
+};

@@ -5,7 +5,7 @@ import {
   TextField,
   InputAdornment,
   List,
-  ListItem,
+  ListItemButton,
   ListItemAvatar,
   Avatar,
   ListItemText,
@@ -16,6 +16,8 @@ import { Search as SearchIcon } from "@mui/icons-material";
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { Conversation } from "../../../interfaces/conversation";
 import { useTimeTranslations } from "../../../hooks/useTimeTranslations";
+import { useRouter } from "next/router";
+import { useTranslations } from "next-intl";
 
 export interface ConversationsListHandle {
   selectConversation: (conversation: Conversation | null) => void;
@@ -33,17 +35,36 @@ export const ConversationsList = forwardRef<
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredConversations, setFilteredConversations] =
     useState(conversations);
-
   const [selectedConversation, setSelectedConversation] =
     useState<Conversation | null>(null);
 
   const timeTranslations = useTimeTranslations();
+  const router = useRouter();
+  const t = useTranslations("Chat");
 
   const handleSelectConversation = (conversation: Conversation | null) => {
     setSelectedConversation(conversation);
     if (onSelectConversation) {
       onSelectConversation(conversation);
     }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+
+    if (value.trim() === "") {
+      setFilteredConversations(conversations);
+      return;
+    }
+
+    // Search only in existing conversations
+    const filteredConvos = conversations.filter(
+      (convo) =>
+        convo.otherUsername?.toLowerCase().includes(value.toLowerCase()) ||
+        convo.lastMessageText?.toLowerCase().includes(value.toLowerCase())
+    );
+
+    setFilteredConversations(filteredConvos);
   };
 
   useImperativeHandle(ref, () => ({
@@ -56,17 +77,17 @@ export const ConversationsList = forwardRef<
     if (searchTerm.trim() === "") {
       setFilteredConversations(conversations);
     } else {
-      const filtered = conversations.filter(
-        (convo) =>
-          convo.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          convo.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredConversations(filtered);
+      // Use debounced search
+      const timeoutId = setTimeout(() => {
+        handleSearchChange(searchTerm);
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [searchTerm, conversations]);
 
   return (
-    <Grid size={{xs: 12, md: 5}} sx={{ height: "100%" }}>
+    <Grid size={{ xs: 12, md: 5 }} sx={{ height: "100%" }}>
       <Box
         sx={{
           padding: 2,
@@ -79,7 +100,7 @@ export const ConversationsList = forwardRef<
         }}
       >
         <Typography variant="h5" component="h2" gutterBottom>
-          Mensajes
+          {t("title")}
         </Typography>
 
         <TextField
@@ -101,7 +122,9 @@ export const ConversationsList = forwardRef<
 
         {filteredConversations.length === 0 ? (
           <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
-            No se encontraron conversaciones
+            {searchTerm.trim() !== ""
+              ? "No se encontraron conversaciones"
+              : "No tienes conversaciones aún"}
           </Typography>
         ) : (
           <List
@@ -112,87 +135,115 @@ export const ConversationsList = forwardRef<
               maxHeight: "100%",
             }}
           >
-            {filteredConversations.map((conversation, index) => (
-              <Box key={conversation.id}>
-                <ListItem
-                  button
-                  alignItems="flex-start"
-                  onClick={() => handleSelectConversation(conversation)}
-                  sx={{
-                    position: "relative",
-                    ...(conversation.unread > 0 && {
-                      bgcolor: "rgba(25, 118, 210, 0.08)",
-                    }),
-                    ...(selectedConversation?.id === conversation.id && {
-                      bgcolor: "rgba(25, 118, 210, 0.15)",
-                    }),
-                  }}
-                >
-                  <ListItemAvatar>
-                    <Avatar>{conversation.username[0].toUpperCase()}</Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Box display="flex" justifyContent="space-between">
-                        <Typography
-                          component="span"
-                          fontWeight={
-                            conversation.unread > 0 ? "bold" : "normal"
-                          }
-                        >
-                          {conversation.username}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {formatTimeElapsed(
-                            new Date(conversation.createdAt),
-                            timeTranslations
-                          )}
-                        </Typography>
-                      </Box>
-                    }
-                    slotProps={{ secondary: { component: "div" } }}
-                    secondary={
-                      <Box display="flex" justifyContent="space-between">
-                        <Typography
-                          component="span"
-                          variant="body2"
-                          color="text.primary"
-                          noWrap
-                          sx={{
-                            display: "inline",
-                            maxWidth: "80%",
-                            fontWeight:
-                              conversation.unread > 0 ? "medium" : "normal",
-                          }}
-                        >
-                          {conversation.lastMessage}
-                        </Typography>
-                        {conversation.unread > 0 && (
-                          <Box
+            {filteredConversations.map((conversation, index) => {
+              // Ensure conversation.id is a string and unique
+              const conversationId =
+                typeof conversation.id === "string"
+                  ? conversation.id
+                  : String(conversation.id || index);
+
+              return (
+                <Box key={conversationId}>
+                  <ListItemButton
+                    alignItems="flex-start"
+                    onClick={() => handleSelectConversation(conversation)}
+                    sx={{
+                      position: "relative",
+                      ...(true && {
+                        // conversation.unread > 0 && {
+                        bgcolor: "rgba(25, 118, 210, 0.08)",
+                      }),
+                      ...(selectedConversation?.id === conversation.id && {
+                        bgcolor: "rgba(25, 118, 210, 0.15)",
+                      }),
+                    }}
+                  >
+                    <ListItemAvatar>
+                      <Avatar
+                        src={conversation.otherProfileImage ?? undefined}
+                      />
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Box display="flex" justifyContent="space-between">
+                          <Typography
+                            component="span"
+                            fontWeight={
+                              // conversation.unread > 0 ? "bold" : "normal"
+                              "normal"
+                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (conversation.otherUsername) {
+                                router.push(
+                                  `/profile/${conversation.otherUsername}`
+                                );
+                              }
+                            }}
                             sx={{
-                              bgcolor: "primary.main",
-                              color: "primary.contrastText",
-                              borderRadius: "50%",
-                              width: 20,
-                              height: 20,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "0.75rem",
+                              cursor: "pointer",
+                              "&:hover": {
+                                textDecoration: "underline",
+                              },
                             }}
                           >
-                            {conversation.unread}
-                          </Box>
-                        )}
-                      </Box>
-                    }
-                  />
-                </ListItem>
-                {index < filteredConversations.length - 1 && (
-                  <Divider variant="inset" component="li" />
-                )}
-              </Box>
-            ))}
+                            {conversation.otherUsername}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {formatTimeElapsed(
+                              new Date(conversation.lastMessageDate ?? ""),
+                              timeTranslations
+                            )}
+                          </Typography>
+                        </Box>
+                      }
+                      slotProps={{ secondary: { component: "div" } }}
+                      secondary={
+                        <Box display="flex" justifyContent="space-between">
+                          <Typography
+                            component="span"
+                            variant="body2"
+                            color="text.primary"
+                            noWrap
+                            sx={{
+                              display: "inline",
+                              maxWidth: "80%",
+                              fontWeight:
+                                // conversation.unread > 0 ? "medium" : "normal"
+                                "normal",
+                            }}
+                          >
+                            {conversation.lastMessageText}
+                          </Typography>
+                          {/* {conversation.unread > 0 && ( */}
+                          {true && (
+                            <Box
+                              sx={{
+                                bgcolor: "primary.main",
+                                color: "primary.contrastText",
+                                borderRadius: "50%",
+                                width: 20,
+                                height: 20,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "0.75rem",
+                              }}
+                            >
+                              {/* {conversation.unread} */}
+                              {0}
+                            </Box>
+                          )}
+                        </Box>
+                      }
+                    />
+                  </ListItemButton>
+                  {index < filteredConversations.length - 1 && (
+                    <Divider variant="inset" component="li" />
+                  )}
+                </Box>
+              );
+            })}
           </List>
         )}
       </Box>

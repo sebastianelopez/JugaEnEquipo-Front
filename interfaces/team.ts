@@ -1,9 +1,14 @@
-import { User } from "./user";
+import { Game } from "./game";
 
-export interface Team{
-    _id: string;
-    name: string;
-    users: User[];
-    achievements?: string[];
-    profileImage?: string;
+export interface Team {
+  id: string;
+  games: Game[];
+  name: string;
+  description: string;
+  image: string;
+  creatorId: string;
+  leaderId: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 }

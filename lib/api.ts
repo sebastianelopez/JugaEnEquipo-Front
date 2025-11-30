@@ -29,6 +29,13 @@ export const api = {
     return response.data;
   },
 
+  patch: async <T>(url: string, data?: any, token?: string) => {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    const response = await axiosInstance.patch<T>(url, data, { headers });
+    return response.data;
+  },
+
   delete: async <T>(url: string, token?: string) => {
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 

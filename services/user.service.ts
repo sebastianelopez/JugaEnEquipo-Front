@@ -1,6 +1,8 @@
 import { User } from "../interfaces";
 import { api } from "../lib/api";
 import { getToken } from "../services/auth.service";
+import { v4 as uuidv4 } from "uuid";
+import type { ServiceResult } from "./types";
 
 interface UserResponse {
   data: User;
@@ -13,6 +15,31 @@ interface SearchUsersResponse {
       quantity: number;
     };
   };
+}
+
+interface SearchFollowingUsersResponse {
+  data: {
+    data: User[];
+    metadata: {
+      quantity: number;
+      hasMore: boolean;
+    };
+  };
+}
+
+interface SearchFollowingUsersParams {
+  query: string;
+  offset?: number;
+  limit?: number;
+}
+
+interface CreateUserPayload {
+  firstname: string;
+  lastname: string;
+  username: string;
+  email: string;
+  password: string;
+  confirmationPassword: string;
 }
 
 export const userService = {
@@ -40,15 +67,21 @@ export const userService = {
     }
   },
 
-  createUser: async (userData: User) => {
-    const token = await getToken();
-    const response = await api.post<UserResponse>(
-      "/user",
-      userData,
-      undefined,
-      token
-    );
-    return response.data;
+  createUser: async (
+    userData: CreateUserPayload
+  ): Promise<ServiceResult<User>> => {
+    try {
+      const id = uuidv4();
+
+      const response = await api.put<UserResponse>(`/user/${id}`, userData);
+      return { ok: true, data: response.data };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Registration failed";
+      return { ok: false, errorMessage: message, error };
+    }
   },
 
   updateUser: async (id: string, userData: Partial<User>) => {
@@ -74,9 +107,18 @@ export const userService = {
       newPassword: string;
       confirmationNewPassword: string;
     }
-  ) => {
-    const token = await getToken();
-    return api.put<void>(`/user/password/${id}`, passwordData, token);
+  ): Promise<ServiceResult<void>> => {
+    try {
+      const token = await getToken();
+      await api.put<void>(`/user/password/${id}`, passwordData, token);
+      return { ok: true, data: undefined };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update password";
+      return { ok: false, errorMessage: message, error };
+    }
   },
 
   restorePassword: async (
@@ -103,25 +145,113 @@ export const userService = {
     );
   },
 
+  // User description
+  updateUserDescription: async (
+    description: string
+  ): Promise<ServiceResult<void>> => {
+    try {
+      const token = await getToken();
+      await api.patch<void>("/user/description", { description }, token);
+      return { ok: true, data: undefined };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update description";
+      return { ok: false, errorMessage: message, error };
+    }
+  },
+
   // User relationships
-  followUser: async (id: string) => {
-    const token = await getToken();
-    return api.put<void>(`/user/${id}/follow`, {}, token);
+  followUser: async (
+    id: string
+  ): Promise<ServiceResult<{ isFollowing: boolean }>> => {
+    try {
+      const token = await getToken();
+      console.log("Following user:", id);
+      console.log("Using token:", token);
+      const response = await api.put<{
+        isFollowing?: boolean;
+        message?: string;
+      }>(`/user/${id}/follow`, token);
+      // Return success with isFollowing status (defaults to true if not provided)
+      return {
+        ok: true,
+        data: { isFollowing: response?.isFollowing ?? true },
+      };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to follow user";
+      return { ok: false, errorMessage: message, error };
+    }
   },
 
-  unfollowUser: async (id: string) => {
-    const token = await getToken();
-    return api.put<void>(`/user/${id}/unfollow`, {}, token);
+  unfollowUser: async (
+    id: string
+  ): Promise<ServiceResult<{ isFollowing: boolean }>> => {
+    try {
+      const token = await getToken();
+      const response = await api.put<{
+        isFollowing?: boolean;
+        message?: string;
+      }>(`/user/${id}/unfollow`, token);
+      return {
+        ok: true,
+        data: { isFollowing: response?.isFollowing ?? false },
+      };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to unfollow user";
+      return { ok: false, errorMessage: message, error };
+    }
   },
 
-  getUserFollowings: async (id: string) => {
-    const token = await getToken();
-    return api.get<User[]>(`/user/${id}/followings`, {}, token);
+  getUserFollowings: async (id: string): Promise<User[]> => {
+    try {
+      const token = await getToken();
+      const response = await api.get<User[] | { data: User[] }>(
+        `/user/${id}/followings`,
+        {},
+        token
+      );
+      // Handle both array and wrapped response formats
+      if (Array.isArray(response)) {
+        return response;
+      }
+      if (response && typeof response === "object" && "data" in response) {
+        return Array.isArray(response.data) ? response.data : [];
+      }
+      return [];
+    } catch (error) {
+      console.error("Error fetching followings:", error);
+      return [];
+    }
   },
 
-  getUserFollowers: async (id: string) => {
-    const token = await getToken();
-    return api.get<User[]>(`/user/${id}/followers`, {}, token);
+  getUserFollowers: async (id: string): Promise<User[]> => {
+    try {
+      const token = await getToken();
+      const response = await api.get<User[] | { data: User[] }>(
+        `/user/${id}/followers`,
+        {},
+        token
+      );
+      // Handle both array and wrapped response formats
+      if (Array.isArray(response)) {
+        return response;
+      }
+      if (response && typeof response === "object" && "data" in response) {
+        return Array.isArray(response.data) ? response.data : [];
+      }
+      return [];
+    } catch (error) {
+      console.error("Error fetching followers:", error);
+      return [];
+    }
   },
 
   searchUsers: async (query: string) => {
@@ -133,5 +263,44 @@ export const userService = {
         token
       )
     ).data;
+  },
+
+  searchFollowingUsers: async ({
+    query,
+    offset = 0,
+    limit = 20,
+  }: SearchFollowingUsersParams): Promise<{
+    users: User[];
+    hasMore: boolean;
+    nextOffset: number;
+  }> => {
+    const token = await getToken();
+    try {
+      const response = await api.get<SearchFollowingUsersResponse>(
+        `/user/following/search`,
+        {
+          q: query,
+          offset: offset.toString(),
+          limit: limit.toString(),
+        },
+        token
+      );
+
+      const users = response.data.data || [];
+      const hasMore = response.data.metadata?.hasMore || users.length === limit;
+
+      return {
+        users,
+        hasMore,
+        nextOffset: offset + users.length,
+      };
+    } catch (error) {
+      console.error("Error searching following users:", error);
+      return {
+        users: [],
+        hasMore: false,
+        nextOffset: offset,
+      };
+    }
   },
 };

@@ -1,5 +1,7 @@
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
+import https from "https";
+
 // Determine if we're running on server or client
 const isServer = typeof window === "undefined";
 
@@ -10,12 +12,20 @@ const baseURL = isServer
   ? "/api/proxy"
   : process.env.NEXT_PUBLIC_API_URL || "https://api.jugaenequipo.com/api";
 
+// Create HTTPS agent for server-side requests
+const httpsAgent = isServer
+  ? new https.Agent({
+      rejectUnauthorized: process.env.NODE_ENV === "production",
+    })
+  : undefined;
+
 const axiosInstance = axios.create({
   baseURL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
+  ...(httpsAgent && { httpsAgent }), // Only add httpsAgent for server-side requests
 });
 
 // Request interceptor to add auth token
@@ -61,11 +71,15 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config;
 
-    // If the error is not 401 or the request was for refreshing token
+    const url = originalRequest?.url || "";
+    const isLoginEndpoint = url.includes("/login") || url.endsWith("/login");
+    const isRefreshTokenEndpoint = url.includes("refresh-token");
+
     if (
       !error.response ||
       error.response.status !== 401 ||
-      originalRequest?.url?.includes("refresh-token") ||
+      isRefreshTokenEndpoint ||
+      isLoginEndpoint ||
       (originalRequest as any)._retry
     ) {
       return Promise.reject(error);
