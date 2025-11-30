@@ -1,4 +1,4 @@
-import { Team, User } from "../../interfaces";
+import { Team, User } from "../interfaces";
 
 export const mockSearchResults = {
   users: [
@@ -62,38 +62,33 @@ export const mockSearchResults = {
     {
       id: "team1",
       name: "Pro Gamers",
-      profileImage: "/images/teams/logo1.jpg",
-      users: [],
+      image: "/images/teams/logo1.jpg",
     },
     {
       id: "team2",
       name: "Casual Squad",
-      profileImage: "/images/teams/logo2.jpg",
-      users: [],
+      image: "/images/teams/logo2.jpg",
     },
     {
       id: "team3",
       name: "Competitive Crew",
-      profileImage: "/images/teams/logo3.jpg",
-      users: [],
+      image: "/images/teams/logo3.jpg",
     },
     {
       id: "team4",
       name: "Weekend Warriors",
-      profileImage: "/images/teams/logo4.jpg",
-      users: [],
+      image: "/images/teams/logo4.jpg",
     },
     {
       id: "team5",
       name: "Elite Squad",
-      profileImage: "/images/teams/logo5.jpg",
-      users: [],
+      image: "/images/teams/logo5.jpg",
     },
     {
       id: "team6",
       name: "Newbie Friendly",
-      profileImage: "/images/teams/logo6.jpg",
-      users: [],
+      image: "/images/teams/logo6.jpg",
     },
   ] as Team[],
 };
+
