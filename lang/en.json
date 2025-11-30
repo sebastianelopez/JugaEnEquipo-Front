@@ -533,5 +533,23 @@
         "comingSoon": "Coming Soon",
         "workingOnFeature": "We're working on this functionality",
         "availableSoon": "This functionality will be available soon"
+    },
+    "Search": {
+        "title": "Juga en Equipo - Search",
+        "pageDescription": "Find players or your team",
+        "resultsFor": "Results for:",
+        "users": "Users",
+        "groups": "Groups",
+        "game": "Game",
+        "allGames": "All games",
+        "ranking": "Ranking",
+        "allRankings": "All rankings",
+        "low": "Low (< 1000)",
+        "medium": "Medium (1000-2000)",
+        "high": "High (> 2000)",
+        "loadMoreUsers": "Load more users",
+        "loadMoreGroups": "Load more groups",
+        "noUsersFound": "No users found for your search",
+        "noGroupsFound": "No groups found for your search"
     }
 }
