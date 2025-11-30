@@ -132,7 +132,6 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
     { label: "Torneos", value: 24, color: "primary" },
     { label: "Victorias", value: 18, color: "success" },
     { label: "Equipos", value: 5, color: "info" },
-    { label: "Horas", value: 2500, color: "warning" },
   ];
 
   const games = (userFound.games || []).map((g) => ({
