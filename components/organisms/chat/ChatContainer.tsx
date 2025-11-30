@@ -39,7 +39,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         const conversationData = result.data;
         if (conversationData && conversationData.id) {
           const conversationId = conversationData.id;
-          
+
           // 2. Si existe, buscar en las conversaciones cargadas usando función de actualización
           setConversations((prevConversations) => {
             const existingConversation = prevConversations.find(
@@ -54,25 +54,18 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               // 4. Si no está en la lista, crear objeto de conversación con los datos del API
               const newConversation: Conversation = {
                 id: conversationId,
-                username: conversationData.otherUsername || "Usuario",
-                lastMessage: conversationData.lastMessageText || "",
-                unread: 0,
-                createdAt: conversationData.lastMessageDate 
-                  ? new Date(conversationData.lastMessageDate).toISOString()
-                  : new Date().toISOString(),
+                otherUsername: conversationData.otherUsername || "Usuario",
+                lastMessageText: conversationData.lastMessageText || "",
+                lastMessageDate: conversationData.lastMessageDate || "",
                 otherUserId: conversationData.otherUserId || userId,
-                otherUser: conversationData.otherUserId ? {
-                  id: conversationData.otherUserId,
-                  username: conversationData.otherUsername || "",
-                  firstname: conversationData.otherFirstname || undefined,
-                  lastname: conversationData.otherLastname || undefined,
-                  profileImage: conversationData.otherProfileImage || undefined,
-                } : undefined,
+                otherFirstname: conversationData.otherFirstname || "",
+                otherLastname: conversationData.otherLastname || "",
+                otherProfileImage: conversationData.otherProfileImage || "",
               };
 
               // Seleccionar la nueva conversación
               setSelectedConversation(newConversation);
-              
+
               // Agregar a la lista y retornar
               return [newConversation, ...prevConversations];
             }

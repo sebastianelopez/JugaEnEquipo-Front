@@ -7,6 +7,7 @@ import {
   List,
   ListItem,
   ListItemAvatar,
+  ListItemButton,
   ListItemText,
   SxProps,
   Theme,
@@ -167,34 +168,39 @@ export const Search = ({ sx }: SearchProps) => {
             {searchResults.map((user, index) => (
               <ListItem
                 key={user.id || index}
-                button
-                onClick={() => handleResultClick(user)}
+                disablePadding
                 sx={{
                   borderBottom:
                     index < searchResults.length - 1
                       ? "1px solid #eee"
                       : "none",
-                  py: 1,
-                  "&:hover": {
-                    bgcolor: "rgba(0,0,0,0.04)",
-                  },
-                  color: "text.primary",
                 }}
               >
-                <ListItemAvatar>
-                  <Avatar
-                    alt={`Avatar de ${user.username}`}
-                    src={user.profileImage}
-                    sx={{ width: 40, height: 40 }}
-                  >
-                    {!user.profileImage &&
-                      user.username.charAt(0).toUpperCase()}
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={user.username}
-                  secondary={`${user.firstname} ${user.lastname}`}
-                />
+                <ListItemButton
+                  onClick={() => handleResultClick(user)}
+                  sx={{
+                    py: 1,
+                    "&:hover": {
+                      bgcolor: "rgba(0,0,0,0.04)",
+                    },
+                    color: "text.primary",
+                  }}
+                >
+                  <ListItemAvatar>
+                    <Avatar
+                      alt={`Avatar de ${user.username}`}
+                      src={user.profileImage}
+                      sx={{ width: 40, height: 40 }}
+                    >
+                      {!user.profileImage &&
+                        user.username.charAt(0).toUpperCase()}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={user.username}
+                    secondary={`${user.firstname} ${user.lastname}`}
+                  />
+                </ListItemButton>
               </ListItem>
             ))}
           </List>

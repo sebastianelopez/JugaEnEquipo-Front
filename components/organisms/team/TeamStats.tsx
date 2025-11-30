@@ -22,7 +22,7 @@ export const TeamStats: FC<Props> = ({
   const theme = useTheme();
   return (
     <Grid container spacing={2}>
-      <Grid item xs={4}>
+      <Grid size={{ xs: 4 }}>
         <Paper
           sx={{
             bgcolor: theme.palette.background.default,
@@ -44,7 +44,7 @@ export const TeamStats: FC<Props> = ({
           </Typography>
         </Paper>
       </Grid>
-      <Grid item xs={4}>
+      <Grid size={{ xs: 4 }}>
         <Paper
           sx={{
             bgcolor: theme.palette.background.default,
@@ -66,7 +66,7 @@ export const TeamStats: FC<Props> = ({
           </Typography>
         </Paper>
       </Grid>
-      <Grid item xs={4}>
+      <Grid size={{ xs: 4 }}>
         <Paper
           sx={{
             bgcolor: theme.palette.background.default,

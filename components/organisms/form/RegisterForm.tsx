@@ -211,9 +211,8 @@ export const RegisterForm = () => {
           validationSchema={validationSchema}
         >
           {(formik) => {
-            const passwordStrength = useMemo(
-              () => checkPasswordStrength(formik.values.password),
-              [formik.values.password]
+            const passwordStrength = checkPasswordStrength(
+              formik.values.password
             );
 
             return (

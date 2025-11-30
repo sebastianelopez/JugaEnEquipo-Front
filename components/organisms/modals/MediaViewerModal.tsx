@@ -63,10 +63,14 @@ export const MediaViewerModal = ({
 
   const hasMultipleItems = allMedia.length > 1;
 
+  const handleClose = () => {
+    onClose(false);
+  };
+
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       aria-label={ariaLabel}
       sx={[...(Array.isArray(sx) ? sx : [sx]), { marginInline: 3 }]}
       maxWidth="lg"
@@ -84,7 +88,7 @@ export const MediaViewerModal = ({
         }}
       >
         <IconButton
-          onClick={onClose}
+          onClick={handleClose}
           sx={{
             position: "absolute",
             right: 8,

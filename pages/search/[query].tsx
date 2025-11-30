@@ -21,7 +21,7 @@ import {
   Avatar,
   ListItemText,
 } from "@mui/material";
-import { mockSearchResults } from "./mock";
+import { mockSearchResults } from "../../mocks/search";
 
 interface Props {
   users: User[];
@@ -147,7 +147,7 @@ const SearchPage: NextPage<Props> = ({
 
         <Grid container spacing={3}>
           {/* Users Section */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 2, mb: 2 }}>
               <Typography variant="h5" component="h2" gutterBottom>
                 Usuarios
@@ -235,7 +235,7 @@ const SearchPage: NextPage<Props> = ({
           </Grid>
 
           {/* Groups Section */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 2, mb: 2 }}>
               <Typography variant="h5" component="h2" gutterBottom>
                 Grupos
@@ -252,9 +252,7 @@ const SearchPage: NextPage<Props> = ({
                           <ListItemAvatar>
                             <Avatar
                               alt={`Logo de ${team.name}`}
-                              src={
-                                team.profileImage || "/images/default-team.png"
-                              }
+                              src={team.image || "/images/default-team.png"}
                             />
                           </ListItemAvatar>
                           <ListItemText id={team.id} primary={team.name} />

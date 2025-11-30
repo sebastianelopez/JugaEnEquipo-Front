@@ -31,7 +31,7 @@ interface ConversationListProps {
 export const ConversationsList = forwardRef<
   ConversationsListHandle,
   ConversationListProps
->(({ conversations, onSelectConversation }, ref) => {
+>(function ConversationsList({ conversations, onSelectConversation }, ref) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredConversations, setFilteredConversations] =
     useState(conversations);

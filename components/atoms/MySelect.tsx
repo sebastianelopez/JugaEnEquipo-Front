@@ -12,7 +12,7 @@ export const MySelect = ({ label, ...props }: Props) => {
 
   return (
     <>      
-      <FormLabel htmlFor={props.id || props.name} children={label} />
+      <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
       <Select {...field} {...props} />
       <ErrorMessage name={props.name} component="span" />
     </>

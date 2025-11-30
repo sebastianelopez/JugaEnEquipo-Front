@@ -18,7 +18,7 @@ export const GamesGrid = ({ games }: GamesGridProps) => {
   return (
     <Grid container spacing={2}>
       {games.map((game, idx) => (
-        <Grid item xs={12} sm={6} md={4} key={idx}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={idx}>
           <Paper
             sx={{
               bgcolor: theme.palette.background.paper,
@@ -63,4 +63,3 @@ export const GamesGrid = ({ games }: GamesGridProps) => {
     </Grid>
   );
 };
-

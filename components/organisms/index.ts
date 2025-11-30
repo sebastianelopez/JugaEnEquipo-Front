@@ -26,10 +26,6 @@ export { TournamentFiltersDialog } from "./modals/TournamentFiltersDialog";
 export { ProfileEditModal } from "./modals/ProfileEditModal";
 export { FollowersModal } from "./modals/FollowersModal";
 
-//Others
-export { HomeNews } from "./HomeNews/HomeNews";
-export { SliderText } from "./sliderText/SliderText";
-
 //Sections
 export { Features } from "./sections/Features";
 export { Community } from "./sections/Community";

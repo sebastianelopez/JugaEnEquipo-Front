@@ -37,7 +37,7 @@ interface Props {
 }
 
 export const CommentSection = forwardRef<CommentSectionHandle, Props>(
-  ({ postId, expanded }, ref) => {
+  function CommentSection({ postId, expanded }, ref) {
     const { user } = useContext(UserContext);
     const { showError } = useContext(FeedbackContext);
     const [comments, setComments] = useState<Comment[]>([]);
