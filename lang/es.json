@@ -241,8 +241,10 @@
         "seeAll": "Ver todos"
     },
     "Chat": {
+        "title": "Mensajes",
         "selectConversation": "Selecciona una conversación para empezar a chatear",
         "loadingMessages": "Cargando mensajes...",
+        "loadingConversations": "Cargando conversaciones...",
         "noMessages": "No hay mensajes aún. ¡Envía el primer mensaje!",
         "sending": "enviando...",
         "inputPlaceholder": "Escribe un mensaje...",

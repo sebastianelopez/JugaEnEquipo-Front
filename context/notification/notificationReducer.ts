@@ -7,7 +7,15 @@ type NotificationAction =
       payload: Notification[];
     }
   | {
+      type: "[Notification] - Set message notifications";
+      payload: Notification[];
+    }
+  | {
       type: "[Notification] - Add notification";
+      payload: Notification;
+    }
+  | {
+      type: "[Notification] - Add message notification";
       payload: Notification;
     }
   | {
@@ -34,6 +42,13 @@ export const notificationReducer = (
         isLoading: false,
       };
 
+    case "[Notification] - Set message notifications":
+      return {
+        ...state,
+        messageNotifications: action.payload,
+        isLoading: false,
+      };
+
     case "[Notification] - Add notification":
       const exists = state.notifications.some(
         (n) => n.id === action.payload.id
@@ -46,14 +61,34 @@ export const notificationReducer = (
         notifications: [action.payload, ...state.notifications],
       };
 
-    case "[Notification] - Mark as read":
+    case "[Notification] - Add message notification":
+      const messageExists = state.messageNotifications.some(
+        (n) => n.id === action.payload.id
+      );
+      if (messageExists) {
+        return state;
+      }
       return {
         ...state,
-        notifications: state.notifications.map((notification) =>
+        messageNotifications: [action.payload, ...state.messageNotifications],
+      };
+
+    case "[Notification] - Mark as read":
+      const updatedNotifications = state.notifications.map((notification) =>
+        notification.id === action.payload
+          ? { ...notification, read: true }
+          : notification
+      );
+      const updatedMessageNotifications = state.messageNotifications.map(
+        (notification) =>
           notification.id === action.payload
             ? { ...notification, read: true }
             : notification
-        ),
+      );
+      return {
+        ...state,
+        notifications: updatedNotifications,
+        messageNotifications: updatedMessageNotifications,
       };
 
     case "[Notification] - Set loading":
@@ -66,6 +101,7 @@ export const notificationReducer = (
       return {
         ...state,
         notifications: [],
+        messageNotifications: [],
         isLoading: false,
       };
 

@@ -30,6 +30,7 @@ import { UserContext } from "../../../context/user/UserContext";
 import { useTimeTranslations } from "../../../hooks/useTimeTranslations";
 import { useFeedback } from "../../../hooks/useFeedback";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/router";
 import { v4 as uuidv4 } from "uuid";
 
 interface ChatWindowProps {
@@ -52,6 +53,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const timeTranslations = useTimeTranslations();
   const { showError } = useFeedback();
   const t = useTranslations("Chat");
+  const router = useRouter();
 
   // Helper function to sort messages by creation date (oldest first)
   const sortMessagesByDate = useCallback((messages: Message[]) => {
@@ -76,8 +78,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
     // Ensure conversation.id is a string
     const conversationId =
-      typeof conversation.id === "string" ? conversation.id : String(conversation.id);
-    
+      typeof conversation.id === "string"
+        ? conversation.id
+        : String(conversation.id);
+
     if (!conversationId) {
       console.error("Invalid conversation ID:", conversation.id);
       return;
@@ -125,8 +129,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
     // Ensure conversation.id is a string
     const conversationId =
-      typeof conversation.id === "string" ? conversation.id : String(conversation.id);
-    
+      typeof conversation.id === "string"
+        ? conversation.id
+        : String(conversation.id);
+
     if (!conversationId) {
       console.error("Invalid conversation ID:", conversation.id);
       return;
@@ -154,7 +160,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     const loadMessagesAsync = async () => {
       setIsLoading(true);
       try {
-        const result = await chatService.getConversationMessages(conversationId);
+        const result = await chatService.getConversationMessages(
+          conversationId
+        );
         if (result.error || !result.data) {
           showError({
             title: t("loadMessagesErrorTitle"),
@@ -250,21 +258,29 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         );
         setTimeout(() => {
           // Only reconnect if still the same conversation and component is still mounted
-          if (conversationIdRef.current === conversationId && conversation && user) {
+          if (
+            conversationIdRef.current === conversationId &&
+            conversation &&
+            user
+          ) {
             // Close old connection if exists
             if (eventSourceRef.current) {
               eventSourceRef.current.close();
             }
-            
+
             // Create new connection
-            const reconnectEventSource = chatService.connectToChat(conversationId);
+            const reconnectEventSource =
+              chatService.connectToChat(conversationId);
             eventSourceRef.current = reconnectEventSource;
 
             // Re-attach message handler
             reconnectEventSource.onmessage = (event) => {
               try {
                 const messageData: Message = JSON.parse(event.data);
-                console.log("Nuevo mensaje recibido via SSE (reconexión):", messageData);
+                console.log(
+                  "Nuevo mensaje recibido via SSE (reconexión):",
+                  messageData
+                );
 
                 setMessages((prev) => {
                   const isMyMessage = messageData.username === user?.username;
@@ -282,14 +298,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                       newMessages[tempMessageIndex] = messageData;
                       return sortMessagesByDate(newMessages);
                     }
-                    const exists = prev.some((msg) => msg.id === messageData.id);
+                    const exists = prev.some(
+                      (msg) => msg.id === messageData.id
+                    );
                     if (!exists) {
                       const newMessages = [...prev, messageData];
                       return sortMessagesByDate(newMessages);
                     }
                     return prev;
                   } else {
-                    const exists = prev.some((msg) => msg.id === messageData.id);
+                    const exists = prev.some(
+                      (msg) => msg.id === messageData.id
+                    );
                     if (exists) return prev;
                     const newMessages = [...prev, messageData];
                     return sortMessagesByDate(newMessages);
@@ -318,11 +338,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
     // Cleanup: close connection when component unmounts or conversation changes
     return () => {
-      if (eventSourceRef.current && conversationIdRef.current === conversationId) {
-        console.log(
-          "Cerrando conexión SSE para conversación:",
-          conversationId
-        );
+      if (
+        eventSourceRef.current &&
+        conversationIdRef.current === conversationId
+      ) {
+        console.log("Cerrando conexión SSE para conversación:", conversationId);
         eventSourceRef.current.close();
         eventSourceRef.current = null;
         conversationIdRef.current = null;
@@ -337,8 +357,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
       // Ensure conversation.id is a string
       const conversationId =
-        typeof conversation.id === "string" ? conversation.id : String(conversation.id);
-      
+        typeof conversation.id === "string"
+          ? conversation.id
+          : String(conversation.id);
+
       if (!conversationId) {
         console.error("Invalid conversation ID:", conversation.id);
         return;
@@ -487,11 +509,26 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               <ArrowBackIcon />
             </IconButton>
           )}
-          <Avatar sx={{ mr: 2 }}>
-            {conversation.username[0].toUpperCase()}
-          </Avatar>
-          <Typography variant="h6" component="h2">
-            {conversation.username}
+          <Avatar
+            sx={{ mr: 2 }}
+            src={conversation.otherProfileImage ?? undefined}
+          />
+          <Typography
+            variant="h6"
+            component="h2"
+            onClick={() => {
+              if (conversation.otherUsername) {
+                router.push(`/profile/${conversation.otherUsername}`);
+              }
+            }}
+            sx={{
+              cursor: "pointer",
+              "&:hover": {
+                textDecoration: "underline",
+              },
+            }}
+          >
+            {conversation.otherUsername}
           </Typography>
         </Box>
 

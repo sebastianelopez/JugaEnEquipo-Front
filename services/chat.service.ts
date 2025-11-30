@@ -2,15 +2,10 @@ import { getToken } from "./auth.service";
 import { userService } from "./user.service";
 import { Message } from "../interfaces/message";
 import { User } from "../interfaces/user";
+import { Conversation } from "../interfaces/conversation";
 import { api } from "../lib/api"; // Asegúrate de importar la instancia de axios
 
 const MERCURE_URL = "https://mercure.jugaenequipo.com";
-
-export type ConversationIdResponse = {
-  data: {
-    id: string;
-  };
-};
 
 export type MessagesResponse = {
   data: Message[];
@@ -92,19 +87,52 @@ export const chatService = {
   // Find conversation by other user ID
   findConversationByUserId: async (
     userId: string
-  ): Promise<Result<string | null>> => {
+  ): Promise<Result<Conversation | null>> => {
     try {
       const token = await getToken();
-      const response = await api.get<ConversationIdResponse>(
+      const response = await api.get<{ data: Conversation }>(
         `/conversation/by-other-user/${userId}`,
         {},
         token
       );
-      return { data: response.data.id, error: null };
+      return { data: response.data, error: null };
     } catch (error: any) {
       if (error?.response?.status === 404) {
         return { data: null, error: { message: "Not found", status: 404 } };
       }
+      const message = toErrorMessage(
+        error?.response?.data?.message || error?.message || "Unknown error"
+      );
+      const status = error?.response?.status;
+      return { data: null, error: { message, status } };
+    }
+  },
+
+  // Get all conversations
+  getAllConversations: async (): Promise<Result<Conversation[]>> => {
+    try {
+      const token = await getToken();
+      const response = await api.get<{ data: Conversation[] }>(
+        `/conversations`,
+        {},
+        token
+      );
+
+      const conversations: Conversation[] = (response.data || []).map(
+        (conv) => ({
+          id: conv.id,
+          otherUserId: conv.otherUserId,
+          otherUsername: conv.otherUsername,
+          otherFirstname: conv.otherFirstname,
+          otherLastname: conv.otherLastname,
+          otherProfileImage: conv.otherProfileImage,
+          lastMessageText: conv.lastMessageText,
+          lastMessageDate: conv.lastMessageDate,
+        })
+      );
+
+      return { data: conversations, error: null };
+    } catch (error: any) {
       const message = toErrorMessage(
         error?.response?.data?.message || error?.message || "Unknown error"
       );

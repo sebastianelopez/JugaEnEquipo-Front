@@ -4,102 +4,33 @@ import { MainLayout } from "../../layouts";
 import { ChatContainer } from "../../components/organisms/chat";
 import { Conversation } from "../../interfaces/conversation";
 import { chatService } from "../../services/chat.service";
+import { Box, CircularProgress, Typography } from "@mui/material";
+import { useTranslations } from "next-intl";
 
 const MessagesPage: NextPage = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const t = useTranslations("Chat");
 
   useEffect(() => {
     const loadConversations = async () => {
       try {
-        // Here you would typically fetch conversations from your API
-        // For now, using mock data until the API endpoint is available
-        const mockConversations: Array<Conversation> = [
-          {
-            id: "1",
-            username: "player1",
-            lastMessage: "Hey, are you available for a match tonight?",
-            createdAt: "2025-05-01T14:30:00Z",
-            unread: 2,
-            otherUserId: "user1",
-          },
-          {
-            id: "2",
-            username: "gamer_pro",
-            lastMessage: "Thanks for joining our team!",
-            createdAt: "2025-03-30T09:15:00Z",
-            unread: 0,
-            otherUserId: "user2",
-          },
-          {
-            id: "3",
-            username: "esports_coach",
-            lastMessage: "Let's review your last game performance",
-            createdAt: "2025-02-29T18:45:00Z",
-            unread: 1,
-            otherUserId: "user3",
-          },
-          {
-            id: "4",
-            username: "team_leader",
-            lastMessage: "Don't forget about the tournament next week!",
-            createdAt: "2025-01-28T12:00:00Z",
-            unread: 0,
-            otherUserId: "user4",
-          },
-          {
-            id: "5",
-            username: "casual_gamer",
-            lastMessage: "Anyone up for some casual games this weekend?",
-            createdAt: "2024-09-27T20:30:00Z",
-            unread: 0,
-            otherUserId: "user5",
-          },
-          {
-            id: "6",
-            username: "pro_player",
-            lastMessage: "Great job in the last match, let's keep it up!",
-            createdAt: "2024-09-26T16:00:00Z",
-            unread: 0,
-            otherUserId: "user6",
-          },
-          {
-            id: "7",
-            username: "newbie_gamer",
-            lastMessage: "Can you help me with some tips for beginners?",
-            createdAt: "2024-09-25T10:30:00Z",
-            unread: 0,
-            otherUserId: "user7",
-          },
-          {
-            id: "8",
-            username: "tournament_organizer",
-            lastMessage: "Registration for the next tournament is open!",
-            createdAt: "2024-09-24T08:00:00Z",
-            unread: 0,
-            otherUserId: "user8",
-          },
-          {
-            id: "9",
-            username: "streamer_fan",
-            lastMessage: "Loved your last stream, keep it up!",
-            createdAt: "2023-09-23T15:45:00Z",
-            unread: 0,
-            otherUserId: "user9",
-          },
-          {
-            id: "10",
-            username: "game_dev",
-            lastMessage: "Check out our new game release!",
-            createdAt: "2023-09-22T11:20:00Z",
-            unread: 0,
-            otherUserId: "user10",
-          },
-        ];
+        const result = await chatService.getAllConversations();
 
-        setConversations(mockConversations);
+        if (result.error) {
+          console.error("Error loading conversations:", result.error);
+          setConversations([]);
+          return;
+        }
+
+        if (result.data) {
+          setConversations(result.data);
+        } else {
+          setConversations([]);
+        }
       } catch (error) {
         console.error("Error loading conversations:", error);
+        setConversations([]);
       } finally {
         setIsLoading(false);
       }
@@ -111,18 +42,33 @@ const MessagesPage: NextPage = () => {
   if (isLoading) {
     return (
       <MainLayout
-        title={"Juga en Equipo - Mensajes"}
+        title={`Juga en Equipo - ${t("title")}`}
         pageDescription={"Sistema de mensajería en tiempo real"}
         fillViewport
       >
-        <div>Cargando conversaciones...</div>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            minHeight: "400px",
+            gap: 2,
+          }}
+        >
+          <CircularProgress size={48} />
+          <Typography variant="body1" color="text.secondary">
+            {t("loadingConversations")}
+          </Typography>
+        </Box>
       </MainLayout>
     );
   }
 
   return (
     <MainLayout
-      title={"Juga en Equipo - Mensajes"}
+      title={`Juga en Equipo - ${t("title")}`}
       pageDescription={"Sistema de mensajería en tiempo real"}
       fillViewport
     >

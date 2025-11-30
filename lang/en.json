@@ -241,8 +241,10 @@
         "seeAll": "See all"
     },
     "Chat": {
+        "title": "Messages",
         "selectConversation": "Select a conversation to start chatting",
         "loadingMessages": "Loading messages...",
+        "loadingConversations": "Loading conversations...",
         "noMessages": "No messages yet. Send the first message!",
         "sending": "sending...",
         "inputPlaceholder": "Type a message...",

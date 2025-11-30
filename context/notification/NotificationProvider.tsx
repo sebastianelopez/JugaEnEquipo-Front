@@ -17,11 +17,13 @@ import { decodeUserIdByToken } from "../../utils/decodeIdByToken";
 
 export interface NotificationState {
   notifications: Notification[];
+  messageNotifications: Notification[];
   isLoading: boolean;
 }
 
 const NOTIFICATION_INITIAL_STATE: NotificationState = {
   notifications: [],
+  messageNotifications: [],
   isLoading: false,
 };
 
@@ -36,8 +38,8 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
   const unreadCount = state.notifications.filter(
     (n) => n.read === undefined || !n.read
   ).length;
-  const unreadChatCount = state.notifications.filter(
-    (n) => n.type === "new_message" && (n.read === undefined || !n.read)
+  const unreadChatCount = state.messageNotifications.filter(
+    (n) => n.read === undefined || !n.read
   ).length;
 
   const setNotifications = useCallback((notifications: Notification[]) => {
@@ -76,14 +78,30 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
       const result = await notificationService.getNotifications(20, 0);
       console.log("result", result);
       if (result.data) {
-        setNotifications(result.data.notifications);
+        // Separar notificaciones de mensajes del resto
+        const allNotifications = result.data.notifications;
+        const messageNotifications = allNotifications.filter(
+          (n) => n.type === "new_message"
+        );
+        const otherNotifications = allNotifications.filter(
+          (n) => n.type !== "new_message"
+        );
+        
+        dispatch({
+          type: "[Notification] - Set notifications",
+          payload: otherNotifications,
+        });
+        dispatch({
+          type: "[Notification] - Set message notifications",
+          payload: messageNotifications,
+        });
       }
     } catch (error) {
       console.error("Error refreshing notifications:", error);
     } finally {
       dispatch({ type: "[Notification] - Set loading", payload: false });
     }
-  }, [setNotifications]);
+  }, []);
 
   useEffect(() => {
     let eventSource: EventSource | null = null;
@@ -139,7 +157,14 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
                 ...JSON.parse(event.data),
                 read: false,
               };
-              addNotification(notification);
+              if (notification.type === "new_message") {
+                dispatch({
+                  type: "[Notification] - Add message notification",
+                  payload: notification,
+                });
+              } else {
+                addNotification(notification);
+              }
             } catch (error) {
               console.error("Error parsing notification:", error);
             }
@@ -183,6 +208,7 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
     <NotificationContext.Provider
       value={{
         notifications: state.notifications,
+        messageNotifications: state.messageNotifications,
         unreadCount,
         unreadChatCount,
         isLoading: state.isLoading,

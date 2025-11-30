@@ -15,7 +15,6 @@ import { UiContext } from "../../../context";
 import { gsap } from "gsap";
 import { useTranslations } from "next-intl";
 import HomeIcon from "@mui/icons-material/Home";
-import MessageIcon from "@mui/icons-material/Message";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import MenuIcon from "@mui/icons-material/Menu";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -23,6 +22,7 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import GroupsIcon from "@mui/icons-material/Groups";
 import { Search } from "../../molecules/Search/Search";
 import { NotificationsButton } from "../../atoms/NotificationsButton";
+import { MessagesButton } from "../../atoms/MessagesButton";
 import { ResponsiveLogo } from "../../atoms/ResponsiveLogo";
 
 export const MainNavbar = () => {
@@ -62,13 +62,7 @@ export const MainNavbar = () => {
               </IconButton>
             </Link>
           </NextLink>
-          <NextLink href={"/messages"} passHref>
-            <Link component="span">
-              <IconButton>
-                <MessageIcon />
-              </IconButton>
-            </Link>
-          </NextLink>
+          <MessagesButton />
           <NextLink href={"/teams"} passHref>
             <Link component="span">
               <IconButton>
@@ -83,7 +77,7 @@ export const MainNavbar = () => {
               </IconButton>
             </Link>
           </NextLink>
-          <NotificationsButton notificationCount={3} />
+          <NotificationsButton />
 
           <Search
             sx={{

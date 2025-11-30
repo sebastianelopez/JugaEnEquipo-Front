@@ -3,6 +3,7 @@ import { Notification } from "../../interfaces/notification";
 
 interface NotificationProps {
   notifications: Notification[];
+  messageNotifications: Notification[];
   unreadCount: number;
   unreadChatCount: number;
   isLoading: boolean;
