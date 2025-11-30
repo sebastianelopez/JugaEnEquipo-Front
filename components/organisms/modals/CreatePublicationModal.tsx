@@ -89,11 +89,16 @@ export const CreatePublicationModal = ({
     setIsCreating(true);
 
     try {
-      const response = await postService.createPost(postId, {
+      const postData: {
+        body: string;
+        files?: File[];
+        sharedPostId?: string | null;
+      } = {
         body: postContent,
-        files: selectedFiles.length > 0 ? selectedFiles : undefined,
+        ...(selectedFiles.length > 0 && { files: selectedFiles }),
         sharedPostId: sharePost ? sharePost.id : null,
-      });
+      };
+      const response = await postService.createPost(postId, postData);
 
       console.log("Post created successfully:", response);
 
