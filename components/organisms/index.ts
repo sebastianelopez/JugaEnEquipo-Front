@@ -44,6 +44,7 @@ export { JoinCard } from "./team/JoinCard";
 export { TeamRequestsAdmin } from "./team/TeamRequestsAdmin";
 // Profile
 export { ProfileHero } from "./profile/ProfileHero";
+export { ProfileTabs } from "./profile/ProfileTabs";
 export { AboutCard } from "./profile/AboutCard";
 export { GamesGrid } from "./profile/GamesGrid";
 export { TeamsList } from "./profile/TeamsList";

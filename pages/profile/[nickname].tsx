@@ -1,9 +1,17 @@
-import { Typography, Container, Card, CardContent, Grid } from "@mui/material";
+import {
+  Typography,
+  Container,
+  Card,
+  CardContent,
+  Grid,
+  Box,
+} from "@mui/material";
 import { GetServerSideProps, GetServerSidePropsContext, NextPage } from "next";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/router";
 import {
   ProfileHero,
+  ProfileTabs,
   AboutCard,
   GamesGrid,
   TeamsList,
@@ -44,9 +52,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
     try {
       setHasError(false);
       setIsLoading(true);
-      const result = await await postService.getPostsByUsername(
-        userFound.username
-      );
+      const result = await postService.getPostsByUsername(userFound.username);
       if (result.error || !result.data) {
         setHasError(true);
         setPosts([]);
@@ -304,77 +310,112 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
         />
 
         <Container maxWidth="xl" sx={{ mt: 4 }}>
-          <Grid container spacing={4}>
-            {/* Left Column: Posts */}
-            <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-              <PostList
-                isLoading={isLoading}
-                posts={posts}
-                error={hasError}
-                onRetry={loadPosts}
-              />
-            </Grid>
+          {/* Mobile View: Tabs */}
+          <ProfileTabs
+            posts={posts}
+            isLoading={isLoading}
+            hasError={hasError}
+            onRetry={loadPosts}
+            hasDescription={hasDescription}
+            description={userFound.description}
+            stats={stats}
+            hasGames={hasGames}
+            games={games}
+            hasTeams={hasTeams}
+            teams={teams}
+            hasTournaments={hasTournaments}
+            tournaments={tournaments}
+            hasAchievements={hasAchievements}
+            achievements={achievements}
+            hasSocialLinks={hasSocialLinks}
+            socialLinks={socialLinks}
+            hasQuickStats={hasQuickStats}
+            currentTeams={currentTeams}
+            activeGames={activeGames}
+            totalAchievements={totalAchievements}
+          />
 
-            {/* Right Column: About, Games, Teams, Tournaments, Achievements, Social Links, Quick Stats */}
-            <Grid size={{ xs: 12, md: 6, lg: 8 }}>
-              {hasDescription && (
-                <AboutCard description={userFound.description!} stats={stats} />
-              )}
-
-              {hasGames && (
-                <Card sx={{ borderRadius: 3, mb: 3 }}>
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
-                      {t("games")}
-                    </Typography>
-                    <GamesGrid games={games} />
-                  </CardContent>
-                </Card>
-              )}
-
-              {hasTeams && (
-                <Card sx={{ borderRadius: 3, mb: 3 }}>
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
-                      {t("teams")}
-                    </Typography>
-                    <TeamsList teams={teams} />
-                  </CardContent>
-                </Card>
-              )}
-
-              {hasTournaments && (
-                <Card sx={{ borderRadius: 3, mb: 3 }}>
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
-                      {t("recentTournaments")}
-                    </Typography>
-                    <TournamentsGrid tournaments={tournaments} />
-                  </CardContent>
-                </Card>
-              )}
-
-              {hasAchievements && (
-                <Card sx={{ borderRadius: 3, mb: 3 }}>
-                  <CardContent sx={{ p: 4 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
-                      {t("achievements")}
-                    </Typography>
-                    <ProfileAchievementsList achievements={achievements} />
-                  </CardContent>
-                </Card>
-              )}
-
-              {hasSocialLinks && <SocialLinksCard links={socialLinks} />}
-              {hasQuickStats && (
-                <QuickStatsCard
-                  currentTeams={currentTeams}
-                  activeGames={activeGames}
-                  totalAchievements={totalAchievements}
+          {/* Desktop View: Grid Layout */}
+          <Box
+            sx={{
+              display: { xs: "none", md: "block" },
+            }}
+          >
+            <Grid container spacing={4}>
+              {/* Left Column: Posts */}
+              <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+                <PostList
+                  isLoading={isLoading}
+                  posts={posts}
+                  error={hasError}
+                  onRetry={loadPosts}
                 />
-              )}
+              </Grid>
+
+              {/* Right Column: About, Games, Teams, Tournaments, Achievements, Social Links, Quick Stats */}
+              <Grid size={{ xs: 12, md: 6, lg: 8 }}>
+                {hasDescription && (
+                  <AboutCard
+                    description={userFound.description!}
+                    stats={stats}
+                  />
+                )}
+
+                {hasGames && (
+                  <Card sx={{ borderRadius: 3, mb: 3 }}>
+                    <CardContent sx={{ p: 4 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+                        {t("games")}
+                      </Typography>
+                      <GamesGrid games={games} />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {hasTeams && (
+                  <Card sx={{ borderRadius: 3, mb: 3 }}>
+                    <CardContent sx={{ p: 4 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+                        {t("teams")}
+                      </Typography>
+                      <TeamsList teams={teams} />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {hasTournaments && (
+                  <Card sx={{ borderRadius: 3, mb: 3 }}>
+                    <CardContent sx={{ p: 4 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+                        {t("recentTournaments")}
+                      </Typography>
+                      <TournamentsGrid tournaments={tournaments} />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {hasAchievements && (
+                  <Card sx={{ borderRadius: 3, mb: 3 }}>
+                    <CardContent sx={{ p: 4 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+                        {t("achievements")}
+                      </Typography>
+                      <ProfileAchievementsList achievements={achievements} />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {hasSocialLinks && <SocialLinksCard links={socialLinks} />}
+                {hasQuickStats && (
+                  <QuickStatsCard
+                    currentTeams={currentTeams}
+                    activeGames={activeGames}
+                    totalAchievements={totalAchievements}
+                  />
+                )}
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
         </Container>
       </MainLayout>
       {isLoggedUser && (
