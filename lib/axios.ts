@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
 import https from "https";
+import { getAuthCookieOptions } from "../utils/cookies";
 
 // Determine if we're running on server or client
 const isServer = typeof window === "undefined";
@@ -99,6 +100,18 @@ axiosInstance.interceptors.response.use(
       const refreshToken = Cookies.get("refreshToken");
       const token = Cookies.get("token");
       if (!refreshToken) {
+        // Don't redirect if we're already on login page or if this is right after login
+        const isOnLoginPage = typeof window !== "undefined" && 
+          (window.location.pathname === "/auth/login" || window.location.pathname.startsWith("/auth/login"));
+        
+        if (!isOnLoginPage) {
+          // Only redirect if not already on login page
+          Cookies.remove("token");
+          Cookies.remove("refreshToken");
+          if (typeof window !== "undefined") {
+            window.location.href = "/auth/login";
+          }
+        }
         throw new Error("No refresh token available");
       }
 
@@ -116,18 +129,10 @@ axiosInstance.interceptors.response.use(
       const { token: newToken, refreshToken: newRefreshToken } =
         response.data.data;
 
-      // Update cookies with new tokens
-      Cookies.set("token", newToken, {
-        secure: true,
-        sameSite: "strict",
-        expires: 7, // days
-      });
-
-      Cookies.set("refreshToken", newRefreshToken, {
-        secure: true,
-        sameSite: "strict",
-        expires: 7, // days
-      });
+      // Update cookies with new tokens using mobile-compatible options
+      const cookieOptions = getAuthCookieOptions();
+      Cookies.set("token", newToken, cookieOptions);
+      Cookies.set("refreshToken", newRefreshToken, cookieOptions);
 
       // Process queued requests
       processQueue(null, newToken);
@@ -142,9 +147,15 @@ axiosInstance.interceptors.response.use(
       processQueue(refreshError, null);
       Cookies.remove("token");
       Cookies.remove("refreshToken");
-      // Redirect to login page
+      
+      // Only redirect if not already on login page to avoid loops
       if (typeof window !== "undefined") {
-        window.location.href = "/auth/login";
+        const isOnLoginPage = window.location.pathname === "/auth/login" || 
+          window.location.pathname.startsWith("/auth/login");
+        
+        if (!isOnLoginPage) {
+          window.location.href = "/auth/login";
+        }
       }
       return Promise.reject(refreshError);
     } finally {

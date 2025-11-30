@@ -49,3 +49,21 @@ export const parseCookies = (cookieString?: string): Record<string, string> => {
   
   return cookies;
 };
+
+/**
+ * Get cookie options for authentication tokens
+ * Optimized for mobile compatibility
+ */
+export const getAuthCookieOptions = () => {
+  // Check if we're in a secure context (HTTPS)
+  const isSecure = typeof window !== "undefined" 
+    ? window.location.protocol === "https:" 
+    : process.env.NODE_ENV === "production";
+  
+  return {
+    secure: isSecure, // Only use secure in HTTPS or production
+    sameSite: "lax" as const, // More permissive than "strict" for better mobile compatibility
+    expires: 7, // days
+    path: "/",
+  };
+};

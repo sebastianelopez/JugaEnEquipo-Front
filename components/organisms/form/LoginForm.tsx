@@ -73,6 +73,10 @@ export const LoginForm = () => {
 
       const token = result.data;
 
+      // Small delay to ensure cookies are set before making next request
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       try {
         const userId = decodeUserIdByToken(token);
         const user = await userService.getUserById(userId);
@@ -86,8 +90,24 @@ export const LoginForm = () => {
           setIsLoading(false);
           setSubmitting(false);
         }
-      } catch (userError) {
+      } catch (userError: any) {
         console.error("Error fetching user:", userError);
+        // If it's a 401 error, the token might not be set yet, try once more
+        if (userError?.response?.status === 401) {
+          // Wait a bit more and retry once
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          try {
+            const userId = decodeUserIdByToken(token);
+            const user = await userService.getUserById(userId);
+            if (user) {
+              setUser(user);
+              router.push("/home");
+              return;
+            }
+          } catch (retryError) {
+            console.error("Retry failed:", retryError);
+          }
+        }
         setShowError(true);
         setIsLoading(false);
         setSubmitting(false);

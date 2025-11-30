@@ -2,6 +2,7 @@ import { api } from "../lib/api";
 import Cookies from "js-cookie";
 import axiosInstance from "../lib/axios";
 import type { ServiceResult } from "./types";
+import { getAuthCookieOptions } from "../utils/cookies";
 
 interface LoginResponse {
   data: {
@@ -34,17 +35,10 @@ export const login = async (email: string, password: string) => {
       throw new Error("Invalid response: missing tokens");
     }
 
-    Cookies.set("token", token, {
-      secure: true,
-      sameSite: "strict",
-      expires: 7,
-    });
+    const cookieOptions = getAuthCookieOptions();
 
-    Cookies.set("refreshToken", refreshToken, {
-      secure: true,
-      sameSite: "strict",
-      expires: 7,
-    });
+    Cookies.set("token", token, cookieOptions);
+    Cookies.set("refreshToken", refreshToken, cookieOptions);
 
     return token;
   } catch (error) {
