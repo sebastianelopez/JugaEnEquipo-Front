@@ -1,7 +1,7 @@
 import { api } from "../lib/api";
 import { ServiceResult } from "./types";
 import { getToken } from "./auth.service";
-import type { Tournament, CreateTournamentPayload } from "../interfaces";
+import type { Tournament, CreateTournamentPayload, Team } from "../interfaces";
 
 async function safeCall<T>(fn: () => Promise<any>): Promise<ServiceResult<T>> {
   try {
@@ -98,6 +98,17 @@ export const tournamentService = {
   },
 
   /**
+   * Get tournament teams
+   * GET /api/teams?tournamentId=:tournamentId
+   */
+  getTournamentTeams: async (
+    tournamentId: string
+  ): Promise<ServiceResult<Team[]>> => {
+    const token = await getToken();
+    return safeCall<Team[]>(() => api.get(`/teams`, { tournamentId }, token));
+  },
+
+  /**
    * Assign a responsible user to a tournament
    * POST /api/tournament/:tournament_id/responsible/:user_id
    */
@@ -113,5 +124,35 @@ export const tournamentService = {
         token
       )
     );
+  },
+
+  /**
+   * Leave a tournament (team leaves)
+   * POST /api/tournament/:tournament_id/team/:team_id/leave
+   */
+  leaveTournament: async (
+    tournamentId: string,
+    teamId: string
+  ): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    return safeCall<void>(() =>
+      api.post(
+        `/tournament/${tournamentId}/team/${teamId}/leave`,
+        {},
+        undefined,
+        token
+      )
+    );
+  },
+
+  /**
+   * Search tournament status
+   * GET /api/tournament-status
+   */
+  searchStatus: async (params?: {
+    [key: string]: any;
+  }): Promise<ServiceResult<any>> => {
+    const token = await getToken();
+    return safeCall<any>(() => api.get("/tournament-status", params, token));
   },
 };

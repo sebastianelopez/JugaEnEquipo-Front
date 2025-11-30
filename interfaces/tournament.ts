@@ -10,9 +10,12 @@ export interface Tournament {
   gameId: string;
   gameName: string;
   tournamentStatusId: string;
+  minGameRankId: string | null;
+  maxGameRankId: string | null;
   responsibleId: string | null;
   name: string;
   description: string;
+  rules: string | null;
   registeredTeams: number;
   maxTeams: number;
   isOfficial: boolean;
@@ -24,8 +27,7 @@ export interface Tournament {
   createdAt: string;
   updatedAt: string | null;
   deletedAt: string | null; // (soft delete)
-  minGameRankId: string | null;
-  maxGameRankId: string | null;
+  isUserRegistered: boolean;
 }
 
 export interface CreateTournamentPayload {
