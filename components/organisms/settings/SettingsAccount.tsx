@@ -59,7 +59,7 @@ export const SettingsAccount: FC<SettingsAccountProps> = ({
         newPassword,
         confirmPassword,
       };
-      
+
       try {
         await onUpdatePassword?.(data);
         // Reset form only on success
@@ -178,13 +178,21 @@ export const SettingsAccount: FC<SettingsAccountProps> = ({
           required
         />
 
-        <Box sx={{ mt: 2 }}>
+        <Box
+          sx={{
+            mt: 2,
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 2,
+            justifyContent: "flex-end",
+          }}
+        >
           <Button
             variant="contained"
             color="error"
-            sx={{ mr: 2 }}
             onClick={handleDeleteAccount}
             type="button"
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             {t("deleteAccount")}
           </Button>
@@ -194,6 +202,7 @@ export const SettingsAccount: FC<SettingsAccountProps> = ({
             color="primary"
             startIcon={<SaveIcon />}
             disabled={!isFormValid || !currentPassword}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             {t("updatePassword")}
           </Button>
