@@ -1,5 +1,13 @@
 import { useState, useCallback } from "react";
-import { Tabs, Tab, Box, Paper, Card, CardContent, Typography } from "@mui/material";
+import {
+  Tabs,
+  Tab,
+  Box,
+  Paper,
+  Card,
+  CardContent,
+  Typography,
+} from "@mui/material";
 import { useTranslations } from "next-intl";
 import { PostList } from "../../molecules/Post/PostList";
 import { Post } from "../../../interfaces";
@@ -130,7 +138,7 @@ export const ProfileTabs = ({
         display: { xs: "block", md: "none" },
       }}
     >
-      <Paper elevation={0} sx={{ borderRadius: 2 }}>
+      <Paper elevation={0} sx={{ borderRadius: 2, bgcolor: "transparent" }}>
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
@@ -146,12 +154,20 @@ export const ProfileTabs = ({
         </Tabs>
 
         <TabPanel value={tabValue} index={0}>
-          <PostList
-            isLoading={isLoading}
-            posts={posts}
-            error={hasError}
-            onRetry={onRetry}
-          />
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <PostList
+              isLoading={isLoading}
+              posts={posts}
+              error={hasError}
+              onRetry={onRetry}
+            />
+          </Box>
         </TabPanel>
 
         <TabPanel value={tabValue} index={1}>
@@ -216,4 +232,3 @@ export const ProfileTabs = ({
     </Box>
   );
 };
-
