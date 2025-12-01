@@ -200,7 +200,38 @@
         "registerLink": "Registre-se aqui",
         "existing-account": "Não tem uma conta ainda?",
         "requiredError": "Obrigatório",
-        "emailError":"Verifique o formato do e-mail"
+        "emailError":"Verifique o formato do e-mail",
+        "forgotPasswordLink": "Esqueceu sua senha?"
+    },
+    "ForgotPassword":{
+        "title": "Recuperar Senha",
+        "subtitle": "Digite seu endereço de email e enviaremos um link para redefinir sua senha",
+        "email": "Endereço de email",
+        "submitButton": "Enviar Link",
+        "submitting": "Enviando...",
+        "successMessage": "Se existir uma conta com esse email, enviamos um link para redefinir a senha.",
+        "expirationWarning": "⚠️ Importante: O link de recuperação expira em 1 hora.",
+        "errorMessage": "Falha ao enviar o email. Por favor tente novamente.",
+        "requiredError": "Obrigatório",
+        "emailError": "Verifique o formato do e-mail",
+        "rememberPassword": "Lembra sua senha?",
+        "backToLogin": "Voltar ao login"
+    },
+    "ResetPassword":{
+        "title": "Redefinir Senha",
+        "subtitle": "Digite sua nova senha",
+        "password": "Nova Senha",
+        "passwordConfirmation": "Confirmar Nova Senha",
+        "submitButton": "Redefinir Senha",
+        "submitting": "Redefinindo...",
+        "successMessage": "Sua senha foi atualizada com sucesso. Redirecionando para o login...",
+        "errorMessage": "Falha ao redefinir a senha. Por favor tente novamente.",
+        "tokenExpiredError": "Este link de recuperação expirou. Por favor solicite um novo link de recuperação.",
+        "expirationInfo": "⚠️ Nota: Este link de recuperação expira 1 hora após ser enviado.",
+        "requiredError": "Obrigatório",
+        "passwordMinLength": "A senha deve ter pelo menos 8 caracteres",
+        "passwordMatchError": "As senhas devem coincidir",
+        "redirectingMessage": "Redirecionando para o login..."
     },
     "Profile":{
         "profile": "Perfil",

@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 const PUBLIC_ROUTE_PREFIXES = [
   "/",
   "/auth",
+  "/recover",
   "/about",
   "/contact",
   "/help",

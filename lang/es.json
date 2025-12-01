@@ -200,7 +200,38 @@
         "registerLink": "Regístrate aquí",
         "existing-account": "¿No tiene una cuenta aún?",
         "requiredError": "Requerido",
-        "emailError":"Revise el formato del correo"
+        "emailError":"Revise el formato del correo",
+        "forgotPasswordLink": "¿Olvidaste tu contraseña?"
+    },
+    "ForgotPassword":{
+        "title": "Recuperar Contraseña",
+        "subtitle": "Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña",
+        "email": "Correo electrónico",
+        "submitButton": "Enviar Enlace",
+        "submitting": "Enviando...",
+        "successMessage": "Si existe una cuenta con ese correo, hemos enviado un enlace para restablecer la contraseña.",
+        "expirationWarning": "⚠️ Importante: El enlace de recuperación expira en 1 hora.",
+        "errorMessage": "Error al enviar el correo. Por favor intenta de nuevo.",
+        "requiredError": "Requerido",
+        "emailError": "Revise el formato del correo",
+        "rememberPassword": "¿Recuerdas tu contraseña?",
+        "backToLogin": "Volver al inicio de sesión"
+    },
+    "ResetPassword":{
+        "title": "Restablecer Contraseña",
+        "subtitle": "Ingresa tu nueva contraseña",
+        "password": "Nueva Contraseña",
+        "passwordConfirmation": "Confirmar Nueva Contraseña",
+        "submitButton": "Restablecer Contraseña",
+        "submitting": "Restableciendo...",
+        "successMessage": "Tu contraseña ha sido actualizada exitosamente. Redirigiendo al inicio de sesión...",
+        "errorMessage": "Error al restablecer la contraseña. Por favor intenta de nuevo.",
+        "tokenExpiredError": "Este enlace de recuperación ha expirado. Por favor solicita un nuevo enlace de recuperación.",
+        "expirationInfo": "⚠️ Nota: Este enlace de recuperación expira 1 hora después de ser enviado.",
+        "requiredError": "Requerido",
+        "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",
+        "passwordMatchError": "Las contraseñas deben coincidir",
+        "redirectingMessage": "Redirigiendo al inicio de sesión..."
     },
     "Profile":{
         "profile": "Perfil",
