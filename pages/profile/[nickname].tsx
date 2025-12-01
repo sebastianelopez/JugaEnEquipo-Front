@@ -21,11 +21,12 @@ import {
   QuickStatsCard,
   ProfileEditModal,
 } from "../../components/organisms";
-import { Post, User } from "../../interfaces";
+import { Post, User, Team } from "../../interfaces";
 import { MainLayout } from "../../layouts";
 import { userService } from "../../services/user.service";
 import { useContext, useEffect, useState, useCallback } from "react";
 import { postService } from "../../services/post.service";
+import { teamService } from "../../services/team.service";
 import { UserContext } from "../../context/user";
 import { PostList } from "../../components/molecules/Post/PostList";
 import { sortPostsByDate } from "../../utils/sortPosts";
@@ -47,6 +48,18 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [teams, setTeams] = useState<
+    {
+      id: string | number;
+      name: string;
+      logo?: string;
+      role?: string;
+      position?: string;
+      joinDate?: string | number | Date;
+      leftDate?: string | number | Date;
+    }[]
+  >([]);
+  const [isLoadingTeams, setIsLoadingTeams] = useState(true);
 
   const loadPosts = useCallback(async () => {
     try {
@@ -73,6 +86,57 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   useEffect(() => {
     loadPosts();
   }, [loadPosts]);
+
+  const loadTeams = useCallback(async () => {
+    try {
+      setIsLoadingTeams(true);
+      const result = await teamService.getTeamsByUserId(userFound.id);
+      if (result.ok && result.data) {
+        // Deduplicate teams by ID (in case user appears multiple times)
+        const uniqueTeamsMap = new Map<string, Team>();
+        result.data.forEach((team: Team) => {
+          if (!uniqueTeamsMap.has(team.id)) {
+            uniqueTeamsMap.set(team.id, team);
+          }
+        });
+
+        // Transform Team[] to TeamItem[]
+        const transformedTeams = Array.from(uniqueTeamsMap.values()).map(
+          (team: Team) => {
+            // Determine role based on user's relationship to the team
+            // Priority: Creador > Capitán > Member
+            let role: string | undefined;
+            if (team.creatorId === userFound.id) {
+              role = "Creador";
+            } else if (team.leaderId === userFound.id) {
+              role = "Capitán";
+            }
+
+            return {
+              id: team.id,
+              name: team.name,
+              logo: team.image || undefined,
+              role,
+              joinDate: team.createdAt,
+              leftDate: team.deletedAt || undefined,
+            };
+          }
+        );
+        setTeams(transformedTeams);
+      } else {
+        setTeams([]);
+      }
+    } catch (error) {
+      console.error("Error loading teams:", error);
+      setTeams([]);
+    } finally {
+      setIsLoadingTeams(false);
+    }
+  }, [userFound.id]);
+
+  useEffect(() => {
+    loadTeams();
+  }, [loadTeams]);
 
   const handleOnSave = useCallback(
     async ({
@@ -131,12 +195,6 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   // Derived data and visibility checks
   // MOCK DATA - Temporal until backend integration
 
-  const stats: { label: string; value: string | number; color?: any }[] = [
-    { label: "Torneos", value: 24, color: "primary" },
-    { label: "Victorias", value: 18, color: "success" },
-    { label: "Equipos", value: 5, color: "info" },
-  ];
-
   const games = (userFound.games || []).map((g) => ({
     name: g.name,
     icon: (g as any).image || undefined,
@@ -144,41 +202,6 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   }));
   const hasGames = games.length > 0;
 
-  // MOCK DATA - Temporal until backend integration
-  const teams: {
-    id: string | number;
-    name: string;
-    logo?: string;
-    role?: string;
-    position?: string;
-    joinDate?: string | number | Date;
-    leftDate?: string | number | Date;
-  }[] = [
-    {
-      id: 1,
-      name: "Team Thunder",
-      logo: "/images/user-placeholder.png",
-      role: "Capitán",
-      position: "DPS",
-      joinDate: new Date("2023-01-15"),
-    },
-    {
-      id: 2,
-      name: "Elite Gaming Squad",
-      logo: "/images/user-placeholder.png",
-      position: "Support",
-      joinDate: new Date("2022-06-20"),
-      leftDate: new Date("2023-12-01"),
-    },
-    {
-      id: 3,
-      name: "Pro Players League",
-      logo: "/images/user-placeholder.png",
-      position: "Tank",
-      joinDate: new Date("2021-03-10"),
-      leftDate: new Date("2022-08-15"),
-    },
-  ];
   const hasTeams = teams.length > 0;
 
   // MOCK DATA - Temporal until backend integration
@@ -265,15 +288,21 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   };
   const hasSocialLinks = Object.values(socialLinks).some(Boolean);
 
-  const hasDescription =
-    (userFound.description?.trim?.() || "").length > 0 ||
-    (stats?.length || 0) > 0;
-
-  const currentTeams = teams.length;
+  const currentTeams = teams.filter((team) => !team.leftDate).length;
   const activeGames = games.length;
   const totalAchievements = achievements.length;
   const hasQuickStats =
     currentTeams > 0 || activeGames > 0 || totalAchievements > 0;
+
+  const stats: { label: string; value: string | number; color?: any }[] = [
+    { label: "Torneos", value: 24, color: "primary" },
+    { label: "Victorias", value: 18, color: "success" },
+    { label: "Equipos", value: currentTeams, color: "info" },
+  ];
+
+  const hasDescription =
+    (userFound.description?.trim?.() || "").length > 0 ||
+    (stats?.length || 0) > 0;
 
   const showPostsSection = isLoading || hasError || posts.length > 0;
 

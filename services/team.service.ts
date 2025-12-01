@@ -82,6 +82,20 @@ export const teamService = {
   },
 
   /**
+   * Get teams by user ID (where user is member, leader, or creator)
+   * GET /api/teams?userId=:userId&leaderId=:userId&creatorId=:userId
+   */
+  getTeamsByUserId: async (userId: string): Promise<ServiceResult<Team[]>> => {
+    const token = await getToken();
+    const queryParams = {
+      userId,
+      leaderId: userId,
+      creatorId: userId,
+    };
+    return safeCall<Team[]>(() => api.get("/teams", queryParams, token));
+  },
+
+  /**
    * Add a game to a team
    * PUT /api/team/:id/game/:game_id
    */
