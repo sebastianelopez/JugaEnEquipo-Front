@@ -17,21 +17,37 @@ const USER_INITIAL_STATE: UserState = {
 export const UserProvider: FC<PropsWithChildren> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, USER_INITIAL_STATE);
 
-   // Load user from token on mount
-   useEffect(() => {
-    const loadUserFromToken = async () => {
+  // Load user from token on mount
+  useEffect(() => {
+    const loadUserFromToken = async (retryCount = 0) => {
       try {
         const token = Cookies.get("token");
         if (token) {
           const userId = decodeUserIdByToken(token);
           const user = await userService.getUserById(userId);
-          
+
           if (user) {
             setUser(user);
           }
         }
-      } catch (error) {
-        console.error("Error loading user from token:", error);
+      } catch (error: any) {
+        // Handle timeout errors gracefully - retry once, then silently fail
+        const isTimeoutError =
+          error?.code === "ECONNABORTED" || error?.message?.includes("timeout");
+
+        if (isTimeoutError && retryCount < 1) {
+          // Retry once after a short delay
+          setTimeout(() => {
+            loadUserFromToken(retryCount + 1);
+          }, 2000);
+          return;
+        }
+
+        // Only log non-timeout errors or timeout errors after retry
+        if (!isTimeoutError) {
+          console.error("Error loading user from token:", error);
+        }
+        // Silently handle timeout errors - app can function without initial user load
       }
     };
 
@@ -41,11 +57,10 @@ export const UserProvider: FC<PropsWithChildren> = ({ children }) => {
   const setUser = (user: User) => {
     dispatch({ type: "[User] - set user", payload: user });
   };
-  
+
   const removeUser = () => {
     dispatch({ type: "[User] - Remove user" });
   };
-
 
   return (
     <UserContext.Provider

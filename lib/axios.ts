@@ -21,7 +21,7 @@ const httpsAgent = isServer
 
 const axiosInstance = axios.create({
   baseURL,
-  timeout: 10000,
+  timeout: 20000, // Increased from 10000ms to 20000ms (20 seconds) for better reliability
   headers: {
     "Content-Type": "application/json",
   },
