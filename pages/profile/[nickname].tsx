@@ -104,12 +104,15 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
         const transformedTeams = Array.from(uniqueTeamsMap.values()).map(
           (team: Team) => {
             // Determine role based on user's relationship to the team
-            // Priority: Creador > Capitán > Member
-            let role: string | undefined;
+            // Priority: Creador > Líder > Miembro
+            let role: string;
             if (team.creatorId === userFound.id) {
               role = "Creador";
             } else if (team.leaderId === userFound.id) {
-              role = "Capitán";
+              role = "Líder";
+            } else {
+              // If user is in the team but not creator or leader, they are a member
+              role = "Miembro";
             }
 
             return {

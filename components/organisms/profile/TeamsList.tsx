@@ -80,11 +80,27 @@ export const TeamsList = ({ teams }: TeamsListProps) => {
               >
                 {team.name}
               </Typography>
-              {team.role === "Capitán" && (
+              {team.role === "Creador" && (
                 <Chip
-                  label="Capitán"
+                  label="Creador"
+                  size="small"
+                  color="primary"
+                  sx={{ fontWeight: 600, height: 20 }}
+                />
+              )}
+              {team.role === "Líder" && (
+                <Chip
+                  label="Líder"
                   size="small"
                   color="warning"
+                  sx={{ fontWeight: 600, height: 20 }}
+                />
+              )}
+              {team.role === "Miembro" && (
+                <Chip
+                  label="Miembro"
+                  size="small"
+                  color="info"
                   sx={{ fontWeight: 600, height: 20 }}
                 />
               )}
@@ -140,4 +156,3 @@ export const TeamsList = ({ teams }: TeamsListProps) => {
     </List>
   );
 };
-
