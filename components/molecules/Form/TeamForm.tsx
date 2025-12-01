@@ -1,13 +1,7 @@
 import { FC, useMemo, useState, useEffect, useRef } from "react";
 import { Formik, Form, useFormikContext } from "formik";
 import * as Yup from "yup";
-import {
-  Box,
-  Button,
-  Stack,
-  Typography,
-  Avatar,
-} from "@mui/material";
+import { Box, Button, Stack, Typography, Avatar } from "@mui/material";
 import { PhotoCamera } from "@mui/icons-material";
 import { MyTextInput } from "../../atoms";
 import { useTranslations } from "next-intl";
@@ -74,15 +68,12 @@ export const TeamForm: FC<TeamFormProps> = ({
         name: Yup.string()
           .required(t("form.nameRequired"))
           .max(80, t("form.nameMaxLength")),
-        description: Yup.string().max(
-          500,
-          t("form.descriptionMaxLength")
-        ),
+        description: Yup.string().max(500, t("form.descriptionMaxLength")),
         image: Yup.string()
           .nullable()
           .test("image-format", "Image must be a base64 string", (value) => {
             if (!value) return true; // null/empty is allowed
-            // Only accept base64 data URLs
+
             return /^data:image\//.test(value);
           }),
       }),
@@ -98,11 +89,17 @@ export const TeamForm: FC<TeamFormProps> = ({
   }, [initialValues]);
 
   const handleSubmit = async (
-    values: CreateTeamPayload & { image?: string | null; description?: string | null },
+    values: CreateTeamPayload & {
+      image?: string | null;
+      description?: string | null;
+    },
     helpers: { setSubmitting: (isSubmitting: boolean) => void }
   ) => {
-    const toUndefinedIfEmpty = (value: string | null | undefined): string | undefined => {
-      if (!value || (typeof value === "string" && !value.trim())) return undefined;
+    const toUndefinedIfEmpty = (
+      value: string | null | undefined
+    ): string | undefined => {
+      if (!value || (typeof value === "string" && !value.trim()))
+        return undefined;
       return typeof value === "string" ? value.trim() : undefined;
     };
 
@@ -195,4 +192,3 @@ export const TeamForm: FC<TeamFormProps> = ({
     </Formik>
   );
 };
-

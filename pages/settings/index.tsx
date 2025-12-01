@@ -1,7 +1,6 @@
 import { NextPage, GetStaticPropsContext } from "next";
 import React, { useState, useCallback, useContext } from "react";
 import { Container, Typography, Box, Tabs, Tab, Paper } from "@mui/material";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import SecurityIcon from "@mui/icons-material/Security";
 import PersonIcon from "@mui/icons-material/Person";
 import { MainLayout } from "../../layouts";
@@ -9,9 +8,7 @@ import { useTranslations } from "next-intl";
 import {
   SettingsProfile,
   SettingsAccount,
-  SettingsNotifications,
 } from "../../components/organisms/settings";
-import type { NotificationPreferences } from "../../components/organisms/settings/SettingsNotifications";
 import { UserContext } from "../../context/user";
 import { useFeedback } from "../../hooks/useFeedback";
 import { userService } from "../../services/user.service";
@@ -98,13 +95,6 @@ const SettingsPage: NextPage = () => {
     // TODO: Implement account deletion logic
   }, []);
 
-  const handleNotificationsSave = useCallback(
-    (preferences: NotificationPreferences) => {
-      // TODO: Implement notification preferences save logic
-    },
-    []
-  );
-
   return (
     <MainLayout title={t("title")} pageDescription={t("pageDescription")}>
       <Container maxWidth="md" sx={{ py: 4 }}>
@@ -122,7 +112,6 @@ const SettingsPage: NextPage = () => {
             >
               <Tab icon={<PersonIcon />} label={t("profileTab")} />
               <Tab icon={<SecurityIcon />} label={t("accountTab")} />
-              <Tab icon={<NotificationsIcon />} label={t("notificationsTab")} />
             </Tabs>
           </Box>
 
@@ -135,10 +124,6 @@ const SettingsPage: NextPage = () => {
               onUpdatePassword={handlePasswordUpdate}
               onDeleteAccount={handleDeleteAccount}
             />
-          </TabPanel>
-
-          <TabPanel value={tabValue} index={2}>
-            <SettingsNotifications onSave={handleNotificationsSave} />
           </TabPanel>
         </Paper>
       </Container>

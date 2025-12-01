@@ -82,6 +82,18 @@ export const teamService = {
   },
 
   /**
+   * Get teams by user ID (where user is member, leader, or creator)
+   * GET /api/teams?userId=:userId&leaderId=:userId&creatorId=:userId
+   */
+  getTeamsByUserId: async (userId: string): Promise<ServiceResult<Team[]>> => {
+    const token = await getToken();
+    const queryParams = {
+      userId,
+    };
+    return safeCall<Team[]>(() => api.get("/teams", queryParams, token));
+  },
+
+  /**
    * Add a game to a team
    * PUT /api/team/:id/game/:game_id
    */
@@ -159,44 +171,73 @@ export const teamService = {
 
   /**
    * Find all team requests
-   * GET /api/team/requests
+   * GET /api/team/requests?teamId=:teamId
    */
-  findAllRequests: async (): Promise<ServiceResult<TeamRequest[]>> => {
-    const token = await getToken();
-    return safeCall<TeamRequest[]>(() => api.get("/team/requests", {}, token));
-  },
-
-  /**
-   * Find all requests for a specific team
-   * GET /api/team/:id/requests
-   */
-  findTeamRequests: async (
+  findAllRequests: async (
     teamId: string
   ): Promise<ServiceResult<TeamRequest[]>> => {
     const token = await getToken();
-    return safeCall<TeamRequest[]>(() =>
-      api.get(`/team/${teamId}/requests`, {}, token)
-    );
+    try {
+      const response = await api.get<{ requests: TeamRequest[] }>(
+        "/team/requests",
+        { teamId },
+        token
+      );
+
+      const requests =
+        (response as any)?.requests || (response as any)?.data?.requests || [];
+      return { ok: true, data: requests };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || "Unknown error";
+      return { ok: false, errorMessage: message, error };
+    }
   },
 
   /**
-   * DELETE /api/team/:id/leave
+   * POST /api/team/:id/leave
    */
   leaveTeam: async (teamId: string): Promise<ServiceResult<void>> => {
     const token = await getToken();
 
-    return safeCall<void>(() => api.delete(`/team/${teamId}/leave`, token));
+    return safeCall<void>(() =>
+      api.post(`/team/${teamId}/leave`, undefined, undefined, token)
+    );
   },
 
   /**
-   * TODO: Reject a team access request
-   * PUT /api/team/request/:request_id/reject
-   * Endpoint not yet implemented in backend
+   * Find all members of a team
+   * GET /api/team/:team_id/members
+   */
+  findMembers: async (teamId: string): Promise<ServiceResult<any[]>> => {
+    const token = await getToken();
+    return safeCall<any[]>(() => api.get(`/team/${teamId}/members`, {}, token));
+  },
+
+  /**
+   * Remove a member from a team (leader/creator only)
+   * DELETE /api/team/:team_id/member/:user_id
+   * Note: This might use the same leave endpoint, but from leader's perspective
+   */
+  removeMember: async (
+    teamId: string,
+    userId: string
+  ): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    // Try DELETE first, if not available, might need to use leave endpoint
+    return safeCall<void>(() =>
+      api.delete(`/team/${teamId}/member/${userId}`, token)
+    );
+  },
+
+  /**
+   * Reject/Decline a team access request
+   * PUT /api/team/request/:request_id/decline
    */
   rejectAccess: async (requestId: string): Promise<ServiceResult<void>> => {
     const token = await getToken();
-    // TODO: Implement when backend endpoint is ready
-    // return safeCall<void>(() => api.put(`/team/request/${requestId}/reject`, undefined, token));
-    return { ok: false, errorMessage: "Endpoint not yet implemented" };
+    return safeCall<void>(() =>
+      api.put(`/team/request/${requestId}/decline`, undefined, token)
+    );
   },
 };

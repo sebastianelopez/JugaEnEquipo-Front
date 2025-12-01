@@ -31,31 +31,31 @@ interface EditTeamPayload {
 interface EditTeamFormProps {
   initialValues?: Partial<EditTeamPayload>;
   initialGames?: Game[];
-  onSubmit: (values: EditTeamPayload, selectedGames: string[]) => Promise<void> | void;
+  onSubmit: (
+    values: EditTeamPayload,
+    selectedGames: string[]
+  ) => Promise<void> | void;
   submitting?: boolean;
 }
 
 const ImageWatcher: FC<{
   onImageChange: (image: string | null) => void;
-}> = ({ onImageChange }) => {
+  initialImageUrl?: string | null;
+}> = ({ onImageChange, initialImageUrl }) => {
   const { values } = useFormikContext<EditTeamPayload>();
   const prevImageRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (values.image !== prevImageRef.current) {
       prevImageRef.current = values.image || undefined;
-      if (
-        values.image &&
-        (values.image.startsWith("http") ||
-          values.image.startsWith("https") ||
-          values.image.startsWith("data:image"))
-      ) {
+
+      if (values.image && values.image.startsWith("data:image")) {
         onImageChange(values.image);
       } else if (!values.image) {
-        onImageChange(null);
+        onImageChange(initialImageUrl || null);
       }
     }
-  }, [values.image, onImageChange]);
+  }, [values.image, onImageChange, initialImageUrl]);
 
   return null;
 };
@@ -67,8 +67,13 @@ export const EditTeamForm: FC<EditTeamFormProps> = ({
   submitting,
 }) => {
   const t = useTranslations("Teams");
+  // Separate preview (can be URL for display) from form value (must be base64)
+  const initialImageUrl =
+    initialValues?.image && !initialValues.image.startsWith("data:image")
+      ? initialValues.image
+      : null;
   const [imagePreview, setImagePreview] = useState<string | null>(
-    initialValues?.image || null
+    initialImageUrl || initialValues?.image || null
   );
   const [availableGames, setAvailableGames] = useState<Game[]>([]);
   const [loadingGames, setLoadingGames] = useState(true);
@@ -91,6 +96,8 @@ export const EditTeamForm: FC<EditTeamFormProps> = ({
   useEffect(() => {
     if (initialValues?.image) {
       setImagePreview(initialValues.image);
+    } else {
+      setImagePreview(null);
     }
   }, [initialValues?.image]);
 
@@ -119,30 +126,41 @@ export const EditTeamForm: FC<EditTeamFormProps> = ({
     return {
       name: initialValues?.name || "",
       description: initialValues?.description || "",
-      image: initialValues?.image || undefined,
+
+      image:
+        initialValues?.image && initialValues.image.startsWith("data:image")
+          ? initialValues.image
+          : undefined,
     };
   }, [initialValues]);
 
   const handleSubmit = async (
-    values: EditTeamPayload & { image?: string | null; description?: string | null },
+    values: EditTeamPayload & {
+      image?: string | null;
+      description?: string | null;
+    },
     helpers: { setSubmitting: (isSubmitting: boolean) => void }
   ) => {
-    const toUndefinedIfEmpty = (value: string | null | undefined): string | undefined => {
-      if (!value || (typeof value === "string" && !value.trim())) return undefined;
+    const toUndefinedIfEmpty = (
+      value: string | null | undefined
+    ): string | undefined => {
+      if (!value || (typeof value === "string" && !value.trim()))
+        return undefined;
       return typeof value === "string" ? value.trim() : undefined;
     };
 
     const payload: EditTeamPayload = {
       name: values.name.trim(),
       description: toUndefinedIfEmpty(values.description),
-      image: toUndefinedIfEmpty(values.image),
+      image:
+        values.image && values.image.startsWith("data:image")
+          ? values.image
+          : undefined,
     };
     await onSubmit(payload, selectedGames);
-    console.log("selectedGames", selectedGames);
-    console.log("payload", payload);
+
     helpers.setSubmitting(false);
   };
-
 
   return (
     <Formik
@@ -154,7 +172,10 @@ export const EditTeamForm: FC<EditTeamFormProps> = ({
       {(formik) => {
         return (
           <Form>
-            <ImageWatcher onImageChange={setImagePreview} />
+            <ImageWatcher
+              onImageChange={setImagePreview}
+              initialImageUrl={initialImageUrl}
+            />
             <Stack spacing={3} sx={{ width: "100%", maxWidth: 600 }}>
               <MyTextInput
                 name="name"
@@ -213,9 +234,11 @@ export const EditTeamForm: FC<EditTeamFormProps> = ({
                 <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
                   {t("form.games") || "Juegos del equipo"}
                 </Typography>
-                
+
                 <FormControl fullWidth>
-                  <InputLabel>{t("form.selectGames") || "Seleccionar juegos"}</InputLabel>
+                  <InputLabel>
+                    {t("form.selectGames") || "Seleccionar juegos"}
+                  </InputLabel>
                   <Select
                     multiple
                     value={selectedGames}
@@ -223,14 +246,21 @@ export const EditTeamForm: FC<EditTeamFormProps> = ({
                     disabled={loadingGames}
                     onChange={(e) => {
                       const value = e.target.value;
-                      setSelectedGames(typeof value === "string" ? value.split(",") : value);
+                      setSelectedGames(
+                        typeof value === "string" ? value.split(",") : value
+                      );
                     }}
                     renderValue={(selected) => {
                       const selectedGameNames = (selected as string[])
-                        .map((gameId) => availableGames.find((g) => g.id === gameId)?.name)
+                        .map(
+                          (gameId) =>
+                            availableGames.find((g) => g.id === gameId)?.name
+                        )
                         .filter(Boolean);
                       return (
-                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                        <Box
+                          sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}
+                        >
                           {selectedGameNames.map((name) => (
                             <Chip key={name} label={name} size="small" />
                           ))}
@@ -240,7 +270,9 @@ export const EditTeamForm: FC<EditTeamFormProps> = ({
                   >
                     {availableGames.map((game) => (
                       <MenuItem key={game.id} value={game.id}>
-                        <Checkbox checked={selectedGames.indexOf(game.id) > -1} />
+                        <Checkbox
+                          checked={selectedGames.indexOf(game.id) > -1}
+                        />
                         <ListItemText primary={game.name} />
                       </MenuItem>
                     ))}
@@ -264,4 +296,3 @@ export const EditTeamForm: FC<EditTeamFormProps> = ({
     </Formik>
   );
 };
-

@@ -27,12 +27,39 @@ export const postService = {
     postId: string,
     postData: {
       body: string;
-      resources?: string[];
+      files?: File[];
       sharedPostId?: string | null;
     }
   ) => {
     try {
-      const result = await api.put<PostResponse>(`/post/${postId}`, postData);
+      const formData = new FormData();
+      
+      // Append body as string
+      formData.append("body", postData.body);
+      
+      // Append sharedPostId (can be null)
+      if (postData.sharedPostId !== undefined && postData.sharedPostId !== null) {
+        formData.append("sharedPostId", postData.sharedPostId);
+      } else {
+        formData.append("sharedPostId", "null");
+      }
+      
+      // Append files if provided
+      if (postData.files && postData.files.length > 0) {
+        postData.files.forEach((file) => {
+          formData.append("files", file);
+        });
+      }
+      
+      const result = await api.post<PostResponse>(
+        `/post/${postId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return result;
     } catch (error) {
       console.error("❌ createPost - Error:", error);

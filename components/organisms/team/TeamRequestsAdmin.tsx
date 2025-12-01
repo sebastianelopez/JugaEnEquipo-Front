@@ -11,9 +11,11 @@ import {
   Button,
   Stack,
   Avatar,
-  Chip,
   Alert,
   CircularProgress,
+  alpha,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -22,6 +24,7 @@ import { useTranslations } from "next-intl";
 import { teamService } from "../../../services/team.service";
 import { useFeedback } from "../../../hooks/useFeedback";
 import { userService } from "../../../services/user.service";
+import { useRouter } from "next/router";
 
 interface TeamRequest {
   id: string;
@@ -45,6 +48,7 @@ interface Props {
 
 export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
   const theme = useTheme();
+  const router = useRouter();
   const t = useTranslations("TeamDetail");
   const { showSuccess, showError } = useFeedback();
   const [requests, setRequests] = useState<TeamRequest[]>([]);
@@ -59,10 +63,10 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
   const loadRequests = async () => {
     try {
       setLoading(true);
-      const result = await teamService.findTeamRequests(teamId);
+      const result = await teamService.findAllRequests(teamId);
       if (result.ok && result.data) {
         const pendingRequests = result.data.filter(
-          (req) => !req.status || req.status === "pending"
+          (req: TeamRequest) => !req.status || req.status === "pending"
         );
         setRequests(pendingRequests);
 
@@ -117,7 +121,6 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
   const handleReject = async (requestId: string) => {
     try {
       setProcessingIds((prev) => new Set(prev).add(requestId));
-      // TODO: Implement when backend endpoint is ready
       const result = await teamService.rejectAccess(requestId);
       if (result.ok) {
         showSuccess({
@@ -126,19 +129,9 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
         await loadRequests();
         onRequestUpdated?.();
       } else {
-        // Show error only if it's not the "not implemented" error
-        if (!result.errorMessage?.includes("not yet implemented")) {
-          showError({
-            message:
-              result.errorMessage || (t("requestRejectedError") as string),
-          });
-        } else {
-          // For now, just remove from local state since endpoint doesn't exist
-          setRequests((prev) => prev.filter((r) => r.id !== requestId));
-          showSuccess({
-            message: t("requestRejectedSuccess") as string,
-          });
-        }
+        showError({
+          message: result.errorMessage || (t("requestRejectedError") as string),
+        });
       }
     } catch (err: any) {
       showError({
@@ -153,19 +146,59 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
     }
   };
 
+  const handleUserClick = (username: string) => {
+    router.push(`/profile/${username}`);
+  };
+
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
-        <CircularProgress />
-      </Box>
+      <Card
+        sx={{
+          bgcolor: theme.palette.background.paper,
+          borderRadius: { xs: 2, md: 3 },
+          border: `1px solid ${theme.palette.divider}`,
+          mt: { xs: 2, md: 3 },
+        }}
+      >
+        <CardContent sx={{ p: { xs: 2, md: 4 } }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              py: { xs: 3, md: 4 },
+            }}
+          >
+            <CircularProgress size={40} />
+          </Box>
+        </CardContent>
+      </Card>
     );
   }
 
   if (requests.length === 0) {
     return (
-      <Alert severity="info" sx={{ mt: 2 }}>
-        {t("noPendingRequests")}
-      </Alert>
+      <Card
+        sx={{
+          bgcolor: theme.palette.background.paper,
+          borderRadius: { xs: 2, md: 3 },
+          border: `1px solid ${theme.palette.divider}`,
+          mt: { xs: 2, md: 3 },
+        }}
+      >
+        <CardContent sx={{ p: { xs: 2, md: 4 } }}>
+          <Alert
+            severity="info"
+            sx={{
+              borderRadius: 2,
+              bgcolor: alpha(theme.palette.info.main, 0.1),
+              border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+            }}
+          >
+            {t("noPendingRequests")}
+          </Alert>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -173,20 +206,25 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
     <Card
       sx={{
         bgcolor: theme.palette.background.paper,
-        borderRadius: 3,
+        borderRadius: { xs: 2, md: 3 },
         border: `1px solid ${theme.palette.divider}`,
-        mt: 3,
+        mt: { xs: 2, md: 3 },
       }}
     >
-      <CardContent sx={{ p: 4 }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
         <Typography
           variant="h5"
-          sx={{ color: theme.palette.text.primary, fontWeight: 700, mb: 3 }}
+          sx={{
+            color: theme.palette.text.primary,
+            fontWeight: 700,
+            mb: { xs: 2, md: 3 },
+            fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
+          }}
         >
           {t("pendingRequestsTitle")}
         </Typography>
 
-        <List>
+        <List sx={{ p: 0 }}>
           {requests.map((request) => {
             const user = users[request.userId];
             const isProcessing = processingIds.has(request.id);
@@ -196,48 +234,134 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
                 key={request.id}
                 sx={{
                   bgcolor: theme.palette.background.default,
-                  borderRadius: 2,
-                  mb: 2,
-                  p: 2,
+                  borderRadius: { xs: 1.5, md: 2 },
+                  mb: { xs: 1.5, md: 2 },
+                  p: { xs: 1.5, sm: 2 },
+                  border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    bgcolor: alpha(theme.palette.primary.main, 0.05),
+                    borderColor: alpha(theme.palette.primary.main, 0.3),
+                    transform: "translateX(4px)",
+                    boxShadow: `0 2px 8px ${alpha(
+                      theme.palette.primary.main,
+                      0.1
+                    )}`,
+                  },
+                  flexDirection: { xs: "column", sm: "row" },
+                  alignItems: { xs: "flex-start", sm: "center" },
                 }}
               >
-                <ListItemAvatar>
-                  <Avatar
-                    src={user?.profileImage}
-                    alt={user?.username || user?.nickname || "User"}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    width: { xs: "100%", sm: "auto" },
+                    mb: { xs: 1.5, sm: 0 },
+                    flex: { sm: 1 },
+                  }}
+                >
+                  <ListItemAvatar
                     sx={{
-                      width: 56,
-                      height: 56,
-                      border: `2px solid ${theme.palette.primary.main}`,
+                      minWidth: { xs: 48, sm: 56 },
+                      mr: { xs: 1.5, sm: 2 },
                     }}
-                  />
-                </ListItemAvatar>
-                <ListItemText
-                  sx={{ flex: 1 }}
-                  primary={
-                    <Typography
+                  >
+                    <Avatar
+                      src={user?.profileImage}
+                      alt={user?.username || user?.nickname || "User"}
                       sx={{
-                        color: theme.palette.text.primary,
-                        fontWeight: 600,
+                        width: { xs: 48, sm: 56 },
+                        height: { xs: 48, sm: 56 },
+                        border: {
+                          xs: `2px solid ${theme.palette.primary.main}`,
+                          sm: `2px solid ${theme.palette.primary.main}`,
+                        },
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                          transform: "scale(1.1)",
+                          boxShadow: `0 4px 12px ${alpha(
+                            theme.palette.primary.main,
+                            0.3
+                          )}`,
+                        },
                       }}
-                    >
-                      {user?.username || user?.nickname || "Unknown User"}
-                    </Typography>
-                  }
-                  secondary={
-                    request.createdAt && (
+                      onClick={() =>
+                        user?.username && handleUserClick(user.username)
+                      }
+                    />
+                  </ListItemAvatar>
+                  <ListItemText
+                    sx={{
+                      flex: 1,
+                      minWidth: 0,
+                      mr: { xs: 0, sm: 2 },
+                    }}
+                    primary={
                       <Typography
                         sx={{
-                          color: theme.palette.text.secondary,
-                          fontSize: "0.85rem",
+                          color: theme.palette.text.primary,
+                          fontWeight: 600,
+                          fontSize: { xs: "0.95rem", sm: "1rem" },
+                          cursor: "pointer",
+                          "&:hover": {
+                            color: theme.palette.primary.main,
+                          },
                         }}
+                        onClick={() =>
+                          user?.username && handleUserClick(user.username)
+                        }
                       >
-                        {new Date(request.createdAt).toLocaleDateString()}
+                        {user?.username || user?.nickname || "Unknown User"}
                       </Typography>
-                    )
-                  }
-                />
-                <Stack direction="row" spacing={1}>
+                    }
+                    secondary={
+                      request.createdAt && (
+                        <Typography
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            fontSize: { xs: "0.75rem", sm: "0.85rem" },
+                            mt: 0.5,
+                          }}
+                        >
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </Typography>
+                      )
+                    }
+                  />
+                </Box>
+                <Stack
+                  direction="row"
+                  spacing={{ xs: 1, sm: 1.5 }}
+                  sx={{
+                    width: { xs: "100%", sm: "auto" },
+                    justifyContent: { xs: "flex-end", sm: "flex-start" },
+                  }}
+                >
+                  <Tooltip title={t("accept")}>
+                    <IconButton
+                      color="success"
+                      onClick={() => handleAccept(request.id)}
+                      disabled={isProcessing}
+                      sx={{
+                        bgcolor: alpha(theme.palette.success.main, 0.1),
+                        border: `1px solid ${alpha(
+                          theme.palette.success.main,
+                          0.3
+                        )}`,
+                        "&:hover": {
+                          bgcolor: theme.palette.success.main,
+                          color: theme.palette.getContrastText(
+                            theme.palette.success.main
+                          ),
+                        },
+                        display: { xs: "flex", sm: "none" },
+                      }}
+                    >
+                      <CheckCircleIcon />
+                    </IconButton>
+                  </Tooltip>
                   <Button
                     variant="contained"
                     color="success"
@@ -245,9 +369,36 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
                     startIcon={<CheckCircleIcon />}
                     onClick={() => handleAccept(request.id)}
                     disabled={isProcessing}
+                    sx={{
+                      display: { xs: "none", sm: "flex" },
+                      minWidth: { sm: 100 },
+                    }}
                   >
                     {t("accept")}
                   </Button>
+                  <Tooltip title={t("reject")}>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleReject(request.id)}
+                      disabled={isProcessing}
+                      sx={{
+                        bgcolor: alpha(theme.palette.error.main, 0.1),
+                        border: `1px solid ${alpha(
+                          theme.palette.error.main,
+                          0.3
+                        )}`,
+                        "&:hover": {
+                          bgcolor: theme.palette.error.main,
+                          color: theme.palette.getContrastText(
+                            theme.palette.error.main
+                          ),
+                        },
+                        display: { xs: "flex", sm: "none" },
+                      }}
+                    >
+                      <CancelIcon />
+                    </IconButton>
+                  </Tooltip>
                   <Button
                     variant="outlined"
                     color="error"
@@ -255,6 +406,10 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
                     startIcon={<CancelIcon />}
                     onClick={() => handleReject(request.id)}
                     disabled={isProcessing}
+                    sx={{
+                      display: { xs: "none", sm: "flex" },
+                      minWidth: { sm: 100 },
+                    }}
                   >
                     {t("reject")}
                   </Button>

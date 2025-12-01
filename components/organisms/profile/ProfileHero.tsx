@@ -166,10 +166,10 @@ export const ProfileHero = ({
     <Box
       sx={{
         position: "relative",
-        height: { xs: 250, md: 350 },
         backgroundImage: `${bgGradient}, url(${bannerSrc || "/images.jpg"})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
+        minHeight: { xs: 280, md: 350 },
         display: "flex",
         alignItems: "flex-end",
       }}
@@ -177,8 +177,10 @@ export const ProfileHero = ({
       <Container
         maxWidth="xl"
         sx={{
-          pb: { xs: 2, md: 4 },
           px: { xs: 1, sm: 2, md: 3 },
+          pt: { xs: 2, md: 0 },
+          pb: { xs: 2, md: 4 },
+          width: "100%",
         }}
       >
         <Button
@@ -196,7 +198,8 @@ export const ProfileHero = ({
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={{ xs: 2, sm: 3 }}
-          alignItems={{ xs: "flex-start", sm: "flex-end" }}
+          alignItems={{ xs: "flex-start", sm: "flex-end", md: "flex-end" }}
+          sx={{ width: "100%", alignSelf: "flex-end" }}
         >
           <Avatar
             src={avatarSrc}
@@ -208,7 +211,8 @@ export const ProfileHero = ({
               border: `4px solid ${theme.palette.primary.main}`,
               boxShadow: `0 0 30px ${alpha(theme.palette.primary.main, 0.5)}`,
               cursor: avatarSrc ? "pointer" : "default",
-              alignSelf: { sm: "flex-start" },
+              alignSelf: { xs: "flex-start", sm: "flex-start" },
+              flexShrink: 0,
               "&:hover": avatarSrc
                 ? {
                     opacity: 0.9,
@@ -219,7 +223,7 @@ export const ProfileHero = ({
             }}
           />
 
-          <Box sx={{ flex: 1, width: { xs: "100%", sm: "auto" } }}>
+          <Box sx={{ flex: 1, width: { xs: "100%", sm: "auto" }, minWidth: 0 }}>
             <Stack
               direction="row"
               spacing={1.5}
@@ -386,19 +390,26 @@ export const ProfileHero = ({
 
           {!isOwnProfile && (
             <Stack
-              direction={{ xs: "column", sm: "row" }}
+              direction={{ xs: "row" }}
               spacing={1}
-              sx={{ width: { xs: "100%", sm: "auto" }, mt: { xs: 2, sm: 0 } }}
+              sx={{
+                width: { xs: "100%", sm: "auto" },
+                alignSelf: { xs: "stretch", sm: "flex-end", md: "flex-end" },
+                flexShrink: 0,
+              }}
             >
               <Button
                 variant={isFollowing ? "outlined" : "contained"}
-                fullWidth={true}
                 sx={{
-                  px: { xs: 2, md: 3 },
-                  py: { xs: 1, md: 1.2 },
+                  px: { xs: 1.5, sm: 2, md: 3 },
+                  py: { xs: 0.875, sm: 1, md: 1.2 },
                   borderRadius: 2,
                   fontWeight: 700,
-                  fontSize: { xs: "0.875rem", md: "1rem" },
+                  fontSize: { xs: "0.8rem", sm: "0.875rem", md: "1rem" },
+                  minWidth: { xs: 0, sm: 120, md: 140 },
+                  width: { xs: "100%", sm: "auto" },
+                  flexGrow: { xs: 1, sm: 0 },
+                  whiteSpace: "nowrap",
                 }}
                 color="primary"
                 onClick={handleFollowClick}
@@ -412,13 +423,16 @@ export const ProfileHero = ({
               </Button>
               <Button
                 variant="outlined"
-                fullWidth={true}
                 sx={{
-                  px: { xs: 2, md: 3 },
-                  py: { xs: 1, md: 1.2 },
+                  px: { xs: 1.5, sm: 2, md: 3 },
+                  py: { xs: 0.875, sm: 1, md: 1.2 },
                   borderRadius: 2,
                   fontWeight: 700,
-                  fontSize: { xs: "0.875rem", md: "1rem" },
+                  fontSize: { xs: "0.8rem", sm: "0.875rem", md: "1rem" },
+                  minWidth: { xs: 0, sm: 120, md: 140 },
+                  width: { xs: "100%", sm: "auto" },
+                  flexGrow: { xs: 1, sm: 0 },
+                  whiteSpace: "nowrap",
                 }}
                 color="primary"
                 onClick={onMessageClick}
