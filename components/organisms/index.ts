@@ -42,6 +42,7 @@ export { TeamGamesGrid } from "./team/TeamGamesGrid";
 export { AchievementsList } from "./team/AchievementsList";
 export { JoinCard } from "./team/JoinCard";
 export { TeamRequestsAdmin } from "./team/TeamRequestsAdmin";
+export { TeamTabs } from "./team/TeamTabs";
 // Profile
 export { ProfileHero } from "./profile/ProfileHero";
 export { ProfileTabs } from "./profile/ProfileTabs";

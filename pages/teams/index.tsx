@@ -85,11 +85,11 @@ export default function TeamsPage() {
         setError(
           result.ok === false
             ? result.errorMessage
-            : "Error al cargar los equipos"
+            : (t("loadTeamsError") as string)
         );
       }
     } catch (err: any) {
-      setError(err?.message || "Error al cargar los equipos");
+      setError(err?.message || (t("loadTeamsError") as string));
     } finally {
       setLoading(false);
     }
@@ -212,8 +212,8 @@ export default function TeamsPage() {
                   }}
                 >
                   {searchQuery
-                    ? t("noTeamsFound") || "No se encontraron equipos"
-                    : t("noTeams") || "No hay equipos disponibles"}
+                    ? (t("noTeamsFound") as string)
+                    : (t("noTeams") as string)}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -224,8 +224,8 @@ export default function TeamsPage() {
                   }}
                 >
                   {searchQuery
-                    ? "Intenta con otros términos de búsqueda"
-                    : "Sé el primero en crear un equipo"}
+                    ? (t("tryOtherSearchTerms") as string)
+                    : (t("beFirstToCreateTeam") as string)}
                 </Typography>
               </Box>
             ) : (

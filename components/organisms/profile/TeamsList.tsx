@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { useTheme, alpha } from "@mui/material/styles";
 import { useRouter } from "next/router";
+import { useTranslations } from "next-intl";
 
 interface TeamItem {
   id: string | number;
@@ -28,6 +29,7 @@ interface TeamsListProps {
 export const TeamsList = ({ teams }: TeamsListProps) => {
   const theme = useTheme();
   const router = useRouter();
+  const t = useTranslations("TeamDetail");
 
   return (
     <List>
@@ -80,25 +82,25 @@ export const TeamsList = ({ teams }: TeamsListProps) => {
               >
                 {team.name}
               </Typography>
-              {team.role === "Creador" && (
+              {team.role === "creator" && (
                 <Chip
-                  label="Creador"
+                  label={t("creator")}
                   size="small"
                   color="primary"
                   sx={{ fontWeight: 600, height: 20 }}
                 />
               )}
-              {team.role === "Líder" && (
+              {team.role === "leader" && (
                 <Chip
-                  label="Líder"
+                  label={t("leader")}
                   size="small"
                   color="warning"
                   sx={{ fontWeight: 600, height: 20 }}
                 />
               )}
-              {team.role === "Miembro" && (
+              {team.role === "member" && (
                 <Chip
-                  label="Miembro"
+                  label={t("member")}
                   size="small"
                   color="info"
                   sx={{ fontWeight: 600, height: 20 }}
