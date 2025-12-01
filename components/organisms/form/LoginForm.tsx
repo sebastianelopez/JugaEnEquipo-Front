@@ -333,6 +333,27 @@ export const LoginForm = () => {
                 {isLoading ? t("submitting") : t("submit-button")}
               </Button>
 
+              <Box sx={{ textAlign: "center", mb: 2 }}>
+                <NextLink href="/auth/forgot-password" passHref>
+                  <Link
+                    component="span"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      fontWeight: 500,
+                      textDecoration: "none",
+                      cursor: "pointer",
+                      fontSize: "0.875rem",
+                      "&:hover": {
+                        textDecoration: "underline",
+                        color: theme.palette.info.main,
+                      },
+                    }}
+                  >
+                    {t("forgotPasswordLink")}
+                  </Link>
+                </NextLink>
+              </Box>
+
               <Box sx={{ textAlign: "center" }}>
                 <Typography
                   variant="body2"

@@ -1,6 +1,8 @@
 //forms
 export { LoginForm } from "./form/LoginForm";
 export { RegisterForm } from "./form/RegisterForm";
+export { ForgotPasswordForm } from "./form/ForgotPasswordForm";
+export { ResetPasswordForm } from "./form/ResetPasswordForm";
 
 //navs
 export { AuthNavbar } from "./navbar/AuthNavbar";
