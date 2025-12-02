@@ -740,9 +740,12 @@
             "uses": "usos",
             "use": "uso",
             "created": "Criado",
+            "createdAt": "Data de criação",
             "updated": "Atualizado",
+            "updatedAt": "Data de atualização",
             "noActiveHashtags": "Nenhum hashtag ativo",
             "noBlockedHashtags": "Nenhum hashtag bloqueado",
+            "noHashtagsFound": "Nenhum hashtag encontrado",
             "errorLoading": "Erro ao carregar hashtags"
         },
         "teams": {
