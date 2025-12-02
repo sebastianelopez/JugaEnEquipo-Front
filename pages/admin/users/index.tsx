@@ -20,101 +20,96 @@ import {
   Select,
   FormControl,
   InputLabel,
-  Button,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import { Search, Block, CheckCircle, Email } from "@mui/icons-material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "../../../layouts";
-
-const mockUsers = [
-  {
-    id: 1,
-    username: "carlos",
-    email: "carlos@example.com",
-    firstName: "Carlos",
-    lastName: "García",
-    verified: true,
-    active: true,
-    avatar: "/user-avatar.jpg",
-  },
-  {
-    id: 2,
-    username: "ana_gamer",
-    email: "ana@example.com",
-    firstName: "Ana",
-    lastName: "Martínez",
-    verified: true,
-    active: true,
-    avatar: "/user-avatar2.jpg",
-  },
-  {
-    id: 3,
-    username: "pedro_pro",
-    email: "pedro@example.com",
-    firstName: "Pedro",
-    lastName: "López",
-    verified: false,
-    active: true,
-    avatar: "/user-avatar3.jpg",
-  },
-  {
-    id: 4,
-    username: "maria_esports",
-    email: "maria@example.com",
-    firstName: "María",
-    lastName: "Rodríguez",
-    verified: true,
-    active: false,
-    avatar: "/user-avatar4.jpg",
-  },
-  {
-    id: 5,
-    username: "juan_gaming",
-    email: "juan@example.com",
-    firstName: "Juan",
-    lastName: "Fernández",
-    verified: false,
-    active: true,
-    avatar: "/user-avatar5.jpg",
-  },
-];
+import {
+  backofficeService,
+  type User,
+} from "../../../services/backoffice.service";
+import { Users2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import type { GetStaticPropsContext } from "next";
 
 export default function AdminUsers() {
-  const [search, setSearch] = useState("");
+  const t = useTranslations("Admin.users");
+  const [searchEmail, setSearchEmail] = useState("");
+  const [searchUsername, setSearchUsername] = useState("");
   const [filterVerified, setFilterVerified] = useState<string>("all");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [users, setUsers] = useState(mockUsers);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
 
-  const handleDisableUser = (userId: number) => {
-    setUsers(
-      users.map((user) =>
-        user.id === userId ? { ...user, active: !user.active } : user
-      )
-    );
+  useEffect(() => {
+    loadUsers();
+  }, [page, rowsPerPage, filterVerified, searchEmail, searchUsername]);
+
+  const loadUsers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params: any = {
+        limit: rowsPerPage,
+        offset: page * rowsPerPage,
+      };
+
+      if (searchEmail) params.email = searchEmail;
+      if (searchUsername) params.username = searchUsername;
+      if (filterVerified !== "all") {
+        params.verified = filterVerified === "verified";
+      }
+
+      const result = await backofficeService.searchUsers(params);
+      if (result.ok && result.data) {
+        // result.data has { data: User[], metadata: SearchMetadata }
+        const usersData = result.data.data || [];
+
+        setUsers(usersData);
+        setTotal(result.data.metadata?.total || usersData.length || 0);
+      } else {
+        setError(result.ok === false ? result.errorMessage : t("errorLoading"));
+      }
+    } catch (err: any) {
+      setError(err?.message || t("errorLoading"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.username.toLowerCase().includes(search.toLowerCase()) ||
-      user.email.toLowerCase().includes(search.toLowerCase()) ||
-      user.firstName.toLowerCase().includes(search.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(search.toLowerCase());
+  const handleToggleUser = async (userId: string, isDisabled: boolean) => {
+    try {
+      const result = isDisabled
+        ? await backofficeService.enableUser(userId)
+        : await backofficeService.disableUser(userId);
 
-    const matchesVerified =
-      filterVerified === "all" ||
-      (filterVerified === "verified" && user.verified) ||
-      (filterVerified === "unverified" && !user.verified);
-
-    return matchesSearch && matchesVerified;
-  });
+      if (result.ok) {
+        await loadUsers();
+      } else {
+        setError(result.ok === false ? result.errorMessage : t("common.error"));
+      }
+    } catch (err: any) {
+      setError(err?.message || t("common.error"));
+    }
+  };
 
   return (
-    <AdminLayout title="Gestión de Usuarios">
+    <AdminLayout title={t("title")}>
       <Box>
         <Typography variant="h4" sx={{ color: "#fff", fontWeight: 700, mb: 4 }}>
-          Gestión de Usuarios
+          {t("title")}
         </Typography>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
 
         <Paper
           sx={{
@@ -126,9 +121,33 @@ export default function AdminUsers() {
         >
           <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
             <TextField
-              placeholder="Buscar por username, email o nombre..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("searchEmail")}
+              value={searchEmail}
+              onChange={(e) => setSearchEmail(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Email sx={{ color: "rgba(255, 255, 255, 0.5)" }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                flex: 1,
+                minWidth: 200,
+                "& .MuiOutlinedInput-root": {
+                  color: "#fff",
+                  "& fieldset": { borderColor: "rgba(255, 255, 255, 0.2)" },
+                  "&:hover fieldset": { borderColor: "#6C5CE7" },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "rgba(255, 255, 255, 0.7)",
+                },
+              }}
+            />
+            <TextField
+              placeholder={t("searchUsername")}
+              value={searchUsername}
+              onChange={(e) => setSearchUsername(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -138,23 +157,29 @@ export default function AdminUsers() {
               }}
               sx={{
                 flex: 1,
-                minWidth: 250,
+                minWidth: 200,
                 "& .MuiOutlinedInput-root": {
                   color: "#fff",
                   "& fieldset": { borderColor: "rgba(255, 255, 255, 0.2)" },
                   "&:hover fieldset": { borderColor: "#6C5CE7" },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "rgba(255, 255, 255, 0.7)",
                 },
               }}
             />
 
             <FormControl sx={{ minWidth: 200 }}>
               <InputLabel sx={{ color: "rgba(255, 255, 255, 0.7)" }}>
-                Estado de Verificación
+                {t("filterVerified")}
               </InputLabel>
               <Select
                 value={filterVerified}
-                onChange={(e) => setFilterVerified(e.target.value)}
-                label="Estado de Verificación"
+                onChange={(e) => {
+                  setFilterVerified(e.target.value);
+                  setPage(0);
+                }}
+                label={t("filterVerified")}
                 sx={{
                   color: "#fff",
                   "& .MuiOutlinedInput-notchedOutline": {
@@ -166,155 +191,205 @@ export default function AdminUsers() {
                   "& .MuiSvgIcon-root": { color: "rgba(255, 255, 255, 0.7)" },
                 }}
               >
-                <MenuItem value="all">Todos</MenuItem>
-                <MenuItem value="verified">Verificados</MenuItem>
-                <MenuItem value="unverified">No Verificados</MenuItem>
+                <MenuItem value="all">{t("all")}</MenuItem>
+                <MenuItem value="verified">{t("verified")}</MenuItem>
+                <MenuItem value="unverified">{t("unverified")}</MenuItem>
               </Select>
             </FormControl>
           </Box>
 
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell
-                    sx={{ color: "rgba(255, 255, 255, 0.7)", fontWeight: 600 }}
-                  >
-                    Usuario
-                  </TableCell>
-                  <TableCell
-                    sx={{ color: "rgba(255, 255, 255, 0.7)", fontWeight: 600 }}
-                  >
-                    Email
-                  </TableCell>
-                  <TableCell
-                    sx={{ color: "rgba(255, 255, 255, 0.7)", fontWeight: 600 }}
-                  >
-                    Nombre Completo
-                  </TableCell>
-                  <TableCell
-                    sx={{ color: "rgba(255, 255, 255, 0.7)", fontWeight: 600 }}
-                  >
-                    Estado
-                  </TableCell>
-                  <TableCell
-                    sx={{ color: "rgba(255, 255, 255, 0.7)", fontWeight: 600 }}
-                  >
-                    Verificado
-                  </TableCell>
-                  <TableCell
-                    sx={{ color: "rgba(255, 255, 255, 0.7)", fontWeight: 600 }}
-                  >
-                    Acciones
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredUsers
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((user) => (
-                    <TableRow
-                      key={user.id}
-                      sx={{
-                        "&:hover": { background: "rgba(108, 92, 231, 0.05)" },
-                      }}
-                    >
-                      <TableCell>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          color: "rgba(255, 255, 255, 0.7)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {t("common.user")}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color: "rgba(255, 255, 255, 0.7)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Email
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color: "rgba(255, 255, 255, 0.7)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {t("status")}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color: "rgba(255, 255, 255, 0.7)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {t("verified")}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color: "rgba(255, 255, 255, 0.7)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {t("common.actions")}
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {users.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          align="center"
+                          sx={{ color: "rgba(255, 255, 255, 0.7)", py: 4 }}
                         >
-                          <Avatar src={user.avatar} alt={user.username} />
-                          <Typography sx={{ color: "#fff", fontWeight: 500 }}>
-                            @{user.username}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          <Email
-                            fontSize="small"
-                            sx={{ color: "rgba(255, 255, 255, 0.5)" }}
-                          />
-                          <Typography
-                            sx={{ color: "rgba(255, 255, 255, 0.8)" }}
-                          >
-                            {user.email}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography sx={{ color: "rgba(255, 255, 255, 0.8)" }}>
-                          {user.firstName} {user.lastName}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={user.active ? "Activo" : "Deshabilitado"}
-                          size="small"
+                          {t("noUsersFound")}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      users.map((user) => (
+                        <TableRow
+                          key={user.id}
                           sx={{
-                            background: user.active
-                              ? "rgba(0, 184, 148, 0.2)"
-                              : "rgba(225, 112, 85, 0.2)",
-                            color: user.active ? "#00B894" : "#E17055",
-                            fontWeight: 600,
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {user.verified ? (
-                          <CheckCircle sx={{ color: "#00B894" }} />
-                        ) : (
-                          <Chip
-                            label="No verificado"
-                            size="small"
-                            sx={{
-                              background: "rgba(253, 203, 110, 0.2)",
-                              color: "#FDCB6E",
-                            }}
-                          />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <IconButton
-                          onClick={() => handleDisableUser(user.id)}
-                          sx={{
-                            color: user.active ? "#E17055" : "#00B894",
                             "&:hover": {
-                              background: user.active
-                                ? "rgba(225, 112, 85, 0.1)"
-                                : "rgba(0, 184, 148, 0.1)",
+                              background: "rgba(108, 92, 231, 0.05)",
                             },
                           }}
                         >
-                          <Block />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                          <TableCell>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
+                              <Avatar sx={{ bgcolor: "#6C5CE7" }}>
+                                {user.username?.[0]?.toUpperCase() || "U"}
+                              </Avatar>
+                              <Typography
+                                sx={{ color: "#fff", fontWeight: 500 }}
+                              >
+                                @{user.username}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <Email
+                                fontSize="small"
+                                sx={{ color: "rgba(255, 255, 255, 0.5)" }}
+                              />
+                              <Typography
+                                sx={{ color: "rgba(255, 255, 255, 0.8)" }}
+                              >
+                                {user.email}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={
+                                user.isDisabled ? t("disabled") : t("active")
+                              }
+                              size="small"
+                              sx={{
+                                background: user.isDisabled
+                                  ? "rgba(225, 112, 85, 0.2)"
+                                  : "rgba(0, 184, 148, 0.2)",
+                                color: user.isDisabled ? "#E17055" : "#00B894",
+                                fontWeight: 600,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {user.isVerified ? (
+                              <CheckCircle sx={{ color: "#00B894" }} />
+                            ) : (
+                              <Chip
+                                label={t("unverified")}
+                                size="small"
+                                sx={{
+                                  background: "rgba(253, 203, 110, 0.2)",
+                                  color: "#FDCB6E",
+                                }}
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <IconButton
+                              onClick={() =>
+                                handleToggleUser(user.id, !!user.isDisabled)
+                              }
+                              sx={{
+                                color: user.isDisabled ? "#00B894" : "#E17055",
+                                "&:hover": {
+                                  background: user.isDisabled
+                                    ? "rgba(0, 184, 148, 0.1)"
+                                    : "rgba(225, 112, 85, 0.1)",
+                                },
+                              }}
+                            >
+                              <Block />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
 
-          <TablePagination
-            component="div"
-            count={filteredUsers.length}
-            page={page}
-            onPageChange={(e, newPage) => setPage(newPage)}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(e) =>
-              setRowsPerPage(parseInt(e.target.value, 10))
-            }
-            sx={{
-              color: "rgba(255, 255, 255, 0.7)",
-              "& .MuiTablePagination-selectIcon": {
-                color: "rgba(255, 255, 255, 0.7)",
-              },
-            }}
-          />
+              <TablePagination
+                component="div"
+                count={total}
+                page={page}
+                onPageChange={(e, newPage) => setPage(newPage)}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={(e) => {
+                  setRowsPerPage(parseInt(e.target.value, 10));
+                  setPage(0);
+                }}
+                sx={{
+                  color: "rgba(255, 255, 255, 0.7)",
+                  "& .MuiTablePagination-selectIcon": {
+                    color: "rgba(255, 255, 255, 0.7)",
+                  },
+                }}
+              />
+            </>
+          )}
         </Paper>
       </Box>
     </AdminLayout>
   );
+}
+
+export async function getStaticProps({ locale }: GetStaticPropsContext) {
+  return {
+    props: {
+      messages: (await import(`../../../lang/${locale}.json`)).default,
+    },
+  };
 }

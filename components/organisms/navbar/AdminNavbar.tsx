@@ -1,6 +1,8 @@
-import { AppBar, IconButton, Toolbar, Typography, Avatar } from "@mui/material";
+import { AppBar, IconButton, Toolbar, Typography, Avatar, Box } from "@mui/material";
 import { FC } from "react";
 import { Menu } from "@mui/icons-material";
+import { useTranslations } from "next-intl";
+import { SelectCountry } from "../../molecules/SelectCountry/SelectCountry";
 
 interface Props {
   handleDrawerToggle: () => void;
@@ -11,6 +13,8 @@ export const AdminNavbar: FC<Props> = ({
   handleDrawerToggle,
   DRAWER_WIDTH,
 }) => {
+  const t = useTranslations("Admin.navbar");
+
   return (
     <AppBar
       position="fixed"
@@ -32,8 +36,11 @@ export const AdminNavbar: FC<Props> = ({
           <Menu />
         </IconButton>
         <Typography variant="h6" sx={{ flexGrow: 1, color: "#fff" }}>
-          Panel de Administración
+          {t("title")}
         </Typography>
+        <Box sx={{ mr: 2 }}>
+          <SelectCountry height={40} />
+        </Box>
         <Avatar sx={{ bgcolor: "#6C5CE7" }}>A</Avatar>
       </Toolbar>
     </AppBar>

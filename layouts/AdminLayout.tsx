@@ -17,27 +17,17 @@ import {
   Groups,
   EmojiEvents,
   Logout,
+  Dashboard,
 } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { FC, PropsWithChildren } from "react";
 import Head from "next/head";
 import { AdminNavbar } from "../components/organisms/navbar/AdminNavbar";
+import { useTranslations } from "next-intl";
+import Cookies from "js-cookie";
 
 const DRAWER_WIDTH = 260;
-
-const menuItems = [
-  { title: "Usuarios", icon: <People />, path: "/admin/users" },
-  {
-    title: "Administradores",
-    icon: <AdminPanelSettings />,
-    path: "/admin/admins",
-  },
-  { title: "Posts", icon: <Article />, path: "/admin/posts" },
-  { title: "Hashtags", icon: <Tag />, path: "/admin/hashtags" },
-  { title: "Equipos", icon: <Groups />, path: "/admin/teams" },
-  { title: "Torneos", icon: <EmojiEvents />, path: "/admin/tournaments" },
-];
 
 interface Props extends PropsWithChildren {
   title: string;
@@ -47,6 +37,26 @@ export const AdminLayout: FC<Props> = ({ children, title }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const t = useTranslations("Admin.menu");
+  const tNavbar = useTranslations("Admin.navbar");
+
+  const menuItems = [
+    { title: t("dashboard"), icon: <Dashboard />, path: "/admin/dashboard" },
+    { title: t("users"), icon: <People />, path: "/admin/users" },
+    {
+      title: t("admins"),
+      icon: <AdminPanelSettings />,
+      path: "/admin/admins",
+    },
+    { title: t("posts"), icon: <Article />, path: "/admin/posts" },
+    { title: t("hashtags"), icon: <Tag />, path: "/admin/hashtags" },
+    { title: t("teams"), icon: <Groups />, path: "/admin/teams" },
+    {
+      title: t("tournaments"),
+      icon: <EmojiEvents />,
+      path: "/admin/tournaments",
+    },
+  ];
 
   /*   // Verificar autenticación
   useEffect(() => {
@@ -59,7 +69,12 @@ export const AdminLayout: FC<Props> = ({ children, title }) => {
   }, [pathname, router]); */
 
   const handleLogout = () => {
+    // Remove admin token from localStorage
     localStorage.removeItem("adminToken");
+    // Remove auth cookies
+    Cookies.remove("token");
+    Cookies.remove("refreshToken");
+    // Redirect to admin login
     router.push("/admin/login");
   };
 
@@ -92,7 +107,7 @@ export const AdminLayout: FC<Props> = ({ children, title }) => {
           }}
         >
           <AdminPanelSettings />
-          Admin Panel
+          {tNavbar("title")}
         </Typography>
       </Box>
 
@@ -146,7 +161,7 @@ export const AdminLayout: FC<Props> = ({ children, title }) => {
           <ListItemIcon sx={{ color: "inherit", minWidth: 40 }}>
             <Logout />
           </ListItemIcon>
-          <ListItemText primary="Cerrar Sesión" />
+          <ListItemText primary={tNavbar("logout")} />
         </ListItemButton>
       </Box>
     </Box>
