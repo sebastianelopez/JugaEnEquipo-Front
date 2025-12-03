@@ -15,6 +15,19 @@ const nextConfig = {
     ],
    // domains: ['res.cloudinary.com'],
   },
+  async headers() {
+    return [
+      {
+        source: '/.well-known/assetlinks.json',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/json',
+          },
+        ],
+      },
+    ];
+  },
 }
 
 module.exports = nextConfig

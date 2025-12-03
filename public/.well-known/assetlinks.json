@@ -1,0 +1,15 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.example.jugaenequipo",
+            "sha256_cert_fingerprints": [
+                "1CAC44307EAAD2F39C313C03F65CDEFA5703507791973A84D1CF2086A2B28273",
+                "F4F34F0577A61B10EAA3A541B8DF1013194A4AD9CBFEEB6ED573E5C442D1F50D"
+            ]
+        }
+    }
+]
