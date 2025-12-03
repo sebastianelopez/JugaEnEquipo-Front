@@ -295,4 +295,45 @@ export const userService = {
       };
     }
   },
+
+  // Background image management
+  getBackgroundImage: async (userId: string): Promise<ServiceResult<string | null>> => {
+    try {
+      const token = await getToken();
+      const response = await api.get<{ data: { backgroundImage: string } }>(
+        `/user/${userId}/background-image`,
+        {},
+        token
+      );
+      return { ok: true, data: response.data?.backgroundImage || null };
+    } catch (error: any) {
+      // If 404, return null (no background image)
+      if (error?.response?.status === 404) {
+        return { ok: true, data: null };
+      }
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to get background image";
+      return { ok: false, errorMessage: message, error };
+    }
+  },
+
+  updateBackgroundImage: async (imageDataUri: string): Promise<ServiceResult<void>> => {
+    try {
+      const token = await getToken();
+      await api.put<void>(
+        `/user/background-image`,
+        { image: imageDataUri },
+        token
+      );
+      return { ok: true, data: undefined };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update background image";
+      return { ok: false, errorMessage: message, error };
+    }
+  },
 };

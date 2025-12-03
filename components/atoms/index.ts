@@ -6,3 +6,4 @@ export * from "./BlizzardButton";
 export * from "./ResponsiveLogo";
 export * from "./ThemeToggleButton";
 export * from "./MessagesButton";
+export * from "./BackgroundFallback";

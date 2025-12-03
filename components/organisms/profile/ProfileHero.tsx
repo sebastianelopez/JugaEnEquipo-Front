@@ -20,6 +20,7 @@ import { userService } from "../../../services/user.service";
 import { FollowersModal } from "../modals/FollowersModal";
 import { MediaViewerModal } from "../modals/MediaViewerModal";
 import { UserContext } from "../../../context/user/UserContext";
+import { BackgroundFallback } from "../../atoms/BackgroundFallback";
 
 interface ProfileHeroProps {
   fullName: string;
@@ -64,11 +65,32 @@ export const ProfileHero = ({
   );
   const [isCheckingFollowStatus, setIsCheckingFollowStatus] = useState(false);
   const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [loadingBackground, setLoadingBackground] = useState(true);
 
   const bgGradient = `linear-gradient(to bottom, ${alpha(
     theme.palette.background.default,
     0.3
   )}, ${alpha(theme.palette.background.default, 0.9)})`;
+
+  // Fetch background image
+  useEffect(() => {
+    const loadBackgroundImage = async () => {
+      try {
+        setLoadingBackground(true);
+        const result = await userService.getBackgroundImage(userId);
+        if (result.ok) {
+          setBackgroundImage(result.data);
+        }
+      } catch (error) {
+        console.error("Error loading background image:", error);
+      } finally {
+        setLoadingBackground(false);
+      }
+    };
+
+    loadBackgroundImage();
+  }, [userId]);
 
   const loadCounts = useCallback(async () => {
     try {
@@ -166,14 +188,51 @@ export const ProfileHero = ({
     <Box
       sx={{
         position: "relative",
-        backgroundImage: `${bgGradient}, url(${bannerSrc || "/images.jpg"})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
         minHeight: { xs: 280, md: 350 },
         display: "flex",
         alignItems: "flex-end",
+        overflow: "hidden",
       }}
     >
+      {/* Background Image or Fallback */}
+      {backgroundImage ? (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: `${bgGradient}, url(${backgroundImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            zIndex: 0,
+          }}
+        />
+      ) : (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 0,
+          }}
+        >
+          <BackgroundFallback seed={username} variant="user" />
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: bgGradient,
+            }}
+          />
+        </Box>
+      )}
       <Container
         maxWidth="xl"
         sx={{
@@ -181,6 +240,8 @@ export const ProfileHero = ({
           pt: { xs: 2, md: 0 },
           pb: { xs: 2, md: 4 },
           width: "100%",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         <Button

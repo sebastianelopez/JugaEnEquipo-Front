@@ -16,6 +16,8 @@ export const getNotificationTranslationKey = (
     post_commented: "postCommented",
     post_liked: "postLiked",
     post_shared: "postShared",
+    team_request_received: "teamRequestReceived",
+    tournament_request_received: "tournamentRequestReceived",
   };
   return translationKeys[type] || "newMessage";
 };

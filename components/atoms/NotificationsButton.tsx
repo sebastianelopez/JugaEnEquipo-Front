@@ -78,6 +78,10 @@ export const NotificationsButton = ({}: Props) => {
       router.push(`/post/${notification.postId}`);
     } else if (notification.type === "new_follower") {
       router.push(`/profile/${notification.username}`);
+    } else if (notification.type === "team_request_received" && notification.teamId) {
+      router.push(`/teams/${notification.teamId}`);
+    } else if (notification.type === "tournament_request_received" && notification.tournamentId) {
+      router.push(`/tournaments/${notification.tournamentId}`);
     }
 
     handleClose();

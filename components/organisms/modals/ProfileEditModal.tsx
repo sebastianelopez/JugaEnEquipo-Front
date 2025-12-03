@@ -8,7 +8,7 @@ import {
   Avatar,
 } from "@mui/material";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
-import { SxProps, Theme } from "@mui/material/styles";
+import { SxProps, Theme, useTheme } from "@mui/material/styles";
 import { useEffect, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { handleImagePreviewChange } from "../../../utils/imageFileUtils";
@@ -27,10 +27,12 @@ interface Props {
     description: string;
     socialLinks: SocialLinks;
     profileImage?: File;
+    backgroundImage?: string; // base64 data URI
   }) => void;
   initialDescription?: string;
   initialSocialLinks?: SocialLinks;
   initialProfileImage?: string;
+  initialBackgroundImage?: string;
   initialUsername?: string;
   sx?: SxProps<Theme>;
 }
@@ -42,15 +44,21 @@ export const ProfileEditModal = ({
   initialDescription = "",
   initialSocialLinks = {},
   initialProfileImage,
+  initialBackgroundImage,
   initialUsername,
   sx = [],
 }: Props) => {
   const t = useTranslations("ProfileEditModal");
+  const theme = useTheme();
   const [description, setDescription] = useState<string>(initialDescription);
   const [links, setLinks] = useState<SocialLinks>(initialSocialLinks);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | undefined>(
     initialProfileImage
+  );
+  const [selectedBackgroundImage, setSelectedBackgroundImage] = useState<string | null>(null);
+  const [previewBackgroundImage, setPreviewBackgroundImage] = useState<string | undefined>(
+    initialBackgroundImage
   );
 
   useEffect(() => {
@@ -66,6 +74,11 @@ export const ProfileEditModal = ({
     setSelectedImage(null);
   }, [initialProfileImage]);
 
+  useEffect(() => {
+    setPreviewBackgroundImage(initialBackgroundImage);
+    setSelectedBackgroundImage(null);
+  }, [initialBackgroundImage]);
+
   const handleImageChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       handleImagePreviewChange(
@@ -77,11 +90,25 @@ export const ProfileEditModal = ({
     []
   );
 
+  const handleBackgroundImageChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleImagePreviewChange(
+        e,
+        (preview) => {
+          setPreviewBackgroundImage(preview || undefined);
+          setSelectedBackgroundImage(preview);
+        }
+      );
+    },
+    []
+  );
+
   const handleSave = () => {
     onSave({
       description,
       socialLinks: links,
       profileImage: selectedImage || undefined,
+      backgroundImage: selectedBackgroundImage || undefined,
     });
     onClose();
   };
@@ -174,6 +201,87 @@ export const ProfileEditModal = ({
                 type="file"
                 onChange={handleImageChange}
               />
+            </Button>
+          </Box>
+
+          {/* Background Image Upload */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              mb: { xs: 1, md: 2 },
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                height: { xs: 120, sm: 150, md: 180 },
+                borderRadius: 2,
+                overflow: "hidden",
+                mb: { xs: 1, md: 2 },
+                border: `2px dashed ${theme.palette.divider}`,
+                position: "relative",
+                cursor: "pointer",
+                "&:hover": {
+                  borderColor: theme.palette.primary.main,
+                },
+              }}
+            >
+              {previewBackgroundImage ? (
+                <Box
+                  component="img"
+                  src={previewBackgroundImage}
+                  alt="Background preview"
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    bgcolor: theme.palette.background.default,
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontSize: { xs: "0.75rem", md: "0.875rem" },
+                      textAlign: "center",
+                      px: 2,
+                    }}
+                  >
+                    {t("backgroundImagePlaceholder") || "Imagen de fondo"}
+                  </Typography>
+                </Box>
+              )}
+              <input
+                hidden
+                accept="image/*"
+                type="file"
+                onChange={handleBackgroundImageChange}
+                id="background-image-input"
+              />
+            </Box>
+            <Button
+              variant="outlined"
+              component="label"
+              htmlFor="background-image-input"
+              startIcon={<PhotoCamera />}
+              size="small"
+              sx={{
+                fontSize: { xs: "0.75rem", md: "0.875rem" },
+                px: { xs: 1.5, md: 2 },
+              }}
+            >
+              {t("changeBackground") || "Cambiar fondo"}
             </Button>
           </Box>
 

@@ -240,4 +240,44 @@ export const teamService = {
       api.put(`/team/request/${requestId}/decline`, undefined, token)
     );
   },
+
+  /**
+   * Get team background image
+   * GET /api/team/:team_id/background-image
+   */
+  getBackgroundImage: async (teamId: string): Promise<ServiceResult<string | null>> => {
+    const token = await getToken();
+    try {
+      const response = await api.get<{ data: { backgroundImage: string } }>(
+        `/team/${teamId}/background-image`,
+        {},
+        token
+      );
+      return { ok: true, data: response.data?.backgroundImage || null };
+    } catch (error: any) {
+      // If 404, return null (no background image)
+      if (error?.response?.status === 404) {
+        return { ok: true, data: null };
+      }
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to get background image";
+      return { ok: false, errorMessage: message, error };
+    }
+  },
+
+  /**
+   * Update team background image
+   * PUT /api/team/:team_id/background-image
+   */
+  updateBackgroundImage: async (
+    teamId: string,
+    imageDataUri: string
+  ): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    return safeCall<void>(() =>
+      api.put(`/team/${teamId}/background-image`, { image: imageDataUri }, token)
+    );
+  },
 };
