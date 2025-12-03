@@ -19,7 +19,8 @@ export function middleware(request: NextRequest) {
   if (
     pathname.startsWith("/assets/") ||
     pathname.startsWith("/images/") ||
-    pathname.startsWith("/_next/")
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/.well-known/")
   ) {
     return NextResponse.next();
   }
@@ -66,9 +67,9 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Match everything, including root path, except API routes, _next, and static assets
+  // Match everything, including root path, except API routes, _next, static assets, and .well-known
   matcher: [
     "/",
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|gltf|glb|bin|hdr|exr|lottie)).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|\\.well-known|.*\\.(?:css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|gltf|glb|bin|hdr|exr|lottie|json)).*)",
   ],
 };

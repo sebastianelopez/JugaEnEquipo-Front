@@ -47,7 +47,10 @@
         },
         "editModalTitle": "Editar equipe",
         "updateSuccessTitle": "Equipe atualizada",
-        "updateSuccessMessage": "A equipe foi atualizada com sucesso"
+        "updateSuccessMessage": "A equipe foi atualizada com sucesso",
+        "backgroundImage": "Imagem de fundo",
+        "backgroundImagePlaceholder": "Sem imagem de fundo",
+        "changeBackground": "Alterar imagem de fundo"
     },
     "TeamDetail": {
         "back": "Voltar para Equipes",
@@ -379,6 +382,8 @@
         "postCommented": "{username} comentou na sua publicação",
         "postLiked": "{username} curtiu sua publicação",
         "postShared": "{username} compartilhou sua publicação",
+        "teamRequestReceived": "{username} solicitou entrar no seu time",
+        "tournamentRequestReceived": "{username} solicitou entrar no seu torneio",
         "noNotifications": "Não há novas notificações"
     },
     "MobileApp": {
@@ -593,6 +598,8 @@
         "twitterPlaceholder": "https://x.com/usuario",
         "instagramUrl": "URL do Instagram",
         "instagramPlaceholder": "https://instagram.com/usuario",
+        "backgroundImagePlaceholder": "Imagem de fundo",
+        "changeBackground": "Alterar fundo",
         "cancel": "Cancelar",
         "save": "Salvar"
     },
@@ -740,9 +747,12 @@
             "uses": "usos",
             "use": "uso",
             "created": "Criado",
+            "createdAt": "Data de criação",
             "updated": "Atualizado",
+            "updatedAt": "Data de atualização",
             "noActiveHashtags": "Nenhum hashtag ativo",
             "noBlockedHashtags": "Nenhum hashtag bloqueado",
+            "noHashtagsFound": "Nenhum hashtag encontrado",
             "errorLoading": "Erro ao carregar hashtags"
         },
         "teams": {

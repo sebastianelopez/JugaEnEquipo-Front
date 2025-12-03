@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -13,6 +13,8 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import GameIcon from "@mui/icons-material/SportsEsports";
 import TrophyIcon from "@mui/icons-material/EmojiEvents";
 import { useTheme, alpha } from "@mui/material/styles";
+import { teamService } from "../../../services/team.service";
+import { BackgroundFallback } from "../../atoms/BackgroundFallback";
 
 interface Member {
   name: string;
@@ -51,6 +53,31 @@ export const TeamCard: FC<Props> = ({
 }) => {
   const theme = useTheme();
   const moreCount = Math.max(0, (team.achievements?.length || 0) - 1);
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [loadingBackground, setLoadingBackground] = useState(true);
+
+  // Fetch background image
+  useEffect(() => {
+    const loadBackgroundImage = async () => {
+      if (!team.id) {
+        setLoadingBackground(false);
+        return;
+      }
+      try {
+        setLoadingBackground(true);
+        const result = await teamService.getBackgroundImage(String(team.id));
+        if (result.ok) {
+          setBackgroundImage(result.data);
+        }
+      } catch (error) {
+        console.error("Error loading background image:", error);
+      } finally {
+        setLoadingBackground(false);
+      }
+    };
+
+    loadBackgroundImage();
+  }, [team.id]);
 
   return (
     <Card
@@ -69,16 +96,40 @@ export const TeamCard: FC<Props> = ({
       }}
       onClick={() => onClick(team.id)}
     >
-      <CardMedia
-        component="img"
-        height={160}
-        image={team.banner}
-        alt={team.name}
+      {/* Background Image or Fallback */}
+      <Box
         sx={{
-          objectFit: "cover",
+          position: "relative",
           height: { xs: 140, sm: 160 },
+          overflow: "hidden",
         }}
-      />
+      >
+        {backgroundImage ? (
+          <CardMedia
+            component="img"
+            height={160}
+            image={backgroundImage}
+            alt={team.name}
+            sx={{
+              objectFit: "cover",
+              height: { xs: 140, sm: 160 },
+              width: "100%",
+            }}
+          />
+        ) : (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          >
+            <BackgroundFallback seed={team.name} variant="team" />
+          </Box>
+        )}
+      </Box>
       <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
         <Stack
           direction="row"

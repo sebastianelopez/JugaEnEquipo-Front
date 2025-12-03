@@ -47,7 +47,10 @@
         },
         "editModalTitle": "Edit team",
         "updateSuccessTitle": "Team updated",
-        "updateSuccessMessage": "The team was updated successfully"
+        "updateSuccessMessage": "The team was updated successfully",
+        "backgroundImage": "Background image",
+        "backgroundImagePlaceholder": "No background image",
+        "changeBackground": "Change background image"
     },
     "TeamDetail": {
         "back": "Back to Teams",
@@ -379,6 +382,8 @@
         "postCommented": "{username} commented on your post",
         "postLiked": "{username} liked your post",
         "postShared": "{username} shared your post",
+        "teamRequestReceived": "{username} requested to join your team",
+        "tournamentRequestReceived": "{username} requested to join your tournament",
         "noNotifications": "No new notifications"
     },
     "MobileApp": {
@@ -593,6 +598,8 @@
         "twitterPlaceholder": "https://x.com/username",
         "instagramUrl": "Instagram URL",
         "instagramPlaceholder": "https://instagram.com/username",
+        "backgroundImagePlaceholder": "Background image",
+        "changeBackground": "Change background",
         "cancel": "Cancel",
         "save": "Save"
     },
@@ -740,9 +747,12 @@
             "uses": "uses",
             "use": "use",
             "created": "Created",
+            "createdAt": "Creation date",
             "updated": "Updated",
+            "updatedAt": "Update date",
             "noActiveHashtags": "No active hashtags",
             "noBlockedHashtags": "No blocked hashtags",
+            "noHashtagsFound": "No hashtags found",
             "errorLoading": "Error loading hashtags"
         },
         "teams": {

@@ -21,6 +21,8 @@ import type { Tournament, User, Game } from "../../../interfaces";
 import { formatFullName } from "../../../utils/textFormatting";
 import { getGameImage } from "../../../utils/gameImageUtils";
 import { gameService } from "../../../services/game.service";
+import { tournamentService } from "../../../services/tournament.service";
+import { BackgroundFallback } from "../../atoms/BackgroundFallback";
 
 interface TournamentCardProps {
   tournament: Tournament & { image?: string; teams?: any[]; users?: any[] };
@@ -40,6 +42,8 @@ export const TournamentCard: FC<TournamentCardProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [game, setGame] = useState<Game | null>(null);
   const [loadingGame, setLoadingGame] = useState(false);
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [loadingBackground, setLoadingBackground] = useState(true);
 
   // Determine tournament status based on dates
   const tournamentStatus = useMemo(() => {
@@ -91,6 +95,29 @@ export const TournamentCard: FC<TournamentCardProps> = ({
       setGame(tournamentAny.game);
     }
   }, [tournament.gameId]);
+
+  // Fetch background image
+  useEffect(() => {
+    const loadBackgroundImage = async () => {
+      if (!tournament.id) {
+        setLoadingBackground(false);
+        return;
+      }
+      try {
+        setLoadingBackground(true);
+        const result = await tournamentService.getBackgroundImage(String(tournament.id));
+        if (result.ok) {
+          setBackgroundImage(result.data);
+        }
+      } catch (error) {
+        console.error("Error loading background image:", error);
+      } finally {
+        setLoadingBackground(false);
+      }
+    };
+
+    loadBackgroundImage();
+  }, [tournament.id]);
 
   const tournamentAny = tournament as any;
   const gameInfo = game || tournamentAny.game;
@@ -191,16 +218,40 @@ export const TournamentCard: FC<TournamentCardProps> = ({
           }}
         />
       )}
-      <CardMedia
-        component="img"
-        height="200"
-        image={image}
-        alt={tournament.name}
+      {/* Background Image or Fallback */}
+      <Box
         sx={{
-          objectFit: "cover",
+          position: "relative",
           height: { xs: 150, md: 200 },
+          overflow: "hidden",
         }}
-      />
+      >
+        {backgroundImage ? (
+          <CardMedia
+            component="img"
+            height="200"
+            image={backgroundImage}
+            alt={tournament.name}
+            sx={{
+              objectFit: "cover",
+              height: { xs: 150, md: 200 },
+              width: "100%",
+            }}
+          />
+        ) : (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          >
+            <BackgroundFallback seed={tournament.name} variant="tournament" />
+          </Box>
+        )}
+      </Box>
       <CardContent sx={{ p: { xs: 2, md: 3 } }}>
         <Typography
           variant="h6"

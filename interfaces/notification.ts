@@ -3,7 +3,9 @@ export type NotificationType =
   | "new_follower"
   | "post_commented"
   | "post_liked"
-  | "post_shared";
+  | "post_shared"
+  | "team_request_received"
+  | "tournament_request_received";
 
 export interface Notification {
   id: string;
@@ -11,6 +13,8 @@ export interface Notification {
   userId: string;
   username: string;
   postId?: string;
+  teamId?: string;
+  tournamentId?: string;
   message: string | null;
   date: string;
   read?: boolean;

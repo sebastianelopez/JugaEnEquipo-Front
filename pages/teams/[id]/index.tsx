@@ -408,6 +408,7 @@ export default function TeamDetailPage({ id }: Props) {
         isLeader={isLeader}
         creatorLabel={t("creator") as string}
         leaderLabel={t("leader") as string}
+        teamId={team.id}
       />
 
       <Container

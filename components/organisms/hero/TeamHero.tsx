@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -14,10 +14,12 @@ import StarIcon from "@mui/icons-material/Star";
 import EditIcon from "@mui/icons-material/Edit";
 import PersonIcon from "@mui/icons-material/Person";
 import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
+import { teamService } from "../../../services/team.service";
+import { BackgroundFallback } from "../../atoms/BackgroundFallback";
 
 interface Props {
-  banner: string;
+  banner?: string;
   logo: string;
   name: string;
   foundedLabel: string; // already resolved (e.g., t("founded", {year}))
@@ -30,6 +32,7 @@ interface Props {
   isLeader?: boolean;
   creatorLabel?: string;
   leaderLabel?: string;
+  teamId?: string;
 }
 
 export const TeamHero: FC<Props> = ({
@@ -46,23 +49,97 @@ export const TeamHero: FC<Props> = ({
   isLeader = false,
   creatorLabel = "Creador",
   leaderLabel = "Líder",
+  teamId,
 }) => {
   const theme = useTheme();
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [loadingBackground, setLoadingBackground] = useState(true);
+
+  const bgGradient = `linear-gradient(to bottom, ${alpha(
+    theme.palette.background.default,
+    0.3
+  )}, ${alpha(theme.palette.background.default, 0.9)})`;
+
+  // Fetch background image
+  useEffect(() => {
+    const loadBackgroundImage = async () => {
+      if (!teamId) {
+        setLoadingBackground(false);
+        return;
+      }
+      try {
+        setLoadingBackground(true);
+        const result = await teamService.getBackgroundImage(teamId);
+        if (result.ok) {
+          setBackgroundImage(result.data);
+        }
+      } catch (error) {
+        console.error("Error loading background image:", error);
+      } finally {
+        setLoadingBackground(false);
+      }
+    };
+
+    loadBackgroundImage();
+  }, [teamId]);
+
   return (
     <Box
       sx={{
         position: "relative",
         height: { xs: "280px", sm: "300px", md: "350px" },
-        backgroundImage: `linear-gradient(to bottom, rgba(15, 15, 30, 0.3), rgba(15, 15, 30, 0.9)), url(${banner})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
         display: "flex",
         alignItems: "flex-end",
+        overflow: "hidden",
       }}
     >
+      {/* Background Image or Fallback */}
+      {backgroundImage ? (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: `${bgGradient}, url(${backgroundImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            zIndex: 0,
+          }}
+        />
+      ) : (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 0,
+          }}
+        >
+          <BackgroundFallback seed={name} variant="team" />
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: bgGradient,
+            }}
+          />
+        </Box>
+      )}
       <Container
         maxWidth="xl"
-        sx={{ pb: { xs: 2, sm: 3, md: 4 }, px: { xs: 2, sm: 3 } }}
+        sx={{
+          pb: { xs: 2, sm: 3, md: 4 },
+          px: { xs: 2, sm: 3 },
+          position: "relative",
+          zIndex: 1,
+        }}
       >
         <Button
           startIcon={<ArrowBackIcon />}

@@ -155,4 +155,50 @@ export const tournamentService = {
     const token = await getToken();
     return safeCall<any>(() => api.get("/tournament-status", params, token));
   },
+
+  /**
+   * Get tournament background image
+   * GET /api/tournament/:tournament_id/background-image
+   */
+  getBackgroundImage: async (
+    tournamentId: string
+  ): Promise<ServiceResult<string | null>> => {
+    const token = await getToken();
+    try {
+      const response = await api.get<{ data: { backgroundImage: string } }>(
+        `/tournament/${tournamentId}/background-image`,
+        {},
+        token
+      );
+      return { ok: true, data: response.data?.backgroundImage || null };
+    } catch (error: any) {
+      // If 404, return null (no background image)
+      if (error?.response?.status === 404) {
+        return { ok: true, data: null };
+      }
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to get background image";
+      return { ok: false, errorMessage: message, error };
+    }
+  },
+
+  /**
+   * Update tournament background image
+   * PUT /api/tournament/:tournament_id/background-image
+   */
+  updateBackgroundImage: async (
+    tournamentId: string,
+    imageDataUri: string
+  ): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    return safeCall<void>(() =>
+      api.put(
+        `/tournament/${tournamentId}/background-image`,
+        { image: imageDataUri },
+        token
+      )
+    );
+  },
 };

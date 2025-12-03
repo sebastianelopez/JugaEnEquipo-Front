@@ -60,6 +60,23 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
     }[]
   >([]);
   const [isLoadingTeams, setIsLoadingTeams] = useState(true);
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+
+  // Load background image
+  useEffect(() => {
+    const loadBackgroundImage = async () => {
+      try {
+        const result = await userService.getBackgroundImage(userFound.id);
+        if (result.ok) {
+          setBackgroundImage(result.data);
+        }
+      } catch (error) {
+        console.error("Error loading background image:", error);
+      }
+    };
+
+    loadBackgroundImage();
+  }, [userFound.id]);
 
   const loadPosts = useCallback(async () => {
     try {
@@ -146,6 +163,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
       description: newDescription,
       socialLinks: newLinks,
       profileImage,
+      backgroundImage,
     }: {
       description: string;
       socialLinks: {
@@ -155,6 +173,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
         twitch?: string;
       };
       profileImage?: File;
+      backgroundImage?: string;
     }) => {
       try {
         const promises: Promise<any>[] = [];
@@ -175,6 +194,11 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
           );
         }
 
+        // Actualizar imagen de fondo si hay una nueva
+        if (backgroundImage) {
+          promises.push(userService.updateBackgroundImage(backgroundImage));
+        }
+
         // Actualizar descripción si cambió
         if (newDescription !== userFound.description) {
           promises.push(userService.updateUserDescription(newDescription));
@@ -192,7 +216,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
         // TODO: Mostrar notificación de error al usuario
       }
     },
-    [user, setUser, router]
+    [user, setUser, router, userFound.description]
   );
 
   // Derived data and visibility checks
@@ -326,7 +350,6 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
           username={userFound.username}
           userId={userFound.id}
           avatarSrc={userFound.profileImage || "/images/user-placeholder.png"}
-          bannerSrc={"/assets/images.jpg"}
           regionLabel={userFound.country}
           memberSinceLabel={t("memberSince", {
             date: new Date(userFound.createdAt).toLocaleDateString(),
@@ -457,6 +480,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
           initialDescription={userFound.description || ""}
           initialSocialLinks={socialLinks}
           initialProfileImage={userFound.profileImage}
+          initialBackgroundImage={backgroundImage || undefined}
           initialUsername={userFound.username}
           onSave={handleOnSave}
         />

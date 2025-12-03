@@ -37,7 +37,7 @@ import {
   HowToReg as RegisterIcon,
   ExitToApp as LeaveIcon,
 } from "@mui/icons-material";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
 import type { Game, Tournament, Team } from "../../interfaces";
 import { tournamentService } from "../../services/tournament.service";
@@ -46,6 +46,7 @@ import { gameService } from "../../services/game.service";
 import { getGameImage } from "../../utils/gameImageUtils";
 import { teamService } from "../../services/team.service";
 import { UserContext } from "../../context/user";
+import { BackgroundFallback } from "../../components/atoms/BackgroundFallback";
 
 interface Props {
   id: string;
@@ -70,6 +71,8 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [tournamentTeams, setTournamentTeams] = useState<Team[]>([]);
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [loadingBackground, setLoadingBackground] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -85,6 +88,29 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
     return () => {
       mounted = false;
     };
+  }, [id]);
+
+  // Fetch background image
+  useEffect(() => {
+    const loadBackgroundImage = async () => {
+      if (!id) {
+        setLoadingBackground(false);
+        return;
+      }
+      try {
+        setLoadingBackground(true);
+        const result = await tournamentService.getBackgroundImage(id);
+        if (result.ok) {
+          setBackgroundImage(result.data);
+        }
+      } catch (error) {
+        console.error("Error loading background image:", error);
+      } finally {
+        setLoadingBackground(false);
+      }
+    };
+
+    loadBackgroundImage();
   }, [id]);
 
   useEffect(() => {
@@ -304,30 +330,67 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
           sx={{
             position: "relative",
             height: { xs: "300px", md: "400px" },
-            backgroundImage: tournament?.image
-              ? `linear-gradient(to bottom, ${
+            display: "flex",
+            alignItems: "flex-end",
+            overflow: "hidden",
+          }}
+        >
+          {/* Background Image or Fallback */}
+          {backgroundImage ? (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundImage: `linear-gradient(to bottom, ${
                   theme.palette.mode === "dark"
                     ? "rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.9)"
                     : "rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7)"
-                }), url(${(tournament as any).image})`
-              : undefined,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            display: "flex",
-            alignItems: "flex-end",
-            bgcolor: tournament?.image
-              ? undefined
-              : theme.palette.background.default,
-          }}
-        >
-          <Container maxWidth="xl" sx={{ pb: 4 }}>
+                }), url(${backgroundImage})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                zIndex: 0,
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 0,
+              }}
+            >
+              <BackgroundFallback
+                seed={tournament?.name || id}
+                variant="tournament"
+              />
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: `linear-gradient(to bottom, ${
+                    theme.palette.mode === "dark"
+                      ? "rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.9)"
+                      : "rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7)"
+                  })`,
+                }}
+              />
+            </Box>
+          )}
+          <Container maxWidth="xl" sx={{ pb: 4, position: "relative", zIndex: 1 }}>
             <Button
               startIcon={<ArrowBackIcon />}
               onClick={() => router.push("/tournaments")}
               sx={{
-                color: tournament?.image
-                  ? theme.palette.common.white
-                  : theme.palette.text.primary,
+                color: theme.palette.common.white,
                 mb: 2,
                 "&:hover": {
                   bgcolor:
@@ -342,9 +405,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
             <Typography
               variant="h2"
               sx={{
-                color: tournament?.image
-                  ? theme.palette.common.white
-                  : theme.palette.text.primary,
+                color: theme.palette.common.white,
                 fontWeight: 800,
                 fontSize: { xs: "2rem", md: "3.5rem" },
                 mb: 2,
