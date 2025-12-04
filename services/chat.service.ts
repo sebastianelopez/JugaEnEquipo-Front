@@ -109,17 +109,20 @@ export const chatService = {
   },
 
   // Get all conversations
-  getAllConversations: async (): Promise<Result<Conversation[]>> => {
+  getAllConversations: async (): Promise<
+    Result<{ conversations: Conversation[]; totalUnreadMessages: number }>
+  > => {
     try {
       const token = await getToken();
-      const response = await api.get<{ data: Conversation[] }>(
-        `/conversations`,
-        {},
-        token
-      );
+      const response = await api.get<{
+        data: Conversation[];
+        metadata?: { totalUnreadMessages?: number };
+      }>(`/conversations`, {}, token);
 
-      const conversations: Conversation[] = (response.data || []).map(
-        (conv) => ({
+      // Handle both response structures: response.data.data or response.data
+      const conversationsData = (response as any).data?.data || response.data || [];
+      const conversations: Conversation[] = conversationsData.map(
+        (conv: any) => ({
           id: conv.id,
           otherUserId: conv.otherUserId,
           otherUsername: conv.otherUsername,
@@ -128,10 +131,63 @@ export const chatService = {
           otherProfileImage: conv.otherProfileImage,
           lastMessageText: conv.lastMessageText,
           lastMessageDate: conv.lastMessageDate,
+          unreadCount: conv.unreadCount ?? 0,
         })
       );
 
-      return { data: conversations, error: null };
+      // Get metadata from response (could be response.metadata or response.data.metadata)
+      const metadata = (response as any).metadata || (response as any).data?.metadata;
+      const totalUnreadMessages = metadata?.totalUnreadMessages ?? 0;
+
+      return {
+        data: { conversations, totalUnreadMessages },
+        error: null,
+      };
+    } catch (error: any) {
+      const message = toErrorMessage(
+        error?.response?.data?.message || error?.message || "Unknown error"
+      );
+      const status = error?.response?.status;
+      return { data: null, error: { message, status } };
+    }
+  },
+
+  // Get total unread messages count
+  getTotalUnreadMessages: async (): Promise<Result<number>> => {
+    try {
+      const token = await getToken();
+      const response = await api.get<{
+        data: Conversation[];
+        metadata?: { totalUnreadMessages?: number };
+      }>(`/conversations`, {}, token);
+
+      // Get metadata from response (could be response.metadata or response.data.metadata)
+      const metadata = (response as any).metadata || (response as any).data?.metadata;
+      const totalUnreadMessages = metadata?.totalUnreadMessages ?? 0;
+
+      return { data: totalUnreadMessages, error: null };
+    } catch (error: any) {
+      const message = toErrorMessage(
+        error?.response?.data?.message || error?.message || "Unknown error"
+      );
+      const status = error?.response?.status;
+      return { data: null, error: { message, status } };
+    }
+  },
+
+  // Mark a message as read
+  markMessageAsRead: async (
+    conversationId: string,
+    messageId: string
+  ): Promise<Result<void>> => {
+    try {
+      const token = await getToken();
+      await api.put(
+        `/conversation/${conversationId}/message/${messageId}/mark-as-read`,
+        {},
+        token
+      );
+      return { data: null, error: null };
     } catch (error: any) {
       const message = toErrorMessage(
         error?.response?.data?.message || error?.message || "Unknown error"

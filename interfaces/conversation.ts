@@ -7,4 +7,5 @@ export interface Conversation {
   otherProfileImage: string | null;
   lastMessageText: string | null;
   lastMessageDate: string | null;
+  unreadCount: number;
 }

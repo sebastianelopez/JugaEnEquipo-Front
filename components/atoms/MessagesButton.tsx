@@ -1,14 +1,13 @@
 import { Badge, IconButton } from "@mui/material";
-import { useContext } from "react";
 import MessageIcon from "@mui/icons-material/Message";
 import { useRouter } from "next/router";
-import { NotificationContext } from "../../context/notification";
+import { useUnreadMessages } from "../../hooks/useUnreadMessages";
 
 interface Props {}
 
 export const MessagesButton = ({}: Props) => {
   const router = useRouter();
-  const { unreadChatCount } = useContext(NotificationContext);
+  const { totalUnreadMessages } = useUnreadMessages();
 
   const handleClick = () => {
     router.push("/messages");
@@ -17,14 +16,14 @@ export const MessagesButton = ({}: Props) => {
   return (
     <IconButton aria-label="messages" onClick={handleClick}>
       <Badge
-        badgeContent={unreadChatCount}
+        badgeContent={totalUnreadMessages > 99 ? "99+" : totalUnreadMessages}
         sx={{
           "& .MuiBadge-badge": {
             backgroundColor: "#ffa599",
             color: "black",
           },
         }}
-        invisible={unreadChatCount === 0}
+        invisible={totalUnreadMessages === 0}
       >
         <MessageIcon />
       </Badge>

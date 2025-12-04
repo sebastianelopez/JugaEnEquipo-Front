@@ -4,4 +4,5 @@ export interface Message {
   username: string;
   mine: boolean;
   createdAt: string;
+  readAt?: string | null;
 }
