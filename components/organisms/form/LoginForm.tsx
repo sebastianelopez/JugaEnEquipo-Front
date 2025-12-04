@@ -26,7 +26,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { useContext, useState } from "react";
 import * as Yup from "yup";
-import logo from "../../../assets/logo.png";
+import logo from "../../../assets/juga-en-equipo_ISO-1-1.png";
 import { loginSafe, logout } from "../../../services/auth.service";
 import { userService } from "../../../services/user.service";
 import { decodeUserIdByToken } from "../../../utils/decodeIdByToken";

@@ -1,7 +1,7 @@
 import { Box, BoxProps } from "@mui/material";
 import Image from "next/image";
-import logo from "../../assets/logo.png";
-import logoRightText from "../../assets/logo_right_text.png";
+import logo from "../../assets/juga-en-equipo_ISO-2-1.png";
+import logoRightText from "../../assets/juga-en-equipo_blanco-1.png";
 
 interface ResponsiveLogoProps extends Omit<BoxProps, 'children'> {
   /**
@@ -18,16 +18,16 @@ interface ResponsiveLogoProps extends Omit<BoxProps, 'children'> {
 
 const sizeConfig = {
   small: {
-    mobile: { height: 35, width: 35 },
-    desktop: { height: 35, width: 100 }
+    mobile: { height: 35, width: 39 }, // ISO-2 aspect ratio: ~1.13:1
+    desktop: { height: 35, width: 79 } // blanco aspect ratio: ~2.26:1
   },
   medium: {
-    mobile: { height: 45, width: 45 },
-    desktop: { height: 45, width: 120 }
+    mobile: { height: 45, width: 51 }, // ISO-2 aspect ratio: ~1.13:1
+    desktop: { height: 45, width: 102 } // blanco aspect ratio: ~2.26:1
   },
   large: {
-    mobile: { height: 55, width: 55 },
-    desktop: { height: 55, width: 150 }
+    mobile: { height: 55, width: 62 }, // ISO-2 aspect ratio: ~1.13:1
+    desktop: { height: 55, width: 124 } // blanco aspect ratio: ~2.26:1
   }
 };
 

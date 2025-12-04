@@ -44,7 +44,7 @@ import {
   emailValidationSchema,
   usernameValidationSchema,
 } from "../../../utils/fieldValidations";
-import logo from "../../../assets/logo.png";
+import logo from "../../../assets/juga-en-equipo_ISO-1-1.png";
 
 const PasswordRequirement = ({
   met,

@@ -19,7 +19,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { useState } from "react";
 import * as Yup from "yup";
-import logo from "../../../assets/logo.png";
+import logo from "../../../assets/juga-en-equipo_ISO-1-1.png";
 import { forgotPassword } from "../../../services/auth.service";
 
 type FormData = {

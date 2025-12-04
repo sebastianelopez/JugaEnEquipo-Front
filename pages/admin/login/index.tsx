@@ -22,11 +22,10 @@ import {
   AdminPanelSettings,
 } from "@mui/icons-material";
 import { Form, Formik } from "formik";
-import Image from "next/image";
+
 import { useRouter } from "next/router";
 import { useState } from "react";
 import * as Yup from "yup";
-import logo from "../../../assets/logo.png";
 import { backofficeService } from "../../../services/backoffice.service";
 import Cookies from "js-cookie";
 import { getAuthCookieOptions } from "../../../utils/cookies";
