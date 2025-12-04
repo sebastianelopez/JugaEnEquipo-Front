@@ -3,11 +3,13 @@ import React, { useState, useCallback, useContext } from "react";
 import { Container, Typography, Box, Tabs, Tab, Paper } from "@mui/material";
 import SecurityIcon from "@mui/icons-material/Security";
 import PersonIcon from "@mui/icons-material/Person";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import { MainLayout } from "../../layouts";
 import { useTranslations } from "next-intl";
 import {
   SettingsProfile,
   SettingsAccount,
+  SettingsGames,
 } from "../../components/organisms/settings";
 import { UserContext } from "../../context/user";
 import { useFeedback } from "../../hooks/useFeedback";
@@ -111,6 +113,7 @@ const SettingsPage: NextPage = () => {
               variant="fullWidth"
             >
               <Tab icon={<PersonIcon />} label={t("profileTab")} />
+              <Tab icon={<SportsEsportsIcon />} label={t("gamesTab")} />
               <Tab icon={<SecurityIcon />} label={t("accountTab")} />
             </Tabs>
           </Box>
@@ -120,6 +123,10 @@ const SettingsPage: NextPage = () => {
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
+            <SettingsGames />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={2}>
             <SettingsAccount
               onUpdatePassword={handlePasswordUpdate}
               onDeleteAccount={handleDeleteAccount}
