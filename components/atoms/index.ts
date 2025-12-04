@@ -7,3 +7,4 @@ export * from "./ResponsiveLogo";
 export * from "./ThemeToggleButton";
 export * from "./MessagesButton";
 export * from "./BackgroundFallback";
+export * from "./UserSearchSelect";

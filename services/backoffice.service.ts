@@ -403,6 +403,28 @@ export const backofficeService = {
     );
   },
 
+  createOfficialTournament: async (
+    tournamentId: string,
+    payload: {
+      name: string;
+      description: string;
+      gameId: string;
+      creatorId: string;
+      responsibleId: string;
+      rules: string | null;
+      maxTeams: number;
+      prize: string | null;
+      region: string;
+      startAt: string; // Format: "YYYY-MM-DD HH:mm:ss"
+      endAt: string; // Format: "YYYY-MM-DD HH:mm:ss"
+    }
+  ): Promise<ServiceResult<Tournament>> => {
+    const token = await getToken();
+    return safeCall<Tournament>(() =>
+      api.put<Tournament>(`/backoffice/tournament/${tournamentId}`, payload, token)
+    );
+  },
+
   disableTournament: async (
     tournamentId: string
   ): Promise<ServiceResult<void>> => {
