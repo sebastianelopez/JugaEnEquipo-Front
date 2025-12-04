@@ -21,16 +21,20 @@ import {
   QuickStatsCard,
   ProfileEditModal,
 } from "../../components/organisms";
-import { Post, User, Team } from "../../interfaces";
+import { Post, User, Team, Player, Game, Role } from "../../interfaces";
 import { MainLayout } from "../../layouts";
 import { userService } from "../../services/user.service";
 import { useContext, useEffect, useState, useCallback } from "react";
 import { postService } from "../../services/post.service";
 import { teamService } from "../../services/team.service";
+import { playerService } from "../../services/player.service";
+import { gameService } from "../../services/game.service";
+import { roleService } from "../../services/role.service";
 import { UserContext } from "../../context/user";
 import { PostList } from "../../components/molecules/Post/PostList";
 import { sortPostsByDate } from "../../utils/sortPosts";
 import { formatFullName } from "../../utils/textFormatting";
+import { getGameImage } from "../../utils/gameImageUtils";
 
 interface Props {
   userFound: User;
@@ -61,6 +65,9 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   >([]);
   const [isLoadingTeams, setIsLoadingTeams] = useState(true);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [rolesData, setRolesData] = useState<Map<string, Role[]>>(new Map());
+  const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
 
   // Load background image
   useEffect(() => {
@@ -158,6 +165,46 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
     loadTeams();
   }, [loadTeams]);
 
+  // Load user players
+  const loadPlayers = useCallback(async () => {
+    try {
+      setIsLoadingPlayers(true);
+      // Filter players by userId
+      const result = await playerService.search(
+        isLoggedUser && user?.id ? { userId: user.id } : { userId: userFound.id }
+      );
+      if (result.ok && result.data) {
+        setPlayers(result.data || []);
+        
+        // Load roles data for each unique game (gameName already comes in the response)
+        const rolesMap = new Map<string, Role[]>();
+        const uniqueGameIds = Array.from(new Set(result.data.map((p: Player) => p.gameId)));
+        
+        for (const gameId of uniqueGameIds) {
+          if (!rolesMap.has(gameId)) {
+            const rolesResult = await roleService.findAllByGame(gameId);
+            if (rolesResult.ok && rolesResult.data) {
+              rolesMap.set(gameId, rolesResult.data);
+            }
+          }
+        }
+        
+        setRolesData(rolesMap);
+      } else {
+        setPlayers([]);
+      }
+    } catch (error) {
+      console.error("Error loading players:", error);
+      setPlayers([]);
+    } finally {
+      setIsLoadingPlayers(false);
+    }
+  }, [isLoggedUser, userFound.id, userFound.username]);
+
+  useEffect(() => {
+    loadPlayers();
+  }, [loadPlayers]);
+
   const handleOnSave = useCallback(
     async ({
       description: newDescription,
@@ -219,14 +266,37 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
     [user, setUser, router, userFound.description]
   );
 
-  // Derived data and visibility checks
-  // MOCK DATA - Temporal until backend integration
-
-  const games = (userFound.games || []).map((g) => ({
-    name: g.name,
-    icon: (g as any).image || undefined,
-    rank: String(g.elo),
-  }));
+  // Transform players to games format for display
+  const games = players.map((player) => {
+    const roles = rolesData.get(player.gameId) || [];
+    const playerRoles = roles.filter((r) => player.gameRoleIds?.includes(r.id));
+    
+    // Build account info string
+    let accountInfo = "";
+    if (player.accountData?.steamId) {
+      accountInfo = `Steam ID: ${player.accountData.steamId}`;
+    } else if (player.accountData?.username) {
+      accountInfo = player.accountData.username;
+      if (player.accountData.tag) {
+        accountInfo += `#${player.accountData.tag}`;
+      }
+      if (player.accountData.region) {
+        accountInfo += ` (${player.accountData.region})`;
+      }
+    }
+    
+    return {
+      name: player.gameName || "Unknown Game",
+      icon: player.gameName ? getGameImage(player.gameName) : undefined,
+      rank: playerRoles.length > 0 ? playerRoles.map((r) => r.roleName).join(", ") : undefined,
+      accountInfo: accountInfo || undefined,
+      roles: playerRoles.map((r) => ({ roleName: r.roleName, roleDescription: r.roleDescription })),
+      gameRank: player.gameRank,
+      gameId: player.gameId,
+      isOwnershipVerified: player.isOwnershipVerified,
+    };
+  });
+  
   const hasGames = games.length > 0;
 
   const hasTeams = teams.length > 0;

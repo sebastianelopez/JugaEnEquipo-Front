@@ -39,4 +39,28 @@ export const gameService = {
       return { ok: false, errorMessage: message, error };
     }
   },
+
+  /**
+   * Get game requirements (what account data fields are required)
+   * GET /api/game/:game_id/requirements
+   */
+  getGameRequirements: async (
+    gameId: string
+  ): Promise<ServiceResult<{ region?: boolean; username?: boolean; tag?: boolean; steamId?: boolean }>> => {
+    try {
+      const token = await getToken();
+      const response = await api.get<{ data: { region?: boolean; username?: boolean; tag?: boolean; steamId?: boolean } }>(
+        `/game/${gameId}/requirements`,
+        {},
+        token
+      );
+      return { ok: true, data: response.data };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to fetch game requirements";
+      return { ok: false, errorMessage: message, error };
+    }
+  },
 };

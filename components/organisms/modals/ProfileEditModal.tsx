@@ -6,12 +6,18 @@ import {
   Stack,
   Typography,
   Avatar,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
+import PersonIcon from "@mui/icons-material/Person";
 import { SxProps, Theme, useTheme } from "@mui/material/styles";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useContext } from "react";
 import { useTranslations } from "next-intl";
 import { handleImagePreviewChange } from "../../../utils/imageFileUtils";
+import { UserContext } from "../../../context/user";
+import { SettingsGames } from "../../organisms/settings/SettingsGames";
 
 interface SocialLinks {
   twitter?: string;
@@ -37,6 +43,28 @@ interface Props {
   sx?: SxProps<Theme>;
 }
 
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`profile-edit-tabpanel-${index}`}
+      aria-labelledby={`profile-edit-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ pt: 2 }}>{children}</Box>}
+    </div>
+  );
+}
+
 export const ProfileEditModal = ({
   open,
   onClose,
@@ -50,6 +78,7 @@ export const ProfileEditModal = ({
 }: Props) => {
   const t = useTranslations("ProfileEditModal");
   const theme = useTheme();
+  const [tabValue, setTabValue] = useState(0);
   const [description, setDescription] = useState<string>(initialDescription);
   const [links, setLinks] = useState<SocialLinks>(initialSocialLinks);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -60,6 +89,10 @@ export const ProfileEditModal = ({
   const [previewBackgroundImage, setPreviewBackgroundImage] = useState<string | undefined>(
     initialBackgroundImage
   );
+
+  const handleTabChange = useCallback((event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  }, []);
 
   useEffect(() => {
     setDescription(initialDescription);
@@ -138,7 +171,7 @@ export const ProfileEditModal = ({
           right: { xs: 0, sm: "auto" },
           transform: { xs: "none", sm: "translate(-50%, -50%)" },
           width: { xs: "100%", sm: "90%", md: "100%" },
-          maxWidth: 600,
+          maxWidth: { xs: "100%", sm: 600, md: 800 },
           maxHeight: { xs: "90vh", sm: "90vh" },
           bgcolor: "background.paper",
           boxShadow: 24,
@@ -161,10 +194,40 @@ export const ProfileEditModal = ({
           {t("title")}
         </Typography>
 
-        <Stack
-          spacing={{ xs: 1.5, md: 2 }}
-          sx={{ mb: { xs: 1.5, md: 2 }, flex: 1 }}
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          aria-label={t("title")}
+          variant="fullWidth"
+          sx={{
+            mb: 2,
+            borderBottom: 1,
+            borderColor: "divider",
+          }}
         >
+          <Tab
+            icon={<PersonIcon />}
+            iconPosition="start"
+            label={t("profileTab")}
+            id="profile-edit-tab-0"
+            aria-controls="profile-edit-tabpanel-0"
+            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+          />
+          <Tab
+            icon={<SportsEsportsIcon />}
+            iconPosition="start"
+            label={t("gamesTab")}
+            id="profile-edit-tab-1"
+            aria-controls="profile-edit-tabpanel-1"
+            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+          />
+        </Tabs>
+
+        <TabPanel value={tabValue} index={0}>
+          <Stack
+            spacing={{ xs: 1.5, md: 2 }}
+            sx={{ mb: { xs: 1.5, md: 2 }, flex: 1 }}
+          >
           <Box
             sx={{
               display: "flex",
@@ -366,42 +429,51 @@ export const ProfileEditModal = ({
               },
             }}
           />
-        </Stack>
+          </Stack>
+        </TabPanel>
 
-        <Stack
-          direction={{ xs: "column-reverse", sm: "row" }}
-          spacing={{ xs: 1, sm: 2 }}
-          justifyContent="flex-end"
-          sx={{
-            mt: { xs: 1, md: 0 },
-            pt: { xs: 2, md: 0 },
-            borderTop: { xs: "1px solid", sm: "none" },
-            borderColor: { xs: "divider", sm: "transparent" },
-          }}
-        >
-          <Button
-            variant="text"
-            onClick={onClose}
-            fullWidth={true}
+        <TabPanel value={tabValue} index={1}>
+          <Box sx={{ maxHeight: "60vh", overflowY: "auto", pb: 2 }}>
+            <SettingsGames />
+          </Box>
+        </TabPanel>
+
+        {tabValue === 0 && (
+          <Stack
+            direction={{ xs: "column-reverse", sm: "row" }}
+            spacing={{ xs: 1, sm: 2 }}
+            justifyContent="flex-end"
             sx={{
-              fontSize: { xs: "0.875rem", md: "1rem" },
-              py: { xs: 1.25, md: 0.75 },
+              mt: "auto",
+              pt: { xs: 2, md: 2 },
+              borderTop: "1px solid",
+              borderColor: "divider",
             }}
           >
-            {t("cancel")}
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleSave}
-            fullWidth={true}
-            sx={{
-              fontSize: { xs: "0.875rem", md: "1rem" },
-              py: { xs: 1.25, md: 0.75 },
-            }}
-          >
-            {t("save")}
-          </Button>
-        </Stack>
+            <Button
+              variant="text"
+              onClick={onClose}
+              fullWidth={true}
+              sx={{
+                fontSize: { xs: "0.875rem", md: "1rem" },
+                py: { xs: 1.25, md: 0.75 },
+              }}
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSave}
+              fullWidth={true}
+              sx={{
+                fontSize: { xs: "0.875rem", md: "1rem" },
+                py: { xs: 1.25, md: 0.75 },
+              }}
+            >
+              {t("save")}
+            </Button>
+          </Stack>
+        )}
       </Box>
     </Modal>
   );

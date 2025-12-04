@@ -53,7 +53,17 @@ interface ProfileTabsProps {
   stats: { label: string; value: string | number; color?: any }[];
   // Games props
   hasGames: boolean;
-  games: { name: string; icon?: string; rank: string }[];
+  games: Array<{
+    name: string;
+    icon?: string;
+    rank?: string;
+    accountInfo?: string;
+    roles?: Array<{ roleName: string; roleDescription?: string }>;
+    hoursPlayed?: number;
+    gameRank?: { id: string; name: string; level: number };
+    gameId?: string;
+    isOwnershipVerified?: boolean;
+  }>;
   // Teams props
   hasTeams: boolean;
   teams: {

@@ -5,9 +5,16 @@ import { v4 as uuidv4 } from "uuid";
 import { Player } from "../interfaces";
 
 interface CreatePlayerPayload {
-  gameRoleId: string;
-  gameRankId: string;
-  username: string;
+  gameId: string;
+  gameRoleIds: string[];
+  accountData: {
+    // RIOT Games
+    region?: string;
+    username?: string;
+    tag?: string;
+    // STEAM
+    steamId?: string;
+  };
 }
 
 async function safeCall<T>(fn: () => Promise<any>): Promise<ServiceResult<T>> {
@@ -63,6 +70,7 @@ export const playerService = {
     page?: number;
     pageSize?: number;
     search?: string;
+    userId: string;
     [key: string]: any;
   }): Promise<ServiceResult<Player[]>> => {
     const token = await getToken();
