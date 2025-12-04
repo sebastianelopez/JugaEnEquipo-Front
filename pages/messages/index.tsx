@@ -24,7 +24,7 @@ const MessagesPage: NextPage = () => {
         }
 
         if (result.data) {
-          setConversations(result.data);
+          setConversations(result.data.conversations);
         } else {
           setConversations([]);
         }

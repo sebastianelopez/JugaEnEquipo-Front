@@ -18,6 +18,8 @@ import {
 import {
   Send as SendIcon,
   ArrowBack as ArrowBackIcon,
+  Done as DoneIcon,
+  DoneAll as DoneAllIcon,
 } from "@mui/icons-material";
 import React, {
   useEffect,
@@ -83,6 +85,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  const markMessageAsRead = useCallback(
+    async (messageId: string, conversationId: string) => {
+      try {
+        await chatService.markMessageAsRead(conversationId, messageId);
+      } catch (error) {
+        console.error("Error marking message as read:", error);
+        // Silently fail - don't show error to user
+      }
+    },
+    []
+  );
 
   // Helper function to load messages (used for retry)
   const loadMessages = useCallback(async () => {
@@ -207,15 +221,29 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     const newEventSource = chatService.connectToChat(conversationId);
     eventSourceRef.current = newEventSource;
 
-    // Listen for new messages
+    // Listen for new messages and message updates (including read status)
     newEventSource.onmessage = (event) => {
       try {
         const messageData: Message = JSON.parse(event.data);
-        console.log("Nuevo mensaje recibido via SSE:", messageData);
 
         setMessages((prev) => {
           // Determine if this message is from the current user
           const isMyMessage = messageData.username === user?.username;
+
+          // Check if message already exists (for updates like read status)
+          const existingIndex = prev.findIndex(
+            (msg) => msg.id === messageData.id
+          );
+
+          if (existingIndex !== -1) {
+            // Update existing message (e.g., when readAt is updated)
+            const newMessages = [...prev];
+            newMessages[existingIndex] = {
+              ...newMessages[existingIndex],
+              ...messageData,
+            };
+            return sortMessagesByDate(newMessages);
+          }
 
           if (isMyMessage) {
             // If it's our message, replace the temporary message with the real one
@@ -243,6 +271,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             const exists = prev.some((msg) => msg.id === messageData.id);
             if (exists) return prev;
             const newMessages = [...prev, messageData];
+
+            // Mark message as read automatically when conversation is open
+            markMessageAsRead(messageData.id, conversationId);
+
             return sortMessagesByDate(newMessages);
           }
         });
@@ -289,13 +321,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             reconnectEventSource.onmessage = (event) => {
               try {
                 const messageData: Message = JSON.parse(event.data);
-                console.log(
-                  "Nuevo mensaje recibido via SSE (reconexión):",
-                  messageData
-                );
 
                 setMessages((prev) => {
                   const isMyMessage = messageData.username === user?.username;
+
+                  // Check if message already exists (for updates like read status)
+                  const existingIndex = prev.findIndex(
+                    (msg) => msg.id === messageData.id
+                  );
+
+                  if (existingIndex !== -1) {
+                    // Update existing message (e.g., when readAt is updated)
+                    const newMessages = [...prev];
+                    newMessages[existingIndex] = {
+                      ...newMessages[existingIndex],
+                      ...messageData,
+                    };
+                    return sortMessagesByDate(newMessages);
+                  }
 
                   if (isMyMessage) {
                     const tempMessageIndex = prev.findIndex(
@@ -324,6 +367,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     );
                     if (exists) return prev;
                     const newMessages = [...prev, messageData];
+
+                    // Mark message as read automatically when conversation is open
+                    markMessageAsRead(messageData.id, conversationId);
+
                     return sortMessagesByDate(newMessages);
                   }
                 });
@@ -348,8 +395,68 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       }
     };
 
+    // Poll for message read status updates every 5 seconds
+    // This ensures we get updates when the other user reads our messages
+    const pollInterval = setInterval(async () => {
+      if (!conversationId || !user) return;
+
+      try {
+        const result = await chatService.getConversationMessages(
+          conversationId
+        );
+        if (result.data && result.data.length > 0) {
+          setMessages((prevMessages) => {
+            // Create a map of new messages by ID for quick lookup
+            const newMessagesMap = new Map(
+              result.data!.map((msg) => [msg.id, msg])
+            );
+
+            // Update existing messages with read status
+            const updatedMessages = prevMessages.map((prevMsg) => {
+              const updatedMsg = newMessagesMap.get(prevMsg.id);
+              if (updatedMsg) {
+                // Preserve optimistic messages (temp IDs) but update read status
+                if (prevMsg.id.startsWith("temp-")) {
+                  // Find the corresponding real message by content and username
+                  const realMsg = Array.from(newMessagesMap.values()).find(
+                    (msg) =>
+                      msg.content === prevMsg.content &&
+                      msg.username === prevMsg.username &&
+                      Math.abs(
+                        new Date(msg.createdAt).getTime() -
+                          new Date(prevMsg.createdAt).getTime()
+                      ) < 5000 // Within 5 seconds
+                  );
+                  if (realMsg) {
+                    return { ...prevMsg, readAt: realMsg.readAt };
+                  }
+                }
+                // Update read status for existing messages
+                return {
+                  ...prevMsg,
+                  readAt: updatedMsg.readAt,
+                };
+              }
+              return prevMsg;
+            });
+
+            // Add any new messages that don't exist yet
+            const existingIds = new Set(prevMessages.map((msg) => msg.id));
+            const newMessages = result.data!.filter(
+              (msg) => !existingIds.has(msg.id)
+            );
+
+            return sortMessagesByDate([...updatedMessages, ...newMessages]);
+          });
+        }
+      } catch (error) {
+        console.error("Error polling for message updates:", error);
+      }
+    }, 5000); // Poll every 5 seconds
+
     // Cleanup: close connection when component unmounts or conversation changes
     return () => {
+      clearInterval(pollInterval);
       if (
         eventSourceRef.current &&
         conversationIdRef.current === conversationId
@@ -540,7 +647,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             position: { xs: "sticky", md: "relative" },
             top: { xs: 0, md: "auto" },
             zIndex: { xs: 1000, md: "auto" },
-            boxShadow: { xs: `0 2px 4px ${alpha(theme.palette.common.black, 0.1)}`, md: "none" },
+            boxShadow: {
+              xs: `0 2px 4px ${alpha(theme.palette.common.black, 0.1)}`,
+              md: "none",
+            },
             flexShrink: 0,
           }}
         >
@@ -592,9 +702,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             flex: 1,
             overflow: "auto",
             padding: { xs: 1, md: 1.5 },
-            paddingBottom: { 
-              xs: "calc(5.5rem + env(safe-area-inset-bottom, 0px))", 
-              md: 1.5 
+            paddingBottom: {
+              xs: "calc(5.5rem + env(safe-area-inset-bottom, 0px))",
+              md: 1.5,
             },
             bgcolor: "background.default",
             minHeight: 0, // Allows flexbox to shrink properly
@@ -652,17 +762,59 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                         <Typography variant="body1" sx={{ mb: 0.5 }}>
                           {message.content}
                         </Typography>
-                        <Typography
-                          variant="caption"
+                        <Box
                           sx={{
-                            opacity: 0.7,
-                            display: "block",
-                            textAlign: isOwnMessage ? "right" : "left",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: isOwnMessage
+                              ? "flex-end"
+                              : "flex-start",
+                            gap: 0.5,
+                            mt: 0.5,
                           }}
                         >
-                          {formatMessageTime(message.createdAt)}
-                          {isOptimistic && ` (${t("sending")})`}
-                        </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              opacity: 0.7,
+                              display: "block",
+                            }}
+                          >
+                            {formatMessageTime(message.createdAt)}
+                            {isOptimistic && ` (${t("sending")})`}
+                          </Typography>
+                          {isOwnMessage && !isOptimistic && (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                ml: 0.5,
+                              }}
+                            >
+                              {message.readAt ? (
+                                <DoneAllIcon
+                                  sx={{
+                                    fontSize: "1rem",
+                                    opacity: 0.8,
+                                    color: isOwnMessage
+                                      ? "primary.contrastText"
+                                      : "primary.main",
+                                  }}
+                                />
+                              ) : (
+                                <DoneIcon
+                                  sx={{
+                                    fontSize: "1rem",
+                                    opacity: 0.6,
+                                    color: isOwnMessage
+                                      ? "primary.contrastText"
+                                      : "text.secondary",
+                                  }}
+                                />
+                              )}
+                            </Box>
+                          )}
+                        </Box>
                       </Paper>
                     </ListItem>
                     {showDivider && <Divider variant="middle" />}
@@ -681,9 +833,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           sx={{
             display: "flex",
             padding: { xs: 1.5, md: 2 },
-            paddingBottom: { 
-              xs: "calc(1.5rem + env(safe-area-inset-bottom, 0px))", 
-              md: 2 
+            paddingBottom: {
+              xs: "calc(1.5rem + env(safe-area-inset-bottom, 0px))",
+              md: 2,
             },
             borderTop: `1px solid ${theme.palette.divider}`,
             bgcolor: "background.paper",
@@ -692,7 +844,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             left: { xs: 0, md: "auto" },
             right: { xs: 0, md: "auto" },
             zIndex: { xs: 1000, md: "auto" },
-            boxShadow: { xs: `0 -2px 8px ${alpha(theme.palette.common.black, 0.15)}`, md: "none" },
+            boxShadow: {
+              xs: `0 -2px 8px ${alpha(theme.palette.common.black, 0.15)}`,
+              md: "none",
+            },
             flexShrink: 0,
             width: "100%",
           }}

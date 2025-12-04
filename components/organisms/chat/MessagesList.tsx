@@ -182,8 +182,7 @@ export const ConversationsList = forwardRef<
                     sx={{
                       position: "relative",
                       py: { xs: 1, md: 1.5 },
-                      ...(true && {
-                        // conversation.unread > 0 && {
+                      ...(conversation.unreadCount > 0 && {
                         bgcolor: alpha(theme.palette.primary.main, 0.08),
                       }),
                       ...(selectedConversation?.id === conversation.id && {
@@ -205,8 +204,7 @@ export const ConversationsList = forwardRef<
                           <Typography
                             component="span"
                             fontWeight={
-                              // conversation.unread > 0 ? "bold" : "normal"
-                              "normal"
+                              conversation.unreadCount > 0 ? "bold" : "normal"
                             }
                             onClick={(e) => {
                               e.stopPropagation();
@@ -245,14 +243,12 @@ export const ConversationsList = forwardRef<
                               display: "inline",
                               maxWidth: "80%",
                               fontWeight:
-                                // conversation.unread > 0 ? "medium" : "normal"
-                                "normal",
+                                conversation.unreadCount > 0 ? "medium" : "normal",
                             }}
                           >
                             {conversation.lastMessageText}
                           </Typography>
-                          {/* {conversation.unread > 0 && ( */}
-                          {true && (
+                          {conversation.unreadCount > 0 && (
                             <Box
                               sx={{
                                 bgcolor: "primary.main",
@@ -264,10 +260,10 @@ export const ConversationsList = forwardRef<
                                 alignItems: "center",
                                 justifyContent: "center",
                                 fontSize: "0.75rem",
+                                fontWeight: "bold",
                               }}
                             >
-                              {/* {conversation.unread} */}
-                              {0}
+                              {conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}
                             </Box>
                           )}
                         </Box>
