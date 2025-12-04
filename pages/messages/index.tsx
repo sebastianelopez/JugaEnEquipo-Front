@@ -1,4 +1,4 @@
-import type { GetStaticPropsContext, NextPage } from "next";
+import type { GetServerSidePropsContext, NextPage } from "next";
 import { useEffect, useState } from "react";
 import { MainLayout } from "../../layouts";
 import { ChatContainer } from "../../components/organisms/chat";
@@ -91,10 +91,10 @@ const MessagesPage: NextPage = () => {
 
 export default MessagesPage;
 
-export async function getStaticProps({ locale }: GetStaticPropsContext) {
+export async function getServerSideProps({ locale }: GetServerSidePropsContext) {
   return {
     props: {
-      messages: (await import(`../../lang/${locale}.json`)).default,
+      messages: (await import(`../../lang/${locale || "es"}.json`)).default,
     },
   };
 }
