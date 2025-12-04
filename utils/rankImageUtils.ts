@@ -18,15 +18,15 @@ interface RankImageConfig {
  */
 const getRankImageFromCDN = (config: RankImageConfig): string => {
   const { gameId, gameName, rankId, rankName } = config;
-  
+
   // Option A: Use gameId and rankId
   if (rankId) {
     return `/images/ranks/${gameId}/${rankId}.png`;
   }
-  
+
   // Option B: Use gameName and rankName (normalized)
-  const normalizedGameName = gameName.toLowerCase().replace(/\s+/g, '-');
-  const normalizedRankName = rankName.toLowerCase().replace(/\s+/g, '-');
+  const normalizedGameName = gameName.toLowerCase().replace(/\s+/g, "-");
+  const normalizedRankName = rankName.toLowerCase().replace(/\s+/g, "-");
   return `/images/ranks/${normalizedGameName}/${normalizedRankName}.png`;
 };
 
@@ -36,13 +36,14 @@ const getRankImageFromCDN = (config: RankImageConfig): string => {
  */
 const getRankImageFromExternalCDN = (config: RankImageConfig): string => {
   const { gameId, rankId, rankName } = config;
-  const CDN_BASE_URL = process.env.NEXT_PUBLIC_RANK_IMAGES_CDN || 'https://your-cdn.com';
-  
+  const CDN_BASE_URL =
+    process.env.NEXT_PUBLIC_RANK_IMAGES_CDN || "https://your-cdn.com";
+
   if (rankId) {
     return `${CDN_BASE_URL}/ranks/${gameId}/${rankId}.png`;
   }
-  
-  const normalizedRankName = rankName.toLowerCase().replace(/\s+/g, '-');
+
+  const normalizedRankName = rankName.toLowerCase().replace(/\s+/g, "-");
   return `${CDN_BASE_URL}/ranks/${gameId}/${normalizedRankName}.png`;
 };
 
@@ -52,23 +53,25 @@ const getRankImageFromExternalCDN = (config: RankImageConfig): string => {
  */
 const getRankImageFromLocalMap = (config: RankImageConfig): string => {
   const { gameName, rankName, level } = config;
-  
+
   // Normalize rank name (trim, handle case variations)
   const normalizedRankName = rankName?.trim() || "";
-  
+
   // Valorant uses format: {RankName}_{Level}_Rank.png
   // Example: Gold_1_Rank.png, Gold_2_Rank.png, Gold_3_Rank.png
   // Radiant doesn't have levels, so it's just Radiant_Rank.png
   const normalizedGameName = gameName?.trim().toLowerCase() || "";
   if (normalizedGameName === "valorant") {
     // Capitalize first letter, lowercase rest
-    const rankNameFormatted = normalizedRankName.charAt(0).toUpperCase() + normalizedRankName.slice(1).toLowerCase();
-    
+    const rankNameFormatted =
+      normalizedRankName.charAt(0).toUpperCase() +
+      normalizedRankName.slice(1).toLowerCase();
+
     // Radiant doesn't have levels
     if (rankNameFormatted.toLowerCase() === "radiant") {
       return "/images/ranks/valorant/Radiant_Rank.png";
     }
-    
+
     // Other ranks have levels 1, 2, 3
     // Use level from config, default to 1 if not provided
     // API level might be 0-based or different, so we convert it
@@ -81,17 +84,18 @@ const getRankImageFromLocalMap = (config: RankImageConfig): string => {
         rankLevel = Math.max(1, Math.min(3, level));
       }
     }
-    
+
     return `/images/ranks/valorant/${rankNameFormatted}_${rankLevel}_Rank.png`;
   }
-  
-  // Counter-Strike 2 uses format: {rank-name}-{level}.png or {rank-name}.png
-  // Example: silver-1.png, gold-nova-1.png, global-elite.png
-  if (normalizedGameName === "counter-strike 2" || normalizedGameName === "counter-strike-2") {
-    // Convert rank name to lowercase and replace spaces with hyphens
-    let rankFileName = normalizedRankName.toLowerCase().replace(/\s+/g, '-');
-    
-    // Handle specific rank name mappings
+
+  if (
+    normalizedGameName.includes("counter-strike") ||
+    normalizedGameName.includes("counter strike") ||
+    normalizedGameName === "cs2" ||
+    normalizedGameName === "cs 2"
+  ) {
+    let rankFileName = normalizedRankName.toLowerCase().replace(/\s+/g, "-");
+
     const cs2RankMap: Record<string, string> = {
       "silver i": "silver-1",
       "silver ii": "silver-2",
@@ -110,31 +114,84 @@ const getRankImageFromLocalMap = (config: RankImageConfig): string => {
       "legendary eagle": "legendary-eagle",
       "legendary eagle master": "legendary-eagle-master",
       "supreme master first class": "supreme-master-first-class",
+      supreme: "supreme-master-first-class",
       "global elite": "global-elite",
+      global: "global-elite",
     };
-    
-    const mappedRank = cs2RankMap[rankFileName] || rankFileName;
-    return `/images/ranks/counter-strike-2/${mappedRank}.png`;
+
+    if (cs2RankMap[rankFileName]) {
+      return `/images/ranks/counter-strike-2/${cs2RankMap[rankFileName]}.png`;
+    }
+
+    const rankFileNameLower = rankFileName.toLowerCase();
+    for (const [key, value] of Object.entries(cs2RankMap)) {
+      const keyLower = key.toLowerCase();
+      if (
+        rankFileNameLower.includes(keyLower) ||
+        keyLower.includes(rankFileNameLower)
+      ) {
+        return `/images/ranks/counter-strike-2/${value}.png`;
+      }
+    }
+
+    if (rankFileNameLower.includes("supreme")) {
+      return `/images/ranks/counter-strike-2/supreme-master-first-class.png`;
+    }
+    if (
+      rankFileNameLower.includes("legendary") &&
+      rankFileNameLower.includes("eagle")
+    ) {
+      if (rankFileNameLower.includes("master")) {
+        return `/images/ranks/counter-strike-2/legendary-eagle-master.png`;
+      }
+      return `/images/ranks/counter-strike-2/legendary-eagle.png`;
+    }
+    if (
+      rankFileNameLower.includes("global") ||
+      rankFileNameLower.includes("elite")
+    ) {
+      return `/images/ranks/counter-strike-2/global-elite.png`;
+    }
+
+    if (level !== undefined && level !== null && level > 0) {
+      const baseRankNames: Record<string, string> = {
+        silver: "silver",
+        "gold-nova": "gold-nova",
+        "master-guardian": "master-guardian",
+      };
+
+      for (const [baseName, mappedBase] of Object.entries(baseRankNames)) {
+        if (rankFileName.startsWith(baseName) && !rankFileName.match(/-\d+$/)) {
+          return `/images/ranks/counter-strike-2/${mappedBase}-${level}.png`;
+        }
+      }
+
+      if (!rankFileName.match(/-\d+$/)) {
+        return `/images/ranks/counter-strike-2/${rankFileName}-${level}.png`;
+      }
+    }
+
+    return `/images/ranks/counter-strike-2/${rankFileName}.png`;
   }
-  
+
   // Dota 2 uses format: SeasonalRank{rank}-{level}.webp
   // Example: SeasonalRank1-1.webp, SeasonalRank7-5.webp, SeasonalRankTop1.webp
   // Mapping: Herald=1, Guardian=2, Crusader=3, Archon=4, Legend=5, Ancient=6, Divine=7, Immortal=Top
   if (normalizedGameName === "dota 2" || normalizedGameName === "dota-2") {
     const dota2RankMap: Record<string, string> = {
-      "herald": "SeasonalRank1",
-      "guardian": "SeasonalRank2",
-      "crusader": "SeasonalRank3",
-      "archon": "SeasonalRank4",
-      "legend": "SeasonalRank5",
-      "ancient": "SeasonalRank6",
-      "divine": "SeasonalRank7",
-      "immortal": "SeasonalRankTop",
+      herald: "SeasonalRank1",
+      guardian: "SeasonalRank2",
+      crusader: "SeasonalRank3",
+      archon: "SeasonalRank4",
+      legend: "SeasonalRank5",
+      ancient: "SeasonalRank6",
+      divine: "SeasonalRank7",
+      immortal: "SeasonalRankTop",
     };
-    
+
     const rankKey = normalizedRankName.toLowerCase();
     const rankPrefix = dota2RankMap[rankKey];
-    
+
     if (rankPrefix) {
       // Use level from config, default to 1 if not provided
       // For Immortal (Top), use level directly (1, 2, 4)
@@ -150,43 +207,46 @@ const getRankImageFromLocalMap = (config: RankImageConfig): string => {
         return `/images/ranks/dota-2/${rankPrefix}${rankLevel}.webp`;
       } else {
         // Regular ranks: use level 1-5, clamp to valid range
-        rankLevel = level !== undefined && level !== null ? Math.max(1, Math.min(5, level)) : 1;
+        rankLevel =
+          level !== undefined && level !== null
+            ? Math.max(1, Math.min(5, level))
+            : 1;
         return `/images/ranks/dota-2/${rankPrefix}-${rankLevel}.webp`;
       }
     }
-    
+
     // Fallback for Dota 2
     return `/images/ranks/dota-2/SeasonalRank1-1.webp`;
   }
-  
+
   // Map of gameName -> rankName -> image path (for other games)
   const rankImageMap: Record<string, Record<string, string>> = {
     "League of Legends": {
-      "Iron": "/images/ranks/league-of-legends/iron.png",
-      "Bronze": "/images/ranks/league-of-legends/bronze.png",
-      "Silver": "/images/ranks/league-of-legends/silver.png",
-      "Gold": "/images/ranks/league-of-legends/gold.png",
-      "Platinum": "/images/ranks/league-of-legends/platinum.png",
-      "Emerald": "/images/ranks/league-of-legends/emerald.png",
-      "Diamond": "/images/ranks/league-of-legends/diamond.png",
-      "Master": "/images/ranks/league-of-legends/master.png",
-      "Grandmaster": "/images/ranks/league-of-legends/grandmaster.png",
-      "Challenger": "/images/ranks/league-of-legends/challenger.png",
+      Iron: "/images/ranks/league-of-legends/iron.png",
+      Bronze: "/images/ranks/league-of-legends/bronze.png",
+      Silver: "/images/ranks/league-of-legends/silver.png",
+      Gold: "/images/ranks/league-of-legends/gold.png",
+      Platinum: "/images/ranks/league-of-legends/platinum.png",
+      Emerald: "/images/ranks/league-of-legends/emerald.png",
+      Diamond: "/images/ranks/league-of-legends/diamond.png",
+      Master: "/images/ranks/league-of-legends/master.png",
+      Grandmaster: "/images/ranks/league-of-legends/grandmaster.png",
+      Challenger: "/images/ranks/league-of-legends/challenger.png",
       // Case variations
-      "iron": "/images/ranks/league-of-legends/iron.png",
-      "bronze": "/images/ranks/league-of-legends/bronze.png",
-      "silver": "/images/ranks/league-of-legends/silver.png",
-      "gold": "/images/ranks/league-of-legends/gold.png",
-      "platinum": "/images/ranks/league-of-legends/platinum.png",
-      "emerald": "/images/ranks/league-of-legends/emerald.png",
-      "diamond": "/images/ranks/league-of-legends/diamond.png",
-      "master": "/images/ranks/league-of-legends/master.png",
-      "grandmaster": "/images/ranks/league-of-legends/grandmaster.png",
-      "challenger": "/images/ranks/league-of-legends/challenger.png",
+      iron: "/images/ranks/league-of-legends/iron.png",
+      bronze: "/images/ranks/league-of-legends/bronze.png",
+      silver: "/images/ranks/league-of-legends/silver.png",
+      gold: "/images/ranks/league-of-legends/gold.png",
+      platinum: "/images/ranks/league-of-legends/platinum.png",
+      emerald: "/images/ranks/league-of-legends/emerald.png",
+      diamond: "/images/ranks/league-of-legends/diamond.png",
+      master: "/images/ranks/league-of-legends/master.png",
+      grandmaster: "/images/ranks/league-of-legends/grandmaster.png",
+      challenger: "/images/ranks/league-of-legends/challenger.png",
     },
     // Add more games as needed
   };
-  
+
   const gameRanks = rankImageMap[gameName];
   if (gameRanks) {
     // Try exact match first
@@ -196,16 +256,18 @@ const getRankImageFromLocalMap = (config: RankImageConfig): string => {
     // Try case-insensitive match
     const lowerRankName = normalizedRankName.toLowerCase();
     const matchingKey = Object.keys(gameRanks).find(
-      key => key.toLowerCase() === lowerRankName
+      (key) => key.toLowerCase() === lowerRankName
     );
     if (matchingKey && gameRanks[matchingKey]) {
       return gameRanks[matchingKey];
     }
   }
-  
+
   // Fallback: try CDN structure (reuse normalizedGameName from above)
-  const normalizedGameNameForCDN = normalizedGameName.replace(/\s+/g, '-');
-  const normalizedRankNameForCDN = normalizedRankName.toLowerCase().replace(/\s+/g, '-');
+  const normalizedGameNameForCDN = normalizedGameName.replace(/\s+/g, "-");
+  const normalizedRankNameForCDN = normalizedRankName
+    .toLowerCase()
+    .replace(/\s+/g, "-");
   return `/images/ranks/${normalizedGameNameForCDN}/${normalizedRankNameForCDN}.png`;
 };
 
@@ -216,14 +278,14 @@ const getRankImageFromLocalMap = (config: RankImageConfig): string => {
  * Default: 'local-map' (easiest to maintain with local images)
  */
 export const getRankImage = (config: RankImageConfig): string => {
-  const strategy = process.env.NEXT_PUBLIC_RANK_IMAGE_STRATEGY || 'local-map';
-  
+  const strategy = process.env.NEXT_PUBLIC_RANK_IMAGE_STRATEGY || "local-map";
+
   switch (strategy) {
-    case 'external-cdn':
+    case "external-cdn":
       return getRankImageFromExternalCDN(config);
-    case 'cdn':
+    case "cdn":
       return getRankImageFromCDN(config);
-    case 'local-map':
+    case "local-map":
     default:
       // Try local map first, fallback to CDN if not found
       const localMapResult = getRankImageFromLocalMap(config);
@@ -246,7 +308,7 @@ export const getRankImageFromPlayer = (
   if (!gameRank) {
     return "/images/image-placeholder.png";
   }
-  
+
   return getRankImage({
     gameId,
     gameName,
@@ -271,4 +333,3 @@ export const getRankImageFromRank = (
     rankName: rank.rankName,
   });
 };
-

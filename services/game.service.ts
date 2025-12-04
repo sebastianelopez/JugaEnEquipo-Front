@@ -5,6 +5,12 @@ import type { ServiceResult } from "./types";
 
 interface GamesResponse {
   data: Game[];
+  metadata: {
+    total: number;
+    count: number;
+    limit: number;
+    offset: number;
+  };
 }
 
 interface GameResponse {

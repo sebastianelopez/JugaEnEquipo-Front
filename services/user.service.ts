@@ -250,10 +250,38 @@ export const userService = {
     }
   },
 
-  searchUsers: async (query: string) => {
+  searchUsers: async (params?: {
+    username?: string;
+    gameId?: string;
+    gameRankId?: string;
+    gameRoleId?: string;
+    firstname?: string;
+    lastname?: string;
+  }) => {
     const token = await getToken();
+    const queryParams: any = {};
+    
+    if (params?.username) {
+      queryParams.username = params.username;
+    }
+    if (params?.gameId) {
+      queryParams.gameId = params.gameId;
+    }
+    if (params?.gameRankId) {
+      queryParams.gameRankId = params.gameRankId;
+    }
+    if (params?.gameRoleId) {
+      queryParams.gameRoleId = params.gameRoleId;
+    }
+    if (params?.firstname) {
+      queryParams.firstname = params.firstname;
+    }
+    if (params?.lastname) {
+      queryParams.lastname = params.lastname;
+    }
+    
     return (
-      await api.get<SearchUsersResponse>(`/users`, { username: query }, token)
+      await api.get<SearchUsersResponse>(`/users`, queryParams, token)
     ).data;
   },
 

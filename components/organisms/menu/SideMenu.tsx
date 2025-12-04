@@ -382,6 +382,18 @@ export const SideMenu = () => {
               </ListItemIcon>
               <ListItemText primary={t("settings")} />
             </ListItem>
+            <ListItem
+              onClick={() => navigateTo(`/search`)}
+              sx={{
+                cursor: "pointer",
+                "&:hover": { backgroundColor: "action.hover" },
+              }}
+            >
+              <ListItemIcon>
+                <SearchOutlined />
+              </ListItemIcon>
+              <ListItemText primary={tNavbar("advancedSearch")} />
+            </ListItem>
           </>
         </List>
 

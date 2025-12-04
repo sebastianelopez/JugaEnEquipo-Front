@@ -663,7 +663,8 @@
         "loadMoreGroups": "Carregar mais grupos",
         "noUsersFound": "Nenhum usuário encontrado para sua pesquisa",
         "noGroupsFound": "Nenhum grupo encontrado para sua pesquisa",
-        "clearSearch": "Limpar pesquisa"
+        "clearSearch": "Limpar pesquisa",
+        "enterSearchTerm": "Digite um termo de pesquisa para começar"
     },
     "Admin": {
         "navbar": {
