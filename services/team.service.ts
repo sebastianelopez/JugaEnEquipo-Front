@@ -70,14 +70,35 @@ export const teamService = {
    * Without ?mine=true returns all teams, with ?mine=true returns only my teams
    */
   search: async (params?: {
+    gameId?: string;
     mine?: boolean;
-    [key: string]: any;
+    tournamentId?: string;
+    userId?: string;
+    leaderId?: string;
+    creatorId?: string;
   }): Promise<ServiceResult<Team[]>> => {
     const token = await getToken();
     const queryParams: any = {};
+    
+    if (params?.gameId) {
+      queryParams.gameId = params.gameId;
+    }
     if (params?.mine !== undefined) {
       queryParams.mine = params.mine.toString();
     }
+    if (params?.tournamentId) {
+      queryParams.tournamentId = params.tournamentId;
+    }
+    if (params?.userId) {
+      queryParams.userId = params.userId;
+    }
+    if (params?.leaderId) {
+      queryParams.leaderId = params.leaderId;
+    }
+    if (params?.creatorId) {
+      queryParams.creatorId = params.creatorId;
+    }
+    
     return safeCall<Team[]>(() => api.get("/teams", queryParams, token));
   },
 
