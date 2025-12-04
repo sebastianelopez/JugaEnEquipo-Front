@@ -13,4 +13,5 @@ export type {
   ParticipationMode,
   CreateTournamentPayload,
   JoinTournamentPayload,
+  CreateBackofficeTournamentPayload,
 } from "./tournament";

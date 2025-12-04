@@ -10,7 +10,7 @@ import {
   Avatar,
 } from "@mui/material";
 import { PhotoCamera } from "@mui/icons-material";
-import { MyTextInput, MySelect } from "../../atoms";
+import { MyTextInput, MySelect, UserSearchSelect } from "../../atoms";
 import { MyDateTimePicker } from "../../atoms/MyDateTimePicker";
 import { gameService } from "../../../services/game.service";
 import { rankService } from "../../../services/rank.service";
@@ -25,11 +25,13 @@ interface TournamentFormProps {
   initialValues?: Partial<CreateTournamentPayload>;
   onSubmit: (values: CreateTournamentPayload) => Promise<void> | void;
   submitting?: boolean;
+  isAdminForm?: boolean; // If true, show creatorId and responsibleId fields
 }
 
 type FormValues = Omit<CreateTournamentPayload, "startAt" | "endAt"> & {
   startAt: string;
   endAt: string;
+  creatorId?: string;
 };
 
 const GameIdWatcher: FC<{
@@ -78,6 +80,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
   initialValues,
   onSubmit,
   submitting,
+  isAdminForm = false,
 }) => {
   const t = useTranslations("Tournaments");
   const [games, setGames] = useState<Game[]>([]);
@@ -165,8 +168,14 @@ export const TournamentForm: FC<TournamentFormProps> = ({
           }),
         minGameRankId: Yup.string().nullable(),
         maxGameRankId: Yup.string().nullable(),
+        creatorId: isAdminForm
+          ? Yup.string().required("El creador es requerido")
+          : Yup.string().nullable(),
+        responsibleId: isAdminForm
+          ? Yup.string().required("El responsable es requerido")
+          : Yup.string().nullable(),
       }),
-    [t, minStartISO]
+    [t, minStartISO, isAdminForm]
   );
 
   const defaultValues: FormValues = useMemo(() => {
@@ -194,6 +203,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
       image: initialValues?.image || null,
       prize: initialValues?.prize || null,
       responsibleId: initialValues?.responsibleId || null,
+      creatorId: initialValues?.creatorId || null,
       minGameRankId: initialValues?.minGameRankId || "",
       maxGameRankId: initialValues?.maxGameRankId || "",
     } as FormValues;
@@ -211,6 +221,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
     const payload: CreateTournamentPayload = {
       gameId: values.gameId,
       responsibleId: values.responsibleId || null,
+      creatorId: values.creatorId || null,
       name: values.name,
       description: values.description,
       maxTeams: values.maxTeams,
@@ -223,7 +234,6 @@ export const TournamentForm: FC<TournamentFormProps> = ({
       minGameRankId: toNullIfEmpty(values.minGameRankId),
       maxGameRankId: toNullIfEmpty(values.maxGameRankId),
     };
-    console.log(payload);
     await onSubmit(payload);
     helpers.setSubmitting(false);
   };
@@ -299,6 +309,23 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                   </MenuItem>
                 ))}
               </MySelect>
+
+              {isAdminForm && (
+                <>
+                  <UserSearchSelect
+                    name="creatorId"
+                    label="Creador del torneo"
+                    placeholder="Buscar usuario creador..."
+                    required
+                  />
+                  <UserSearchSelect
+                    name="responsibleId"
+                    label="Responsable del torneo"
+                    placeholder="Buscar usuario responsable..."
+                    required
+                  />
+                </>
+              )}
 
               <Box>
                 <Typography variant="body2" sx={{ mb: 1 }}>

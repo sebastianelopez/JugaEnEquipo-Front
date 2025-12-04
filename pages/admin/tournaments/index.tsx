@@ -55,6 +55,8 @@ import type { CreateTournamentPayload } from "../../../interfaces";
 import { v4 as uuidv4 } from "uuid";
 import { useTranslations } from "next-intl";
 import type { GetStaticPropsContext } from "next";
+import { decodeUserIdByToken } from "../../../utils/decodeIdByToken";
+import { getToken } from "../../../services/auth.service";
 
 const colors = {
   primary: "#6C5CE7",
@@ -150,27 +152,84 @@ export default function TournamentsModeration() {
     }
   };
 
+  // Helper function to convert ISO date to "YYYY-MM-DD HH:mm:ss" format
+  // Uses UTC to match backend expectations
+  const formatDateForBackend = (isoDate: string): string => {
+    const date = new Date(isoDate);
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
+
   const handleCreateTournament = async (values: CreateTournamentPayload) => {
     setCreatingTournament(true);
     setError(null);
     try {
       const tournamentId = uuidv4();
-      // Force isOfficial to true for admin-created tournaments
-      const result = await tournamentService.create(tournamentId, {
-        ...values,
-        isOfficial: true,
-      });
+      const token = getToken();
+      
+      if (!token) {
+        setError("No se encontró el token de autenticación");
+        setCreatingTournament(false);
+        return;
+      }
+
+      // Get creatorId and responsibleId from form values (required for admin)
+      if (!values.creatorId || !values.responsibleId) {
+        setError("El creador y el responsable son requeridos");
+        setCreatingTournament(false);
+        return;
+      }
+
+      const creatorId = values.creatorId;
+      const responsibleId = values.responsibleId;
+
+      // Format dates for backend
+      const formattedStartAt = formatDateForBackend(values.startAt);
+      const formattedEndAt = formatDateForBackend(values.endAt);
+
+      // Prepare payload for backoffice endpoint
+      const backofficePayload = {
+        name: values.name,
+        description: values.description,
+        gameId: values.gameId,
+        creatorId: creatorId,
+        responsibleId: responsibleId,
+        rules: null, // Can be added later if needed
+        maxTeams: values.maxTeams,
+        prize: values.prize,
+        region: values.region,
+        startAt: formattedStartAt,
+        endAt: formattedEndAt,
+      };
+
+      // Create tournament using backoffice endpoint
+      const result = await backofficeService.createOfficialTournament(
+        tournamentId,
+        backofficePayload
+      );
 
       if (result.ok) {
         await loadTournaments();
         setCreateDialogOpen(false);
       } else {
-        setError(
-          result.ok === false ? result.errorMessage : t("errorCreating")
-        );
+        // Check if it's a 404 error (endpoint not found)
+        const is404 = (result.error as any)?.response?.status === 404;
+        const errorMessage = is404
+          ? "El endpoint para crear torneos oficiales no está disponible en el backend. Por favor, contacte al administrador del sistema."
+          : result.errorMessage || t("errorCreating");
+        setError(errorMessage);
       }
     } catch (err: any) {
-      setError(err?.message || t("errorCreating"));
+      const is404 = err?.response?.status === 404;
+      const errorMessage = is404
+        ? "El endpoint para crear torneos oficiales no está disponible en el backend. Por favor, contacte al administrador del sistema."
+        : err?.message || t("errorCreating");
+      setError(errorMessage);
     } finally {
       setCreatingTournament(false);
     }
@@ -708,6 +767,7 @@ export default function TournamentsModeration() {
               }}
               onSubmit={handleCreateTournament}
               submitting={creatingTournament}
+              isAdminForm={true}
             />
           </DialogContent>
           <DialogActions sx={{ background: "#2D3436", p: 2 }}>
