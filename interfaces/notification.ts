@@ -4,6 +4,7 @@ export type NotificationType =
   | "post_commented"
   | "post_liked"
   | "post_shared"
+  | "post_moderated"
   | "team_request_received"
   | "tournament_request_received";
 

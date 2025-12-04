@@ -156,6 +156,8 @@
         "createPostErrorServerError": "Erro do servidor ao criar a publicação",
         "createPostErrorContentTooLarge": "O conteúdo é muito grande",
         "createPostErrorNetwork": "Erro de rede. Verifique sua conexão",
+        "postModeratedTitle": "Publicação moderada",
+        "postModeratedMessage": "Sua publicação foi moderada e não foi publicada devido a conteúdo inadequado. Por favor, revise nossas políticas da comunidade.",
         "deletePostTitle": "Excluir publicação?",
         "deletePostConfirmation": "Tem certeza de que deseja excluir esta publicação? Esta ação não pode ser desfeita.",
         "cancel": "Cancelar",

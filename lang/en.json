@@ -156,6 +156,8 @@
         "createPostErrorServerError": "Server error creating post",
         "createPostErrorContentTooLarge": "Content is too large",
         "createPostErrorNetwork": "Network error. Please check your connection",
+        "postModeratedTitle": "Post moderated",
+        "postModeratedMessage": "Your post has been moderated and was not published due to inappropriate content. Please review our community policies.",
         "deletePostTitle": "Delete post?",
         "deletePostConfirmation": "Are you sure you want to delete this post? This action cannot be undone.",
         "cancel": "Cancel",

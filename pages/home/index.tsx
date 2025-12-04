@@ -67,6 +67,26 @@ const HomePage = () => {
     }, 2000);
   }, []);
 
+  const removePost = useCallback((postId: string) => {
+    setPosts((prevPosts) => {
+      return prevPosts.filter((post) => post.id !== postId);
+    });
+  }, []);
+
+  // Listen for post_moderated events to remove optimistic posts
+  useEffect(() => {
+    const handlePostModerated = (event: CustomEvent<{ postId: string }>) => {
+      removePost(event.detail.postId);
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("postModerated", handlePostModerated as EventListener);
+      return () => {
+        window.removeEventListener("postModerated", handlePostModerated as EventListener);
+      };
+    }
+  }, [removePost]);
+
   const checkNewPosts = useCallback(async () => {
     try {
       const lastVisiblePost = posts.length > 0 ? posts[0] : null;

@@ -131,12 +131,14 @@ export const NotificationsButton = ({}: Props) => {
           horizontal: "right",
         }}
       >
-        {notifications.length === 0 ? (
+        {notifications.filter((n) => n.type !== "post_moderated").length === 0 ? (
           <MenuItem onClick={handleClose}>
             {t("Notifications.noNotifications")}
           </MenuItem>
         ) : (
-          notifications.map((notification) => {
+          notifications
+            .filter((n) => n.type !== "post_moderated")
+            .map((notification) => {
             const isRead =
               notification.read === undefined ? false : notification.read;
 
