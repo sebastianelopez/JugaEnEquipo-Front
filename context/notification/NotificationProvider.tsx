@@ -14,6 +14,7 @@ import { Notification } from "../../interfaces/notification";
 import { getToken } from "../../services/auth.service";
 import { UserContext } from "../user";
 import { decodeUserIdByToken } from "../../utils/decodeIdByToken";
+import { FeedbackContext } from "../feedback/FeedbackContext";
 
 export interface NotificationState {
   notifications: Notification[];
@@ -29,11 +30,13 @@ const NOTIFICATION_INITIAL_STATE: NotificationState = {
 
 export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
   const { user } = useContext(UserContext);
+  const feedbackContext = useContext(FeedbackContext);
   const [state, dispatch] = useReducer(
     notificationReducer,
     NOTIFICATION_INITIAL_STATE
   );
   const previousUserIdRef = useRef<string | undefined>(undefined);
+  const processedModerationNotificationsRef = useRef<Set<string>>(new Set());
 
   const unreadCount = state.notifications.filter(
     (n) => n.read === undefined || !n.read
@@ -83,7 +86,7 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
           (n) => n.type === "new_message"
         );
         const otherNotifications = allNotifications.filter(
-          (n) => n.type !== "new_message"
+          (n) => n.type !== "new_message" && n.type !== "post_moderated"
         );
 
         dispatch({
@@ -156,6 +159,44 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
                 ...JSON.parse(event.data),
                 read: false,
               };
+              
+              // Handle post_moderated notifications - show alert to user and remove optimistic post
+              if (notification.type === "post_moderated") {
+                // Only show once per notification ID to avoid duplicates
+                if (!processedModerationNotificationsRef.current.has(notification.id)) {
+                  processedModerationNotificationsRef.current.add(notification.id);
+                  
+                  // Show error dialog to inform user
+                  if (feedbackContext?.showError) {
+                    feedbackContext.showError({
+                      title: "Publicación moderada",
+                      message: notification.message || 
+                        "Tu publicación ha sido moderada y no se ha publicado debido a contenido inapropiado. Por favor, revisa nuestras políticas de comunidad.",
+                    });
+                  }
+                  
+                  // Emit custom event to remove optimistic post if postId is available
+                  if (notification.postId) {
+                    const removePostEvent = new CustomEvent("postModerated", {
+                      detail: { postId: notification.postId },
+                    });
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(removePostEvent);
+                    }
+                  }
+                  
+                  // Clean up old processed notifications (keep last 100)
+                  if (processedModerationNotificationsRef.current.size > 100) {
+                    const idsArray = Array.from(processedModerationNotificationsRef.current);
+                    processedModerationNotificationsRef.current = new Set(
+                      idsArray.slice(-100)
+                    );
+                  }
+                }
+                // Don't add post_moderated notifications to the list - return early
+                return;
+              }
+              
               if (notification.type === "new_message") {
                 dispatch({
                   type: "[Notification] - Add message notification",

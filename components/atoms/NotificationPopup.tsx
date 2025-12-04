@@ -60,8 +60,13 @@ export const NotificationPopup: React.FC = () => {
         previousNotificationsRef.current.map((n) => n.id)
       );
 
+      // Filter out new_message and post_moderated notifications - they should not show in popup
       const newNotification = notifications.find(
-        (n) => (n.read === undefined || !n.read) && !previousIds.has(n.id)
+        (n) => 
+          n.type !== "new_message" &&
+          n.type !== "post_moderated" &&
+          (n.read === undefined || !n.read) && 
+          !previousIds.has(n.id)
       );
 
       if (newNotification) {

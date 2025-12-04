@@ -91,7 +91,7 @@ export const SideMenu = () => {
 
   const searchUsers = async (term: string) => {
     try {
-      const response = await userService.searchUsers(term);
+      const response = await userService.searchUsers({ username: term });
       const users = response || [];
       const total = users.length;
       setHasSearched(true);
