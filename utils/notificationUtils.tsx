@@ -25,7 +25,7 @@ export const getNotificationTranslationKey = (
 /**
  * Renders a notification message with the username highlighted in bold
  * @param type - The notification type
- * @param username - The username to highlight in bold
+ * @param username - The username to highlight in bold (can be null or undefined)
  * @param customMessage - Optional custom message from backend (if provided, use it instead)
  * @param translationFn - Function to get translations (from useTranslations hook)
  * @param isRead - Whether the notification has been read
@@ -33,11 +33,14 @@ export const getNotificationTranslationKey = (
  */
 export const renderNotificationMessage = (
   type: NotificationType,
-  username: string,
+  username: string | null | undefined,
   customMessage: string | null,
   translationFn: (key: string, values?: Record<string, string>) => string,
   isRead: boolean
 ): React.ReactNode => {
+  // Handle null/undefined username
+  const safeUsername = username || "Someone";
+  
   // Get the message to display
   let messageTemplate: string;
   
@@ -48,14 +51,14 @@ export const renderNotificationMessage = (
     // Get the translation key for this notification type
     const translationKey = getNotificationTranslationKey(type);
     messageTemplate = translationFn(`Notifications.${translationKey}`, {
-      username,
+      username: safeUsername,
     });
   }
 
   // Split message to highlight ONLY username in bold, rest stays normal weight
   const parts: React.ReactNode[] = [];
   const regex = new RegExp(
-    `(${username.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+    `(${safeUsername.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
     "g"
   );
   let lastIndex = 0;
@@ -81,7 +84,7 @@ export const renderNotificationMessage = (
           fontWeight: "bold",
         }}
       >
-        {username}
+        {safeUsername}
       </Typography>
     );
 
