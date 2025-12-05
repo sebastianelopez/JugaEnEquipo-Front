@@ -132,7 +132,7 @@ export const ConversationsList = forwardRef<
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Buscar mensajes o contactos..."
+          placeholder={t("searchPlaceholder")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           margin="normal"
@@ -155,8 +155,8 @@ export const ConversationsList = forwardRef<
         {filteredConversations.length === 0 ? (
           <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
             {searchTerm.trim() !== ""
-              ? "No se encontraron conversaciones"
-              : "No tienes conversaciones aún"}
+              ? t("noConversationsFound")
+              : t("noConversationsYet")}
           </Typography>
         ) : (
           <List

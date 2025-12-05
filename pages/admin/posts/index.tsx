@@ -45,7 +45,7 @@ import { formatDate } from "../../../utils/formatDate";
 import {
   backofficeService,
   type Post,
-  type DisablePostPayload,
+  type DisableReason,
 } from "../../../services/backoffice.service";
 import { useTranslations } from "next-intl";
 import type { GetStaticPropsContext } from "next";
@@ -63,17 +63,16 @@ export default function PostsModeration() {
   const t = useTranslations("Admin.posts");
   const tCommon = useTranslations("Admin.common");
 
-  const disableReasons: { value: DisablePostPayload["reason"]; label: string }[] =
-    [
-      { value: "inappropriate_content", label: t("inappropriate_content") },
-      { value: "spam", label: t("spam") },
-      { value: "harassment", label: t("harassment") },
-      { value: "hate_speech", label: t("hate_speech") },
-      { value: "violence", label: t("violence") },
-      { value: "sexual_content", label: t("sexual_content") },
-      { value: "misinformation", label: t("misinformation") },
-      { value: "copyright_violation", label: t("copyright_violation") },
-    ];
+  const disableReasons: { value: DisableReason; label: string }[] = [
+    { value: "inappropriate_content", label: tCommon("inappropriate_content") },
+    { value: "spam", label: tCommon("spam") },
+    { value: "harassment", label: tCommon("harassment") },
+    { value: "hate_speech", label: tCommon("hate_speech") },
+    { value: "violence", label: tCommon("violence") },
+    { value: "sexual_content", label: tCommon("sexual_content") },
+    { value: "misinformation", label: tCommon("misinformation") },
+    { value: "copyright_violation", label: tCommon("copyright_violation") },
+  ];
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -88,9 +87,9 @@ export default function PostsModeration() {
   const [total, setTotal] = useState(0);
   const [disableDialogOpen, setDisableDialogOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [disableReason, setDisableReason] = useState<
-    DisablePostPayload["reason"]
-  >("inappropriate_content");
+  const [disableReason, setDisableReason] = useState<DisableReason>(
+    "inappropriate_content"
+  );
 
   useEffect(() => {
     loadPosts();
@@ -635,16 +634,14 @@ export default function PostsModeration() {
             </Box>
             <FormControl fullWidth>
               <InputLabel sx={{ color: "rgba(255,255,255,0.7)" }}>
-                {t("disableReason")}
+                {tCommon("disableReason")}
               </InputLabel>
               <Select
                 value={disableReason}
                 onChange={(e) =>
-                  setDisableReason(
-                    e.target.value as DisablePostPayload["reason"]
-                  )
+                  setDisableReason(e.target.value as DisableReason)
                 }
-                label={t("disableReason")}
+                label={tCommon("disableReason")}
                 sx={{
                   color: "#fff",
                   "& .MuiOutlinedInput-notchedOutline": {

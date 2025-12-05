@@ -47,6 +47,7 @@ import { AdminLayout } from "../../../layouts";
 import {
   backofficeService,
   type Tournament,
+  type DisableReason,
 } from "../../../services/backoffice.service";
 import { formatDate } from "../../../utils/formatDate";
 import { tournamentService } from "../../../services/tournament.service";
@@ -70,11 +71,24 @@ const colors = {
 export default function TournamentsModeration() {
   const t = useTranslations("Admin.tournaments");
   const tCommon = useTranslations("Admin.common");
+
+  const disableReasons: { value: DisableReason; label: string }[] = [
+    { value: "inappropriate_content", label: tCommon("inappropriate_content") },
+    { value: "spam", label: tCommon("spam") },
+    { value: "harassment", label: tCommon("harassment") },
+    { value: "hate_speech", label: tCommon("hate_speech") },
+    { value: "violence", label: tCommon("violence") },
+    { value: "sexual_content", label: tCommon("sexual_content") },
+    { value: "misinformation", label: tCommon("misinformation") },
+    { value: "copyright_violation", label: tCommon("copyright_violation") },
+  ];
+
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchName, setSearchName] = useState("");
-  const [searchResponsibleUsername, setSearchResponsibleUsername] = useState("");
+  const [searchResponsibleUsername, setSearchResponsibleUsername] =
+    useState("");
   const [searchResponsibleEmail, setSearchResponsibleEmail] = useState("");
   const [filterDisabled, setFilterDisabled] = useState<string>("all");
   const [page, setPage] = useState(0);
@@ -82,6 +96,12 @@ export default function TournamentsModeration() {
   const [total, setTotal] = useState(0);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [creatingTournament, setCreatingTournament] = useState(false);
+  const [disableDialogOpen, setDisableDialogOpen] = useState(false);
+  const [selectedTournament, setSelectedTournament] =
+    useState<Tournament | null>(null);
+  const [disableReason, setDisableReason] = useState<DisableReason>(
+    "inappropriate_content"
+  );
 
   useEffect(() => {
     loadTournaments();
@@ -118,11 +138,7 @@ export default function TournamentsModeration() {
         setTournaments(result.data.data || []);
         setTotal(result.data.metadata?.total || result.data.data?.length || 0);
       } else {
-        setError(
-          result.ok === false
-            ? result.errorMessage
-            : t("errorLoading")
-        );
+        setError(result.ok === false ? result.errorMessage : t("errorLoading"));
       }
     } catch (err: any) {
       setError(err?.message || t("errorLoading"));
@@ -131,25 +147,51 @@ export default function TournamentsModeration() {
     }
   };
 
-  const handleToggleTournament = async (
-    tournamentId: string,
-    isDisabled: boolean
-  ) => {
+  const handleEnableTournament = async (tournamentId: string) => {
     try {
-      const result = isDisabled
-        ? await backofficeService.enableTournament(tournamentId)
-        : await backofficeService.disableTournament(tournamentId);
-
+      const result = await backofficeService.enableTournament(tournamentId);
       if (result.ok) {
         await loadTournaments();
       } else {
         setError(
-          result.ok === false ? result.errorMessage : tCommon("error")
+          result.ok === false
+            ? result.errorMessage
+            : "Error al habilitar torneo"
         );
       }
     } catch (err: any) {
-      setError(err?.message || tCommon("error"));
+      setError(err?.message || "Error al habilitar torneo");
     }
+  };
+
+  const handleDisableTournament = async () => {
+    if (!selectedTournament) return;
+
+    try {
+      const result = await backofficeService.disableTournament(
+        selectedTournament.id,
+        disableReason
+      );
+      if (result.ok) {
+        await loadTournaments();
+        setDisableDialogOpen(false);
+        setSelectedTournament(null);
+      } else {
+        setError(
+          result.ok === false
+            ? result.errorMessage
+            : "Error al deshabilitar torneo"
+        );
+      }
+    } catch (err: any) {
+      setError(err?.message || "Error al deshabilitar torneo");
+    }
+  };
+
+  const openDisableDialog = (tournament: Tournament) => {
+    setSelectedTournament(tournament);
+    setDisableReason("inappropriate_content");
+    setDisableDialogOpen(true);
   };
 
   // Helper function to convert ISO date to "YYYY-MM-DD HH:mm:ss" format
@@ -171,7 +213,7 @@ export default function TournamentsModeration() {
     try {
       const tournamentId = uuidv4();
       const token = getToken();
-      
+
       if (!token) {
         setError("No se encontró el token de autenticación");
         setCreatingTournament(false);
@@ -401,10 +443,22 @@ export default function TournamentsModeration() {
                       return (
                         <TableRow
                           key={tournament.id}
-                          sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                          sx={{
+                            "&:last-child td, &:last-child th": { border: 0 },
+                          }}
                         >
-                          <TableCell component="th" scope="row" sx={{ color: "white" }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <TableCell
+                            component="th"
+                            scope="row"
+                            sx={{ color: "white" }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
                               {imageUrl ? (
                                 <Avatar
                                   variant="rounded"
@@ -416,13 +470,23 @@ export default function TournamentsModeration() {
                               ) : (
                                 <Avatar
                                   variant="rounded"
-                                  sx={{ bgcolor: "#6C5CE7", width: 48, height: 48 }}
+                                  sx={{
+                                    bgcolor: "#6C5CE7",
+                                    width: 48,
+                                    height: 48,
+                                  }}
                                 >
                                   {tournament.name?.[0]?.toUpperCase() || "T"}
                                 </Avatar>
                               )}
                               <Box sx={{ flex: 1, minWidth: 0 }}>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                  }}
+                                >
                                   <Typography variant="body2" fontWeight="bold">
                                     {tournament.name}
                                   </Typography>
@@ -566,7 +630,8 @@ export default function TournamentsModeration() {
                                   }}
                                 />
                                 <Typography variant="body2">
-                                  {tournament.registeredTeams}/{tournament.maxTeams} {t("teams")}
+                                  {tournament.registeredTeams}/
+                                  {tournament.maxTeams} {t("teams")}
                                 </Typography>
                               </Box>
                               <Chip
@@ -622,7 +687,10 @@ export default function TournamentsModeration() {
                                   }}
                                 />
                                 <Typography variant="caption">
-                                  {t("startDate")}: {formatDate(tournament.startAt, { includeTime: true })}
+                                  {t("startDate")}:{" "}
+                                  {formatDate(tournament.startAt, {
+                                    includeTime: true,
+                                  })}
                                 </Typography>
                               </Box>
                               <Box
@@ -639,7 +707,10 @@ export default function TournamentsModeration() {
                                   }}
                                 />
                                 <Typography variant="caption">
-                                  {t("endDate")}: {formatDate(tournament.endAt, { includeTime: true })}
+                                  {t("endDate")}:{" "}
+                                  {formatDate(tournament.endAt, {
+                                    includeTime: true,
+                                  })}
                                 </Typography>
                               </Box>
                               {tournament.disabledAt && (
@@ -661,7 +732,10 @@ export default function TournamentsModeration() {
                                     variant="caption"
                                     sx={{ color: colors.error }}
                                   >
-                                    {t("disabledAt")}: {formatDate(tournament.disabledAt, { includeTime: true })}
+                                    {t("disabledAt")}:{" "}
+                                    {formatDate(tournament.disabledAt, {
+                                      includeTime: true,
+                                    })}
                                   </Typography>
                                 </Box>
                               )}
@@ -677,7 +751,10 @@ export default function TournamentsModeration() {
                                 >
                                   <Typography
                                     variant="caption"
-                                    sx={{ color: colors.error, fontSize: "0.65rem" }}
+                                    sx={{
+                                      color: colors.error,
+                                      fontSize: "0.65rem",
+                                    }}
                                   >
                                     {tournament.moderationReason}
                                   </Typography>
@@ -687,13 +764,19 @@ export default function TournamentsModeration() {
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label={tournament.disabled ? t("disabled") : tCommon("active")}
+                              label={
+                                tournament.disabled
+                                  ? t("disabled")
+                                  : tCommon("active")
+                              }
                               size="small"
                               sx={{
                                 bgcolor: tournament.disabled
                                   ? "rgba(225, 112, 85, 0.2)"
                                   : "rgba(0, 184, 148, 0.2)",
-                                color: tournament.disabled ? colors.error : colors.success,
+                                color: tournament.disabled
+                                  ? colors.error
+                                  : colors.success,
                                 fontWeight: "bold",
                               }}
                             />
@@ -703,9 +786,7 @@ export default function TournamentsModeration() {
                             {tournament.disabled ? (
                               <IconButton
                                 size="small"
-                                onClick={() =>
-                                  handleToggleTournament(tournament.id, true)
-                                }
+                                onClick={() => handleEnableTournament(tournament.id)}
                                 sx={{ color: colors.success }}
                               >
                                 <CheckIcon />
@@ -713,17 +794,15 @@ export default function TournamentsModeration() {
                             ) : (
                               <IconButton
                                 size="small"
-                                onClick={() =>
-                                  handleToggleTournament(tournament.id, false)
-                                }
+                                onClick={() => openDisableDialog(tournament)}
                                 sx={{ color: colors.error }}
                               >
                                 <BlockIcon />
                               </IconButton>
                             )}
                           </Box>
-                        </TableCell>
-                      </TableRow>
+                          </TableCell>
+                        </TableRow>
                       );
                     })
                   )}
@@ -777,6 +856,88 @@ export default function TournamentsModeration() {
               disabled={creatingTournament}
             >
               {tCommon("cancel")}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={disableDialogOpen}
+          onClose={() => {
+            setDisableDialogOpen(false);
+            setSelectedTournament(null);
+          }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle sx={{ background: "#2D3436", color: "#fff" }}>
+            {t("disable")}
+          </DialogTitle>
+          <DialogContent sx={{ background: "#2D3436", pt: 3 }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography sx={{ color: "rgba(255,255,255,0.7)", mb: 1 }}>
+                {t("tournament")}: {selectedTournament?.name}
+              </Typography>
+              {selectedTournament?.description && (
+                <Typography
+                  sx={{
+                    color: "rgba(255,255,255,0.8)",
+                    p: 2,
+                    bgcolor: "rgba(255,255,255,0.05)",
+                    borderRadius: 1,
+                  }}
+                >
+                  {selectedTournament.description}
+                </Typography>
+              )}
+            </Box>
+            <FormControl fullWidth>
+              <InputLabel sx={{ color: "rgba(255,255,255,0.7)" }}>
+                {tCommon("disableReason")}
+              </InputLabel>
+              <Select
+                value={disableReason}
+                onChange={(e) =>
+                  setDisableReason(e.target.value as DisableReason)
+                }
+                label={tCommon("disableReason")}
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.2)",
+                  },
+                  "& .MuiSvgIcon-root": { color: "rgba(255,255,255,0.7)" },
+                }}
+              >
+                {disableReasons.map((reason) => (
+                  <MenuItem key={reason.value} value={reason.value}>
+                    {reason.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions sx={{ background: "#2D3436", p: 2 }}>
+            <Button
+              onClick={() => {
+                setDisableDialogOpen(false);
+                setSelectedTournament(null);
+              }}
+              sx={{ color: "rgba(255,255,255,0.7)" }}
+            >
+              {tCommon("cancel")}
+            </Button>
+            <Button
+              onClick={handleDisableTournament}
+              variant="contained"
+              sx={{
+                background: "linear-gradient(135deg, #6C5CE7 0%, #00CEC9 100%)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #5B4BCF 0%, #00B8B1 100%)",
+                },
+              }}
+            >
+              {t("disable")}
             </Button>
           </DialogActions>
         </Dialog>

@@ -1,4 +1,4 @@
-import { User } from "../interfaces";
+import { User, UserSocialNetwork } from "../interfaces";
 import { api } from "../lib/api";
 import { getToken } from "../services/auth.service";
 import { v4 as uuidv4 } from "uuid";
@@ -260,7 +260,7 @@ export const userService = {
   }) => {
     const token = await getToken();
     const queryParams: any = {};
-    
+
     if (params?.username) {
       queryParams.username = params.username;
     }
@@ -279,10 +279,9 @@ export const userService = {
     if (params?.lastname) {
       queryParams.lastname = params.lastname;
     }
-    
-    return (
-      await api.get<SearchUsersResponse>(`/users`, queryParams, token)
-    ).data;
+
+    return (await api.get<SearchUsersResponse>(`/users`, queryParams, token))
+      .data;
   },
 
   searchFollowingUsers: async ({
@@ -325,7 +324,9 @@ export const userService = {
   },
 
   // Background image management
-  getBackgroundImage: async (userId: string): Promise<ServiceResult<string | null>> => {
+  getBackgroundImage: async (
+    userId: string
+  ): Promise<ServiceResult<string | null>> => {
     try {
       const token = await getToken();
       const response = await api.get<{ data: { backgroundImage: string } }>(
@@ -347,7 +348,9 @@ export const userService = {
     }
   },
 
-  updateBackgroundImage: async (imageDataUri: string): Promise<ServiceResult<void>> => {
+  updateBackgroundImage: async (
+    imageDataUri: string
+  ): Promise<ServiceResult<void>> => {
     try {
       const token = await getToken();
       await api.put<void>(
@@ -361,6 +364,99 @@ export const userService = {
         error?.response?.data?.message ||
         error?.message ||
         "Failed to update background image";
+      return { ok: false, errorMessage: message, error };
+    }
+  },
+
+  // Social Networks management
+  searchAvailableSocialNetworks: async (available: boolean = true) => {
+    try {
+      const token = await getToken();
+      const response = await api.get<{
+        data: import("../interfaces/socialNetwork").SocialNetwork[];
+      }>(
+        `/user/social-network/search`,
+        { available: available.toString() },
+        token
+      );
+      return response.data || [];
+    } catch (error: any) {
+      console.error("Error searching available social networks:", error);
+      return [];
+    }
+  },
+
+  getUserSocialNetworks: async (
+    userId: string
+  ): Promise<UserSocialNetwork[]> => {
+    try {
+      const token = await getToken();
+      const response = await api.get<{ data: UserSocialNetwork[] }>(
+        `/user/${userId}/social-networks`,
+        {},
+        token
+      );
+
+      let networks: UserSocialNetwork[] = [];
+
+      if (response && typeof response === "object" && "data" in response) {
+        networks = Array.isArray(response.data) ? response.data : [];
+      } else if (Array.isArray(response)) {
+        networks = response;
+      }
+
+      // Normalize the data structure
+      return networks.map((network) => ({
+        ...network,
+        socialNetwork: network.socialNetwork || {
+          id: network.id,
+          name: network.name,
+          code: network.code,
+          url: network.url,
+        },
+      }));
+    } catch (error: any) {
+      console.error("Error fetching user social networks:", error);
+      console.error("Error details:", error?.response?.data);
+      return [];
+    }
+  },
+
+  addUserSocialNetwork: async (
+    socialNetworkId: string,
+    username: string
+  ): Promise<ServiceResult<UserSocialNetwork>> => {
+    try {
+      const token = await getToken();
+      const response = await api.put<{
+        data: UserSocialNetwork;
+      }>(
+        `/user/social-network/${socialNetworkId}/username/${username}`,
+        {},
+        token
+      );
+      return { ok: true, data: response.data };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to add social network";
+      return { ok: false, errorMessage: message, error };
+    }
+  },
+
+  removeUserSocialNetwork: async (
+    socialNetworkId: string
+  ): Promise<ServiceResult<void>> => {
+    try {
+      const token = await getToken();
+      await api.delete<void>(`/user/social-network/${socialNetworkId}`, token);
+      return { ok: true, data: undefined };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to remove social network";
       return { ok: false, errorMessage: message, error };
     }
   },

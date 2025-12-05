@@ -22,6 +22,11 @@ import {
   InputLabel,
   CircularProgress,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import { Search, Block, CheckCircle, Email } from "@mui/icons-material";
 import { useState, useEffect } from "react";
@@ -29,6 +34,7 @@ import { AdminLayout } from "../../../layouts";
 import {
   backofficeService,
   type User,
+  type DisableReason,
 } from "../../../services/backoffice.service";
 import { Users2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -36,6 +42,19 @@ import type { GetStaticPropsContext } from "next";
 
 export default function AdminUsers() {
   const t = useTranslations("Admin.users");
+  const tCommon = useTranslations("Admin.common");
+
+  const disableReasons: { value: DisableReason; label: string }[] = [
+    { value: "inappropriate_content", label: tCommon("inappropriate_content") },
+    { value: "spam", label: tCommon("spam") },
+    { value: "harassment", label: tCommon("harassment") },
+    { value: "hate_speech", label: tCommon("hate_speech") },
+    { value: "violence", label: tCommon("violence") },
+    { value: "sexual_content", label: tCommon("sexual_content") },
+    { value: "misinformation", label: tCommon("misinformation") },
+    { value: "copyright_violation", label: tCommon("copyright_violation") },
+  ];
+
   const [searchEmail, setSearchEmail] = useState("");
   const [searchUsername, setSearchUsername] = useState("");
   const [filterVerified, setFilterVerified] = useState<string>("all");
@@ -45,6 +64,11 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
+  const [disableDialogOpen, setDisableDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [disableReason, setDisableReason] = useState<DisableReason>(
+    "inappropriate_content"
+  );
 
   useEffect(() => {
     loadUsers();
@@ -82,20 +106,51 @@ export default function AdminUsers() {
     }
   };
 
-  const handleToggleUser = async (userId: string, isDisabled: boolean) => {
+  const handleEnableUser = async (userId: string) => {
     try {
-      const result = isDisabled
-        ? await backofficeService.enableUser(userId)
-        : await backofficeService.disableUser(userId);
-
+      const result = await backofficeService.enableUser(userId);
       if (result.ok) {
         await loadUsers();
       } else {
-        setError(result.ok === false ? result.errorMessage : t("common.error"));
+        setError(
+          result.ok === false
+            ? result.errorMessage
+            : "Error al habilitar usuario"
+        );
       }
     } catch (err: any) {
-      setError(err?.message || t("common.error"));
+      setError(err?.message || "Error al habilitar usuario");
     }
+  };
+
+  const handleDisableUser = async () => {
+    if (!selectedUser) return;
+
+    try {
+      const result = await backofficeService.disableUser(
+        selectedUser.id,
+        disableReason
+      );
+      if (result.ok) {
+        await loadUsers();
+        setDisableDialogOpen(false);
+        setSelectedUser(null);
+      } else {
+        setError(
+          result.ok === false
+            ? result.errorMessage
+            : "Error al deshabilitar usuario"
+        );
+      }
+    } catch (err: any) {
+      setError(err?.message || "Error al deshabilitar usuario");
+    }
+  };
+
+  const openDisableDialog = (user: User) => {
+    setSelectedUser(user);
+    setDisableReason("inappropriate_content");
+    setDisableDialogOpen(true);
   };
 
   return (
@@ -340,7 +395,9 @@ export default function AdminUsers() {
                           <TableCell>
                             <IconButton
                               onClick={() =>
-                                handleToggleUser(user.id, !!user.isDisabled)
+                                user.isDisabled
+                                  ? handleEnableUser(user.id)
+                                  : openDisableDialog(user)
                               }
                               sx={{
                                 color: user.isDisabled ? "#00B894" : "#E17055",
@@ -381,6 +438,79 @@ export default function AdminUsers() {
             </>
           )}
         </Paper>
+
+        <Dialog
+          open={disableDialogOpen}
+          onClose={() => {
+            setDisableDialogOpen(false);
+            setSelectedUser(null);
+          }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle sx={{ background: "#2D3436", color: "#fff" }}>
+            {t("disable")}
+          </DialogTitle>
+          <DialogContent sx={{ background: "#2D3436", pt: 3 }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography sx={{ color: "rgba(255,255,255,0.7)", mb: 1 }}>
+                {t("common.user")}: @{selectedUser?.username}
+              </Typography>
+              <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+                Email: {selectedUser?.email}
+              </Typography>
+            </Box>
+            <FormControl fullWidth>
+              <InputLabel sx={{ color: "rgba(255,255,255,0.7)" }}>
+                {tCommon("disableReason")}
+              </InputLabel>
+              <Select
+                value={disableReason}
+                onChange={(e) =>
+                  setDisableReason(e.target.value as DisableReason)
+                }
+                label={tCommon("disableReason")}
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.2)",
+                  },
+                  "& .MuiSvgIcon-root": { color: "rgba(255,255,255,0.7)" },
+                }}
+              >
+                {disableReasons.map((reason) => (
+                  <MenuItem key={reason.value} value={reason.value}>
+                    {reason.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions sx={{ background: "#2D3436", p: 2 }}>
+            <Button
+              onClick={() => {
+                setDisableDialogOpen(false);
+                setSelectedUser(null);
+              }}
+              sx={{ color: "rgba(255,255,255,0.7)" }}
+            >
+              {tCommon("cancel")}
+            </Button>
+            <Button
+              onClick={handleDisableUser}
+              variant="contained"
+              sx={{
+                background: "linear-gradient(135deg, #6C5CE7 0%, #00CEC9 100%)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #5B4BCF 0%, #00B8B1 100%)",
+                },
+              }}
+            >
+              {t("disable")}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </AdminLayout>
   );

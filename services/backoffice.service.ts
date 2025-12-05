@@ -94,16 +94,34 @@ export interface Post {
   commentsCount: number;
 }
 
+export type DisableReason =
+  | "inappropriate_content"
+  | "spam"
+  | "harassment"
+  | "hate_speech"
+  | "violence"
+  | "sexual_content"
+  | "misinformation"
+  | "copyright_violation";
+
 export interface DisablePostPayload {
-  reason:
-    | "inappropriate_content"
-    | "spam"
-    | "harassment"
-    | "hate_speech"
-    | "violence"
-    | "sexual_content"
-    | "misinformation"
-    | "copyright_violation";
+  reason: DisableReason;
+}
+
+export interface DisableTeamPayload {
+  reason: DisableReason;
+}
+
+export interface DisableUserPayload {
+  reason: DisableReason;
+}
+
+export interface DisableHashtagPayload {
+  reason: DisableReason;
+}
+
+export interface DisableTournamentPayload {
+  reason: DisableReason;
 }
 
 export interface HashtagSearchParams {
@@ -293,10 +311,18 @@ export const backofficeService = {
     );
   },
 
-  disableUser: async (userId: string): Promise<ServiceResult<void>> => {
+  disableUser: async (
+    userId: string,
+    reason: DisableReason
+  ): Promise<ServiceResult<void>> => {
     const token = await getToken();
     return safeCall<void>(() =>
-      api.post<void>(`/backoffice/user/${userId}/disable`, {}, undefined, token)
+      api.post<void>(
+        `/backoffice/user/${userId}/disable`,
+        { reason },
+        undefined,
+        token
+      )
     );
   },
 
@@ -319,7 +345,7 @@ export const backofficeService = {
 
   disablePost: async (
     postId: string,
-    reason: DisablePostPayload["reason"]
+    reason: DisableReason
   ): Promise<ServiceResult<void>> => {
     const token = await getToken();
     return safeCall<void>(() =>
@@ -349,10 +375,17 @@ export const backofficeService = {
     );
   },
 
-  disableHashtag: async (hashtagId: string): Promise<ServiceResult<void>> => {
+  disableHashtag: async (
+    hashtagId: string,
+    reason: DisableReason
+  ): Promise<ServiceResult<void>> => {
     const token = await getToken();
     return safeCall<void>(() =>
-      api.put<void>(`/backoffice/hashtag/${hashtagId}/disable`, {}, token)
+      api.put<void>(
+        `/backoffice/hashtag/${hashtagId}/disable`,
+        { reason },
+        token
+      )
     );
   },
 
@@ -373,10 +406,18 @@ export const backofficeService = {
     );
   },
 
-  disableTeam: async (teamId: string): Promise<ServiceResult<void>> => {
+  disableTeam: async (
+    teamId: string,
+    reason: DisableReason
+  ): Promise<ServiceResult<void>> => {
     const token = await getToken();
     return safeCall<void>(() =>
-      api.post<void>(`/backoffice/team/${teamId}/disable`, {}, undefined, token)
+      api.post<void>(
+        `/backoffice/team/${teamId}/disable`,
+        { reason },
+        undefined,
+        token
+      )
     );
   },
 
@@ -421,18 +462,23 @@ export const backofficeService = {
   ): Promise<ServiceResult<Tournament>> => {
     const token = await getToken();
     return safeCall<Tournament>(() =>
-      api.put<Tournament>(`/backoffice/tournament/${tournamentId}`, payload, token)
+      api.put<Tournament>(
+        `/backoffice/tournament/${tournamentId}`,
+        payload,
+        token
+      )
     );
   },
 
   disableTournament: async (
-    tournamentId: string
+    tournamentId: string,
+    reason: DisableReason
   ): Promise<ServiceResult<void>> => {
     const token = await getToken();
     return safeCall<void>(() =>
       api.post<void>(
         `/backoffice/tournament/${tournamentId}/disable`,
-        {},
+        { reason },
         undefined,
         token
       )

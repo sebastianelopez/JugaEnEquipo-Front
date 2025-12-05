@@ -4,6 +4,8 @@ import {
   IconButton,
   ListItemAvatar,
   ListItemText,
+  alpha,
+  useTheme,
 } from "@mui/material";
 import { useState, useContext, useEffect, useRef } from "react";
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -14,6 +16,8 @@ import { useRouter } from "next/router";
 import { NotificationContext } from "../../context/notification";
 import { renderNotificationMessage } from "../../utils/notificationUtils";
 import { NotificationType } from "../../interfaces/notification";
+import { formatTimeElapsed } from "../../utils/formatTimeElapsed";
+import { useTimeTranslations } from "../../hooks/useTimeTranslations";
 
 interface Props {}
 
@@ -23,6 +27,8 @@ export const NotificationsButton = ({}: Props) => {
   const hasMarkedAsReadRef = useRef(false);
   const t = useTranslations();
   const router = useRouter();
+  const theme = useTheme();
+  const timeTranslations = useTimeTranslations();
 
   const { notifications, unreadCount, markAsRead, refreshNotifications } =
     useContext(NotificationContext);
@@ -72,6 +78,7 @@ export const NotificationsButton = ({}: Props) => {
       "post_liked",
       "post_shared",
       "post_commented",
+      "user_mentioned",
     ];
 
     if (postTypes.includes(notification.type) && notification.postId) {
@@ -149,10 +156,15 @@ export const NotificationsButton = ({}: Props) => {
                 sx={{
                   backgroundColor: isRead
                     ? "inherit"
-                    : "rgba(185, 117, 224, 0.71)",
+                    : alpha(theme.palette.primary.main, 0.15),
                   whiteSpace: "normal",
                   width: "100%",
                   display: "flex",
+                  "&:hover": {
+                    backgroundColor: isRead
+                      ? alpha(theme.palette.action.hover, 0.5)
+                      : alpha(theme.palette.primary.main, 0.12),
+                  },
                 }}
               >
                 <ListItemAvatar>
@@ -171,6 +183,10 @@ export const NotificationsButton = ({}: Props) => {
                     notification.message,
                     t,
                     isRead
+                  )}
+                  secondary={formatTimeElapsed(
+                    new Date(notification.date),
+                    timeTranslations
                   )}
                   slotProps={{
                     primary: {

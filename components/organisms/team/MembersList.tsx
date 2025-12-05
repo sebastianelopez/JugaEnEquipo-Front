@@ -45,6 +45,7 @@ interface Member {
 interface Props {
   members: Member[];
   title: string;
+  teamName?: string;
   formatSince: (dateIso?: string) => string;
   currentUserId?: string;
   isCurrentUserLeader?: boolean;
@@ -58,6 +59,7 @@ interface Props {
 export const MembersList: FC<Props> = ({
   members,
   title,
+  teamName,
   formatSince,
   currentUserId,
   isCurrentUserLeader = false,
@@ -92,23 +94,24 @@ export const MembersList: FC<Props> = ({
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    setSelectedMember(null);
   };
 
   const handleMakeLeader = () => {
+    const member = selectedMember;
     handleMenuClose();
-    if (selectedMember) {
-      setConfirmAction("leader");
-      setConfirmDialogOpen(true);
-    }
+    if (!member) return;
+    setSelectedMember(member);
+    setConfirmAction("leader");
+    setConfirmDialogOpen(true);
   };
 
   const handleRemoveMember = () => {
+    const member = selectedMember;
     handleMenuClose();
-    if (selectedMember) {
-      setConfirmAction("remove");
-      setConfirmDialogOpen(true);
-    }
+    if (!member) return;
+    setSelectedMember(member);
+    setConfirmAction("remove");
+    setConfirmDialogOpen(true);
   };
 
   const handleConfirmAction = async () => {
@@ -116,17 +119,30 @@ export const MembersList: FC<Props> = ({
 
     try {
       setProcessing(true);
-      if (confirmAction === "leader" && onUpdateLeader) {
+
+      if (confirmAction === "leader") {
+        if (!onUpdateLeader) {
+          setProcessing(false);
+          return;
+        }
         await onUpdateLeader(String(selectedMember.id));
-      } else if (confirmAction === "remove" && onRemoveMember) {
+        setConfirmDialogOpen(false);
+        setConfirmAction(null);
+        setSelectedMember(null);
+        onMemberUpdated?.();
+      } else if (confirmAction === "remove") {
+        if (!onRemoveMember) {
+          setProcessing(false);
+          return;
+        }
         await onRemoveMember(String(selectedMember.id));
+        setConfirmDialogOpen(false);
+        setConfirmAction(null);
+        setSelectedMember(null);
+        onMemberUpdated?.();
       }
-      setConfirmDialogOpen(false);
-      setConfirmAction(null);
-      setSelectedMember(null);
-      onMemberUpdated?.();
-    } catch (error) {
-      console.error("Error performing action:", error);
+    } catch (error: any) {
+      // Error messages are already shown by the handlers
     } finally {
       setProcessing(false);
     }
@@ -136,15 +152,30 @@ export const MembersList: FC<Props> = ({
     router.push(`/profile/${members.find((m) => m.id === memberId)?.username}`);
   };
 
-  const canPerformActionOnMember = (member: Member): boolean => {
+  const canRemoveMember = (member: Member): boolean => {
     if (!canManageMembers) return false;
-    // Can't remove yourself
-    if (String(member.id) === currentUserId) return false;
-    // Creator can't be removed or have leader changed
+
     if (member.isCreator) return false;
-    // Can't remove current leader unless you're the creator
-    if (member.isLeader && !isCreator) return false;
+
+    if (member.isLeader && !isCurrentUserCreator) return false;
+
+    if (String(member.id) === currentUserId) return false;
     return true;
+  };
+
+  const canMakeLeader = (member: Member): boolean => {
+    if (!canManageMembers) return false;
+
+    if (member.isCreator) return false;
+
+    if (member.isLeader) return false;
+
+    if (String(member.id) === currentUserId) return false;
+    return true;
+  };
+
+  const canPerformActionOnMember = (member: Member): boolean => {
+    return canRemoveMember(member) || canMakeLeader(member);
   };
 
   if (members.length === 0) {
@@ -441,13 +472,13 @@ export const MembersList: FC<Props> = ({
         onClose={handleMenuClose}
         onClick={(e) => e.stopPropagation()}
       >
-        {selectedMember && !selectedMember.isLeader && (
+        {selectedMember && canMakeLeader(selectedMember) && (
           <MenuItem onClick={handleMakeLeader} disabled={processing}>
             <HowToRegIcon sx={{ mr: 1, fontSize: 20 }} />
             {t("changeLeader")}
           </MenuItem>
         )}
-        {selectedMember && !selectedMember.isCreator && (
+        {selectedMember && canRemoveMember(selectedMember) && (
           <MenuItem
             onClick={handleRemoveMember}
             disabled={processing}
@@ -462,7 +493,13 @@ export const MembersList: FC<Props> = ({
       {/* Confirmation Dialog */}
       <Dialog
         open={confirmDialogOpen}
-        onClose={() => !processing && setConfirmDialogOpen(false)}
+        onClose={() => {
+          if (!processing) {
+            setConfirmDialogOpen(false);
+            setConfirmAction(null);
+            setSelectedMember(null);
+          }
+        }}
       >
         <DialogTitle>
           {confirmAction === "leader"
@@ -474,15 +511,11 @@ export const MembersList: FC<Props> = ({
             {confirmAction === "leader"
               ? t("changeLeaderConfirmationMessage", {
                   memberName: selectedMember?.name || "",
-                  teamName: title
-                    .replace("Team Members (", "")
-                    .replace(")", ""),
+                  teamName: teamName || "",
                 })
               : t("removeMemberConfirmationMessage", {
                   memberName: selectedMember?.name || "",
-                  teamName: title
-                    .replace("Team Members (", "")
-                    .replace(")", ""),
+                  teamName: teamName || "",
                 })}
           </DialogContentText>
         </DialogContent>

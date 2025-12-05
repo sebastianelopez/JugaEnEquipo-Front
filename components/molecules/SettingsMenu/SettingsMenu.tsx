@@ -51,7 +51,13 @@ export const SettingsMenu = ({ postId }: SettingsMenuProps) => {
         message: t("deletePostSuccessMessage"),
         closeLabel: t("close"),
       });
-      // TODO: refresh the posts list after deletion
+
+      if (typeof window !== "undefined") {
+        const postDeletedEvent = new CustomEvent("postDeleted", {
+          detail: { postId },
+        });
+        window.dispatchEvent(postDeletedEvent);
+      }
     } catch (error) {
       console.error("Error deleting post:", error);
       setOpenConfirmDialog(false);

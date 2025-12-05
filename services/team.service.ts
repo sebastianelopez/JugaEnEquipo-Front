@@ -79,7 +79,7 @@ export const teamService = {
   }): Promise<ServiceResult<Team[]>> => {
     const token = await getToken();
     const queryParams: any = {};
-    
+
     if (params?.gameId) {
       queryParams.gameId = params.gameId;
     }
@@ -98,7 +98,7 @@ export const teamService = {
     if (params?.creatorId) {
       queryParams.creatorId = params.creatorId;
     }
-    
+
     return safeCall<Team[]>(() => api.get("/teams", queryParams, token));
   },
 
@@ -237,17 +237,15 @@ export const teamService = {
 
   /**
    * Remove a member from a team (leader/creator only)
-   * DELETE /api/team/:team_id/member/:user_id
-   * Note: This might use the same leave endpoint, but from leader's perspective
+   * DELETE /api/team/:team_id/user/:user_id
    */
   removeMember: async (
     teamId: string,
     userId: string
   ): Promise<ServiceResult<void>> => {
     const token = await getToken();
-    // Try DELETE first, if not available, might need to use leave endpoint
     return safeCall<void>(() =>
-      api.delete(`/team/${teamId}/member/${userId}`, token)
+      api.delete(`/team/${teamId}/user/${userId}`, token)
     );
   },
 
@@ -266,7 +264,9 @@ export const teamService = {
    * Get team background image
    * GET /api/team/:team_id/background-image
    */
-  getBackgroundImage: async (teamId: string): Promise<ServiceResult<string | null>> => {
+  getBackgroundImage: async (
+    teamId: string
+  ): Promise<ServiceResult<string | null>> => {
     const token = await getToken();
     try {
       const response = await api.get<{ data: { backgroundImage: string } }>(
@@ -298,7 +298,11 @@ export const teamService = {
   ): Promise<ServiceResult<void>> => {
     const token = await getToken();
     return safeCall<void>(() =>
-      api.put(`/team/${teamId}/background-image`, { image: imageDataUri }, token)
+      api.put(
+        `/team/${teamId}/background-image`,
+        { image: imageDataUri },
+        token
+      )
     );
   },
 };

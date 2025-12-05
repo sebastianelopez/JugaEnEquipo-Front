@@ -95,13 +95,7 @@ interface ProfileTabsProps {
     prize?: string;
   }[];
   // Social links props
-  hasSocialLinks: boolean;
-  socialLinks: {
-    twitter?: string;
-    instagram?: string;
-    youtube?: string;
-    twitch?: string;
-  };
+  userId: string;
   // Quick stats props
   hasQuickStats: boolean;
   currentTeams: number;
@@ -125,8 +119,7 @@ export const ProfileTabs = ({
   tournaments,
   hasAchievements,
   achievements,
-  hasSocialLinks,
-  socialLinks,
+  userId,
   hasQuickStats,
   currentTeams,
   activeGames,
@@ -229,7 +222,7 @@ export const ProfileTabs = ({
             </Card>
           )}
 
-          {hasSocialLinks && <SocialLinksCard links={socialLinks} />}
+          <SocialLinksCard userId={userId} />
           {hasQuickStats && (
             <QuickStatsCard
               currentTeams={currentTeams}

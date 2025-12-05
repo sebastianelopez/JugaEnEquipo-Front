@@ -17,6 +17,15 @@ import {
   CircularProgress,
   Alert,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import {
   Tag as TagIcon,
@@ -32,6 +41,7 @@ import { formatDate } from "../../../utils/formatDate";
 import {
   backofficeService,
   type Hashtag,
+  type DisableReason,
 } from "../../../services/backoffice.service";
 import { useTranslations } from "next-intl";
 import type { GetStaticPropsContext } from "next";
@@ -49,10 +59,26 @@ export default function HashtagsModeration() {
   const t = useTranslations("Admin.hashtags");
   const tCommon = useTranslations("Admin.common");
 
+  const disableReasons: { value: DisableReason; label: string }[] = [
+    { value: "inappropriate_content", label: tCommon("inappropriate_content") },
+    { value: "spam", label: tCommon("spam") },
+    { value: "harassment", label: tCommon("harassment") },
+    { value: "hate_speech", label: tCommon("hate_speech") },
+    { value: "violence", label: tCommon("violence") },
+    { value: "sexual_content", label: tCommon("sexual_content") },
+    { value: "misinformation", label: tCommon("misinformation") },
+    { value: "copyright_violation", label: tCommon("copyright_violation") },
+  ];
+
   const [hashtags, setHashtags] = useState<Hashtag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTag, setSearchTag] = useState("");
+  const [disableDialogOpen, setDisableDialogOpen] = useState(false);
+  const [selectedHashtag, setSelectedHashtag] = useState<Hashtag | null>(null);
+  const [disableReason, setDisableReason] = useState<DisableReason>(
+    "inappropriate_content"
+  );
 
   useEffect(() => {
     loadHashtags();
@@ -72,9 +98,7 @@ export default function HashtagsModeration() {
         // result.data has { data: Hashtag[], metadata: SearchMetadata }
         setHashtags(result.data.data || []);
       } else {
-        setError(
-          result.ok === false ? result.errorMessage : t("errorLoading")
-        );
+        setError(result.ok === false ? result.errorMessage : t("errorLoading"));
       }
     } catch (err: any) {
       setError(err?.message || t("errorLoading"));
@@ -83,22 +107,51 @@ export default function HashtagsModeration() {
     }
   };
 
-  const handleToggleHashtag = async (hashtagId: string, enable: boolean) => {
+  const handleEnableHashtag = async (hashtagId: string) => {
     try {
-      const result = enable
-        ? await backofficeService.enableHashtag(hashtagId)
-        : await backofficeService.disableHashtag(hashtagId);
-
+      const result = await backofficeService.enableHashtag(hashtagId);
       if (result.ok) {
         await loadHashtags();
       } else {
         setError(
-          result.ok === false ? result.errorMessage : tCommon("error")
+          result.ok === false
+            ? result.errorMessage
+            : "Error al habilitar hashtag"
         );
       }
     } catch (err: any) {
-      setError(err?.message || tCommon("error"));
+      setError(err?.message || "Error al habilitar hashtag");
     }
+  };
+
+  const handleDisableHashtag = async () => {
+    if (!selectedHashtag) return;
+
+    try {
+      const result = await backofficeService.disableHashtag(
+        selectedHashtag.id,
+        disableReason
+      );
+      if (result.ok) {
+        await loadHashtags();
+        setDisableDialogOpen(false);
+        setSelectedHashtag(null);
+      } else {
+        setError(
+          result.ok === false
+            ? result.errorMessage
+            : "Error al deshabilitar hashtag"
+        );
+      }
+    } catch (err: any) {
+      setError(err?.message || "Error al deshabilitar hashtag");
+    }
+  };
+
+  const openDisableDialog = (hashtag: Hashtag) => {
+    setSelectedHashtag(hashtag);
+    setDisableReason("inappropriate_content");
+    setDisableDialogOpen(true);
   };
 
   const disabledHashtags = hashtags.filter((h) => h.disabled);
@@ -176,7 +229,7 @@ export default function HashtagsModeration() {
                             <IconButton
                               edge="end"
                               aria-label="block"
-                              onClick={() => handleToggleHashtag(item.id, false)}
+                              onClick={() => openDisableDialog(item)}
                               sx={{ color: colors.error }}
                             >
                               <BlockIcon />
@@ -328,7 +381,7 @@ export default function HashtagsModeration() {
                             <IconButton
                               edge="end"
                               aria-label="enable"
-                              onClick={() => handleToggleHashtag(item.id, true)}
+                              onClick={() => handleEnableHashtag(item.id)}
                               sx={{ color: colors.success }}
                             >
                               <CheckIcon />
@@ -473,6 +526,76 @@ export default function HashtagsModeration() {
             </Paper>
           </Grid>
         </Grid>
+
+        <Dialog
+          open={disableDialogOpen}
+          onClose={() => {
+            setDisableDialogOpen(false);
+            setSelectedHashtag(null);
+          }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle sx={{ background: "#2D3436", color: "#fff" }}>
+            {t("disable")}
+          </DialogTitle>
+          <DialogContent sx={{ background: "#2D3436", pt: 3 }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography sx={{ color: "rgba(255,255,255,0.7)", mb: 1 }}>
+                Hashtag: #{selectedHashtag?.tag}
+              </Typography>
+            </Box>
+            <FormControl fullWidth>
+              <InputLabel sx={{ color: "rgba(255,255,255,0.7)" }}>
+                {tCommon("disableReason")}
+              </InputLabel>
+              <Select
+                value={disableReason}
+                onChange={(e) =>
+                  setDisableReason(e.target.value as DisableReason)
+                }
+                label={tCommon("disableReason")}
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.2)",
+                  },
+                  "& .MuiSvgIcon-root": { color: "rgba(255,255,255,0.7)" },
+                }}
+              >
+                {disableReasons.map((reason) => (
+                  <MenuItem key={reason.value} value={reason.value}>
+                    {reason.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions sx={{ background: "#2D3436", p: 2 }}>
+            <Button
+              onClick={() => {
+                setDisableDialogOpen(false);
+                setSelectedHashtag(null);
+              }}
+              sx={{ color: "rgba(255,255,255,0.7)" }}
+            >
+              {tCommon("cancel")}
+            </Button>
+            <Button
+              onClick={handleDisableHashtag}
+              variant="contained"
+              sx={{
+                background: "linear-gradient(135deg, #6C5CE7 0%, #00CEC9 100%)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #5B4BCF 0%, #00B8B1 100%)",
+                },
+              }}
+            >
+              {t("disable")}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </AdminLayout>
   );

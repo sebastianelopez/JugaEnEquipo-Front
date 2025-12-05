@@ -10,6 +10,12 @@ import {
   CircularProgress,
   Alert,
   Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
 } from "@mui/material";
 
 import { useRouter } from "next/router";
@@ -52,6 +58,8 @@ export default function TeamDetailPage({ id }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [canEdit, setCanEdit] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isLeader, setIsLeader] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [isMember, setIsMember] = useState(false);
@@ -115,26 +123,24 @@ export default function TeamDetailPage({ id }: Props) {
     try {
       const result = await teamService.findMembers(teamId);
       if (result.ok && result.data) {
-        // Transform API response to MembersList format using the actual data structure
         const transformedMembers = result.data.map((member: any) => {
           const fullName = `${member.firstname || ""} ${
             member.lastname || ""
           }`.trim();
+
+          const isCreator = teamData?.creatorId === member.id;
+          const isLeader = teamData?.leaderId === member.id;
 
           return {
             id: member.id,
             name: fullName || member.username,
             username: member.username,
             avatar: member.profileImage || "/default-avatar.png",
-            role: member.isCreator
-              ? "creator"
-              : member.isLeader
-              ? "leader"
-              : undefined,
+            role: isCreator ? "creator" : isLeader ? "leader" : undefined,
             position: "",
             joinDate: member.joinedAt,
-            isCreator: teamData?.creatorId === member.id,
-            isLeader: teamData?.leaderId === member.id,
+            isCreator,
+            isLeader,
           };
         });
         setMembers(transformedMembers);
@@ -203,20 +209,25 @@ export default function TeamDetailPage({ id }: Props) {
   };
 
   const handleTeamUpdated = async () => {
-    // Reload team data after update
     if (id) {
       const result = await teamService.find(id);
       if (result.ok && result.data) {
-        setTeam(result.data);
+        const teamData = result.data;
+        setTeam(teamData);
+
+        const userIsLeader = user?.id === teamData.leaderId;
+        const userIsCreator = user?.id === teamData.creatorId;
+        setIsLeader(userIsLeader);
+        setIsCreator(userIsCreator);
+        setCanEdit(userIsLeader || userIsCreator);
+
         const gamesResult = await teamService.findAllGames(id);
         if (gamesResult.ok && gamesResult.data) {
           setTeamGames(gamesResult.data);
         }
-        // Reload members
-        const reloadedMembers = await loadMembers(id, result.data);
-        // Recheck user status
+        const reloadedMembers = await loadMembers(id, teamData);
         if (user?.id) {
-          await checkUserStatus(result.data, user.id, reloadedMembers);
+          await checkUserStatus(teamData, user.id, reloadedMembers);
         }
       }
     }
@@ -286,29 +297,69 @@ export default function TeamDetailPage({ id }: Props) {
   };
 
   const handleUpdateLeader = async (userId: string) => {
-    if (!id || !user?.id) return;
+    if (!id || !user?.id) {
+      const errorMessage = "Team ID or user ID is missing";
+      showError({
+        message: errorMessage,
+      });
+      throw new Error(errorMessage);
+    }
 
     try {
       const result = await teamService.updateLeader(id, userId);
+
       if (result.ok) {
         showSuccess({
           message: t("leaderUpdatedSuccess") as string,
         });
         await handleTeamUpdated();
       } else {
+        const errorMessage =
+          result.errorMessage || (t("leaderUpdatedError") as string);
         showError({
-          message: result.errorMessage || (t("leaderUpdatedError") as string),
+          message: errorMessage,
         });
+        throw new Error(errorMessage);
       }
     } catch (err: any) {
+      const errorMessage = err?.message || (t("leaderUpdatedError") as string);
       showError({
-        message: err?.message || (t("leaderUpdatedError") as string),
+        message: errorMessage,
       });
+      throw err;
     }
   };
 
   const handleRemoveMember = async (userId: string) => {
     if (!id || !user?.id) return;
+
+    // Find the member to check permissions
+    const memberToRemove = members.find((m) => m.id === userId);
+
+    // Validate permissions
+    if (memberToRemove?.isCreator) {
+      const errorMessage = t("cannotRemoveCreator") as string;
+      showError({
+        message: errorMessage,
+      });
+      throw new Error(errorMessage);
+    }
+
+    if (memberToRemove?.isLeader && !isCreator) {
+      const errorMessage = t("cannotRemoveLeader") as string;
+      showError({
+        message: errorMessage,
+      });
+      throw new Error(errorMessage);
+    }
+
+    if (!isLeader && !isCreator) {
+      const errorMessage = t("onlyLeaderCreatorCanRemove") as string;
+      showError({
+        message: errorMessage,
+      });
+      throw new Error(errorMessage);
+    }
 
     try {
       const result = await teamService.removeMember(id, userId);
@@ -318,14 +369,50 @@ export default function TeamDetailPage({ id }: Props) {
         });
         await handleTeamUpdated();
       } else {
+        const errorMessage =
+          result.errorMessage || (t("memberRemovedError") as string);
         showError({
-          message: result.errorMessage || (t("memberRemovedError") as string),
+          message: errorMessage,
         });
+        // Throw error so the calling component can handle it
+        throw new Error(errorMessage);
+      }
+    } catch (err: any) {
+      const errorMessage = err?.message || (t("memberRemovedError") as string);
+      showError({
+        message: errorMessage,
+      });
+      // Re-throw the error so the calling component can handle it
+      throw err;
+    }
+  };
+
+  const handleDeleteTeam = async () => {
+    if (!id || !isCreator) return;
+
+    setIsDeleting(true);
+    try {
+      const result = await teamService.delete(id);
+      if (result.ok) {
+        showSuccess({
+          message: t("deleteTeamSuccess") as string,
+        });
+        setDeleteDialogOpen(false);
+        // Redirect to teams page after a short delay
+        setTimeout(() => {
+          router.push("/teams");
+        }, 1000);
+      } else {
+        showError({
+          message: result.errorMessage || (t("deleteTeamError") as string),
+        });
+        setIsDeleting(false);
       }
     } catch (err: any) {
       showError({
-        message: err?.message || (t("memberRemovedError") as string),
+        message: err?.message || (t("deleteTeamError") as string),
       });
+      setIsDeleting(false);
     }
   };
 
@@ -404,6 +491,8 @@ export default function TeamDetailPage({ id }: Props) {
         onBack={() => router.push("/teams")}
         showEditButton={canEdit}
         onEdit={() => setEditModalOpen(true)}
+        showDeleteButton={isCreator}
+        onDelete={() => setDeleteDialogOpen(true)}
         isCreator={isCreator}
         isLeader={isLeader}
         creatorLabel={t("creator") as string}
@@ -624,6 +713,7 @@ export default function TeamDetailPage({ id }: Props) {
                         count: members.length,
                       }) as string
                     }
+                    teamName={team?.name}
                     formatSince={(dateIso?: string) =>
                       t("since", {
                         date: new Date(dateIso || "").toLocaleDateString(),
@@ -1070,6 +1160,41 @@ export default function TeamDetailPage({ id }: Props) {
           onUpdated={handleTeamUpdated}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => !isDeleting && setDeleteDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          {t("deleteTeamTitle") as string}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            {t("deleteTeamConfirmation", { teamName: team?.name }) as string}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            variant="outlined"
+            disabled={isDeleting}
+          >
+            {t("cancel") as string}
+          </Button>
+          <Button
+            onClick={handleDeleteTeam}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+            autoFocus
+          >
+            {isDeleting ? (t("deleting") as string) : (t("delete") as string)}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </MainLayout>
   );
 }
