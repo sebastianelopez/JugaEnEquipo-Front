@@ -39,7 +39,7 @@ import {
   CommentSectionHandle,
 } from "./CommentSection/CommentSection";
 import { postService } from "../../../../services/post.service";
-import { parseHashtags } from "../../../../utils/parseHashtags";
+import { parsePostText } from "../../../../utils/parsePostText";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -222,7 +222,7 @@ export const PublicationCard = ({
         <CardContent sx={{ paddingY: 0 }}>
           {body && (
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              {parseHashtags(body, theme)}
+              {parsePostText(body, theme)}
             </Typography>
           )}
 

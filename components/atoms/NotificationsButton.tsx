@@ -72,6 +72,7 @@ export const NotificationsButton = ({}: Props) => {
       "post_liked",
       "post_shared",
       "post_commented",
+      "user_mentioned",
     ];
 
     if (postTypes.includes(notification.type) && notification.postId) {

@@ -24,6 +24,8 @@ import { SharedPostCard } from "../cards/SharedPostCard";
 import { v4 as uuidv4 } from "uuid";
 import { postService } from "../../../services/post.service";
 import { useFeedback } from "../../../hooks/useFeedback";
+import { MentionAutocomplete } from "../../molecules/MentionAutocomplete";
+import { User } from "../../../interfaces/user";
 
 interface Props {
   sx?: SxProps<Theme>;
@@ -50,6 +52,11 @@ export const CreatePublicationModal = ({
   const [postContent, setPostContent] = useState<string>("");
   const [isCreating, setIsCreating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textInputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const [mentionSearchTerm, setMentionSearchTerm] = useState<string>("");
+  const [mentionAnchorEl, setMentionAnchorEl] = useState<HTMLElement | null>(null);
+  const [mentionStartIndex, setMentionStartIndex] = useState<number>(-1);
+  const [mentionCursorPosition, setMentionCursorPosition] = useState<number>(-1);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -79,6 +86,10 @@ export const CreatePublicationModal = ({
     setSelectedFiles([]);
     setPostContent("");
     setIsCreating(false);
+    setMentionSearchTerm("");
+    setMentionAnchorEl(null);
+    setMentionStartIndex(-1);
+    setMentionCursorPosition(-1);
   };
 
   const handleClose = () => {
@@ -331,28 +342,109 @@ export const CreatePublicationModal = ({
           )}
 
           <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
-          <Input
-            placeholder={t("writeSomething")}
-            multiline
-            rows={4}
-            fullWidth
-            sx={{
-              mt: { xs: 1, md: 2 },
-              fontSize: { xs: "0.875rem", md: "1rem" },
-              color: "text.primary",
-              "&::before": {
-                borderColor: "divider",
-              },
-              "&:hover:not(.Mui-disabled)::before": {
-                borderColor: "primary.main",
-              },
-              "&::after": {
-                borderColor: "primary.main",
-              },
-            }}
-            value={postContent}
-            onChange={(e) => setPostContent(e.target.value)}
-          />
+          <Box sx={{ position: "relative", mt: { xs: 1, md: 2 } }}>
+            <Input
+              placeholder={t("writeSomething")}
+              multiline
+              rows={4}
+              fullWidth
+              inputRef={textInputRef}
+              sx={{
+                fontSize: { xs: "0.875rem", md: "1rem" },
+                color: "text.primary",
+                "&::before": {
+                  borderColor: "divider",
+                },
+                "&:hover:not(.Mui-disabled)::before": {
+                  borderColor: "primary.main",
+                },
+                "&::after": {
+                  borderColor: "primary.main",
+                },
+              }}
+              value={postContent}
+              onChange={(e) => {
+                const value = e.target.value;
+                const inputElement = e.target as HTMLInputElement | HTMLTextAreaElement;
+                setPostContent(value);
+
+                setTimeout(() => {
+                  const cursorPosition = inputElement.selectionStart || value.length;
+                  const textBeforeCursor = value.substring(0, cursorPosition);
+                  const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+                  
+                  if (lastAtIndex !== -1) {
+                    const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+                    const hasSpaceOrNewline = /[\s\n]/.test(textAfterAt);
+                    
+                    if (!hasSpaceOrNewline && textAfterAt.length > 0) {
+                      setMentionStartIndex(lastAtIndex);
+                      setMentionSearchTerm(textAfterAt);
+                      setMentionAnchorEl(inputElement);
+                      setMentionCursorPosition(lastAtIndex);
+                    } else if (textAfterAt.length === 0) {
+                      setMentionStartIndex(lastAtIndex);
+                      setMentionSearchTerm("");
+                      setMentionAnchorEl(null);
+                      setMentionCursorPosition(-1);
+                    } else {
+                      setMentionAnchorEl(null);
+                      setMentionSearchTerm("");
+                      setMentionStartIndex(-1);
+                      setMentionCursorPosition(-1);
+                    }
+                  } else {
+                    setMentionAnchorEl(null);
+                    setMentionSearchTerm("");
+                    setMentionStartIndex(-1);
+                    setMentionCursorPosition(-1);
+                  }
+                }, 0);
+              }}
+              onKeyDown={(e) => {
+                if (mentionAnchorEl && mentionSearchTerm) {
+                  if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter") {
+                    return;
+                  }
+                }
+              }}
+            />
+            {mentionAnchorEl && (
+              <MentionAutocomplete
+                searchTerm={mentionSearchTerm}
+                anchorEl={mentionAnchorEl}
+                cursorPosition={mentionCursorPosition}
+                textContent={postContent}
+                onSelectUser={(selectedUser: User) => {
+                  if (mentionStartIndex !== -1 && textInputRef.current) {
+                    const textBeforeMention = postContent.substring(0, mentionStartIndex);
+                    const textAfterMention = postContent.substring(
+                      mentionStartIndex + 1 + mentionSearchTerm.length
+                    );
+                    const newContent = `${textBeforeMention}@${selectedUser.username} ${textAfterMention}`;
+                    setPostContent(newContent);
+                    setMentionAnchorEl(null);
+                    setMentionSearchTerm("");
+                    setMentionStartIndex(-1);
+                    
+                    setTimeout(() => {
+                      if (textInputRef.current) {
+                        const newCursorPos = textBeforeMention.length + selectedUser.username.length + 2;
+                        textInputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+                        textInputRef.current.focus();
+                      }
+                    }, 0);
+                  }
+                }}
+                onClose={() => {
+                  setMentionAnchorEl(null);
+                  setMentionSearchTerm("");
+                  setMentionStartIndex(-1);
+                  setMentionCursorPosition(-1);
+                }}
+              />
+            )}
+          </Box>
 
           {sharePost && (
             <Box sx={{ mt: { xs: 1.5, md: 2 } }}>

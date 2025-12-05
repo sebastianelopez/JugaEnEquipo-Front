@@ -175,7 +175,8 @@
         "retry": "Retry",
         "close": "Close",
         "deletePostSuccessTitle": "Post deleted",
-        "deletePostSuccessMessage": "The post was successfully deleted."
+        "deletePostSuccessMessage": "The post was successfully deleted.",
+        "noUsersFound": "No users found"
     },
     "Register":{
         "name": "First name",
@@ -359,6 +360,9 @@
         "noMessages": "No messages yet. Send the first message!",
         "sending": "sending...",
         "inputPlaceholder": "Type a message...",
+        "searchPlaceholder": "Search messages or contacts...",
+        "noConversationsFound": "No conversations found",
+        "noConversationsYet": "You don't have conversations yet",
         "loadMessagesErrorTitle": "Could not load messages",
         "loadMessagesErrorMessage": "An error occurred while trying to load messages. Please try again.",
         "sendMessageErrorTitle": "Could not send message",
@@ -459,6 +463,7 @@
         "postCommented": "{username} commented on your post",
         "postLiked": "{username} liked your post",
         "postShared": "{username} shared your post",
+        "userMentioned": "{username} mentioned you in a post",
         "teamRequestReceived": "{username} requested to join your team",
         "tournamentRequestReceived": "{username} requested to join your tournament",
         "noNotifications": "No new notifications"

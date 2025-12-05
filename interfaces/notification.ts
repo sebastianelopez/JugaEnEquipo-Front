@@ -6,7 +6,8 @@ export type NotificationType =
   | "post_shared"
   | "post_moderated"
   | "team_request_received"
-  | "tournament_request_received";
+  | "tournament_request_received"
+  | "user_mentioned";
 
 export interface Notification {
   id: string;
