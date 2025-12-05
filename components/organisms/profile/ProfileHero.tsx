@@ -21,6 +21,7 @@ import { FollowersModal } from "../modals/FollowersModal";
 import { MediaViewerModal } from "../modals/MediaViewerModal";
 import { UserContext } from "../../../context/user/UserContext";
 import { BackgroundFallback } from "../../atoms/BackgroundFallback";
+import { SocialNetworksBadges } from "./SocialNetworksBadges";
 
 interface ProfileHeroProps {
   fullName: string;
@@ -324,16 +325,26 @@ export const ProfileHero = ({
               )}
             </Stack>
 
-            <Typography
+            <Box
               sx={{
-                color: theme.palette.info.main,
-                fontSize: { xs: "0.9rem", sm: "1rem", md: "1.2rem" },
-                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                flexWrap: "wrap",
                 mb: { xs: 0.5, md: 1 },
               }}
             >
-              @{username}
-            </Typography>
+              <Typography
+                sx={{
+                  color: theme.palette.info.main,
+                  fontSize: { xs: "0.9rem", sm: "1rem", md: "1.2rem" },
+                  fontWeight: 600,
+                }}
+              >
+                @{username}
+              </Typography>
+              <SocialNetworksBadges userId={userId} size="small" compact />
+            </Box>
 
             <Stack
               direction="row"

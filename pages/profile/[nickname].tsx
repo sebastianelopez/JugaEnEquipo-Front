@@ -406,19 +406,6 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   ];
   const hasAchievements = achievements.length > 0;
 
-  // MOCK DATA - Temporal until backend integration
-  const socialLinks: {
-    twitter?: string;
-    instagram?: string;
-    youtube?: string;
-    twitch?: string;
-  } = {
-    twitch: "https://www.twitch.tv/jugaenequipo",
-    youtube: "https://www.youtube.com/@jugaenequipo",
-    twitter: "https://twitter.com/jugaenequipo",
-    instagram: "https://www.instagram.com/jugaenequipo",
-  };
-  const hasSocialLinks = Object.values(socialLinks).some(Boolean);
 
   const currentTeams = teams.filter((team) => !team.leftDate).length;
   const activeGames = games.length;
@@ -487,8 +474,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
             tournaments={tournaments}
             hasAchievements={hasAchievements}
             achievements={achievements}
-            hasSocialLinks={hasSocialLinks}
-            socialLinks={socialLinks}
+            userId={userFound.id}
             hasQuickStats={hasQuickStats}
             currentTeams={currentTeams}
             activeGames={activeGames}
@@ -565,7 +551,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
                   </Card>
                 )}
 
-                {hasSocialLinks && <SocialLinksCard links={socialLinks} />}
+                <SocialLinksCard userId={userFound.id} />
                 {hasQuickStats && (
                   <QuickStatsCard
                     currentTeams={currentTeams}
@@ -583,7 +569,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
           open={isEditOpen}
           onClose={() => setIsEditOpen(false)}
           initialDescription={userFound.description || ""}
-          initialSocialLinks={socialLinks}
+          initialSocialLinks={{}}
           initialProfileImage={userFound.profileImage}
           initialBackgroundImage={backgroundImage || undefined}
           initialUsername={userFound.username}

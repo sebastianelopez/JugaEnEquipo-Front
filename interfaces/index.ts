@@ -6,6 +6,7 @@ export type { Post } from "./post";
 export type { Rank } from "./rank";
 export type { Role } from "./role";
 export type { Player } from "./player";
+export type { SocialNetwork, UserSocialNetwork } from "./socialNetwork";
 
 export type {
   Tournament,

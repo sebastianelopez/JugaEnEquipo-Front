@@ -18,6 +18,7 @@ import { useTranslations } from "next-intl";
 import { handleImagePreviewChange } from "../../../utils/imageFileUtils";
 import { UserContext } from "../../../context/user";
 import { SettingsGames } from "../../organisms/settings/SettingsGames";
+import { SocialNetworksManager } from "../profile/SocialNetworksManager";
 
 interface SocialLinks {
   twitter?: string;
@@ -78,6 +79,7 @@ export const ProfileEditModal = ({
 }: Props) => {
   const t = useTranslations("ProfileEditModal");
   const theme = useTheme();
+  const { user } = useContext(UserContext);
   const [tabValue, setTabValue] = useState(0);
   const [description, setDescription] = useState<string>(initialDescription);
   const [links, setLinks] = useState<SocialLinks>(initialSocialLinks);
@@ -139,7 +141,7 @@ export const ProfileEditModal = ({
   const handleSave = () => {
     onSave({
       description,
-      socialLinks: links,
+      socialLinks: links, // Keep for backward compatibility, but SocialNetworksManager handles it now
       profileImage: selectedImage || undefined,
       backgroundImage: selectedBackgroundImage || undefined,
     });
@@ -363,70 +365,10 @@ export const ProfileEditModal = ({
             }}
           />
 
-          <Typography
-            variant="subtitle1"
-            sx={{
-              fontWeight: 700,
-              mt: { xs: 0.5, md: 1 },
-              fontSize: { xs: "0.95rem", md: "1rem" },
-            }}
-          >
-            {t("socialNetworks")}
-          </Typography>
-          <TextField
-            label={t("twitchUrl")}
-            placeholder={t("twitchPlaceholder")}
-            fullWidth
-            value={links.twitch || ""}
-            onChange={(e) =>
-              setLinks((prev) => ({ ...prev, twitch: e.target.value }))
-            }
-            sx={{
-              "& .MuiInputBase-root": {
-                fontSize: { xs: "0.875rem", md: "1rem" },
-              },
-            }}
-          />
-          <TextField
-            label={t("youtubeUrl")}
-            placeholder={t("youtubePlaceholder")}
-            fullWidth
-            value={links.youtube || ""}
-            onChange={(e) =>
-              setLinks((prev) => ({ ...prev, youtube: e.target.value }))
-            }
-            sx={{
-              "& .MuiInputBase-root": {
-                fontSize: { xs: "0.875rem", md: "1rem" },
-              },
-            }}
-          />
-          <TextField
-            label={t("twitterUrl")}
-            placeholder={t("twitterPlaceholder")}
-            fullWidth
-            value={links.twitter || ""}
-            onChange={(e) =>
-              setLinks((prev) => ({ ...prev, twitter: e.target.value }))
-            }
-            sx={{
-              "& .MuiInputBase-root": {
-                fontSize: { xs: "0.875rem", md: "1rem" },
-              },
-            }}
-          />
-          <TextField
-            label={t("instagramUrl")}
-            placeholder={t("instagramPlaceholder")}
-            fullWidth
-            value={links.instagram || ""}
-            onChange={(e) =>
-              setLinks((prev) => ({ ...prev, instagram: e.target.value }))
-            }
-            sx={{
-              "& .MuiInputBase-root": {
-                fontSize: { xs: "0.875rem", md: "1rem" },
-              },
+          <SocialNetworksManager
+            userId={user?.id || ""}
+            onUpdate={() => {
+              // Refresh data when social networks are updated
             }}
           />
           </Stack>

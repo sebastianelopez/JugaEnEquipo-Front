@@ -54,4 +54,5 @@ export { TeamsList } from "./profile/TeamsList";
 export { TournamentsGrid } from "./profile/TournamentsGrid";
 export { AchievementsList as ProfileAchievementsList } from "./profile/AchievementsList";
 export { SocialLinksCard } from "./profile/SocialLinksCard";
+export { SocialNetworksBadges } from "./profile/SocialNetworksBadges";
 export { QuickStatsCard } from "./profile/QuickStatsCard";
