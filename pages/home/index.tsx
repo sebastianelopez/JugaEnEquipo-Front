@@ -73,7 +73,6 @@ const HomePage = () => {
     });
   }, []);
 
-  // Listen for post_moderated events to remove optimistic posts
   useEffect(() => {
     const handlePostModerated = (event: CustomEvent<{ postId: string }>) => {
       removePost(event.detail.postId);

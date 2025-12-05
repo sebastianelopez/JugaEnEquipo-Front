@@ -136,6 +136,25 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
     }
   }, [removePost]);
 
+  useEffect(() => {
+    const handlePostModerated = (event: CustomEvent<{ postId: string }>) => {
+      removePost(event.detail.postId);
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener(
+        "postModerated",
+        handlePostModerated as EventListener
+      );
+      return () => {
+        window.removeEventListener(
+          "postModerated",
+          handlePostModerated as EventListener
+        );
+      };
+    }
+  }, [removePost]);
+
   const loadTeams = useCallback(async () => {
     try {
       setIsLoadingTeams(true);
@@ -405,7 +424,6 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
     },
   ];
   const hasAchievements = achievements.length > 0;
-
 
   const currentTeams = teams.filter((team) => !team.leftDate).length;
   const activeGames = games.length;
