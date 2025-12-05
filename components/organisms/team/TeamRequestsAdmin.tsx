@@ -209,9 +209,16 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
         borderRadius: { xs: 2, md: 3 },
         border: `1px solid ${theme.palette.divider}`,
         mt: { xs: 2, md: 3 },
+        maxWidth: "100%",
+        overflow: "hidden",
       }}
     >
-      <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+      <CardContent
+        sx={{
+          p: { xs: 2, sm: 3, md: 4 },
+          "&:last-child": { pb: { xs: 2, sm: 3, md: 4 } },
+        }}
+      >
         <Typography
           variant="h5"
           sx={{
@@ -224,7 +231,7 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
           {t("pendingRequestsTitle")}
         </Typography>
 
-        <List sx={{ p: 0 }}>
+        <List sx={{ p: 0, width: "100%" }}>
           {requests.map((request) => {
             const user = users[request.userId];
             const isProcessing = processingIds.has(request.id);
@@ -232,53 +239,56 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
             return (
               <ListItem
                 key={request.id}
+                disablePadding
                 sx={{
-                  bgcolor: theme.palette.background.default,
-                  borderRadius: { xs: 1.5, md: 2 },
                   mb: { xs: 1.5, md: 2 },
-                  p: { xs: 1.5, sm: 2 },
-                  border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                  transition: "all 0.2s ease-in-out",
-                  "&:hover": {
-                    bgcolor: alpha(theme.palette.primary.main, 0.05),
-                    borderColor: alpha(theme.palette.primary.main, 0.3),
-                    transform: "translateX(4px)",
-                    boxShadow: `0 2px 8px ${alpha(
-                      theme.palette.primary.main,
-                      0.1
-                    )}`,
+                  "&:last-child": {
+                    mb: 0,
                   },
-                  flexDirection: { xs: "column", sm: "row" },
-                  alignItems: { xs: "flex-start", sm: "center" },
                 }}
               >
                 <Box
                   sx={{
+                    width: "100%",
+                    bgcolor: theme.palette.background.default,
+                    borderRadius: { xs: 1.5, md: 2 },
+                    p: { xs: 1.5, sm: 2, md: 2.5 },
+                    border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+                    transition: "all 0.2s ease-in-out",
+                    "&:hover": {
+                      bgcolor: alpha(theme.palette.primary.main, 0.05),
+                      borderColor: alpha(theme.palette.primary.main, 0.3),
+                      transform: "translateX(4px)",
+                      boxShadow: `0 2px 8px ${alpha(
+                        theme.palette.primary.main,
+                        0.1
+                      )}`,
+                    },
                     display: "flex",
-                    alignItems: "center",
-                    width: { xs: "100%", sm: "auto" },
-                    mb: { xs: 1.5, sm: 0 },
-                    flex: { sm: 1 },
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: 1.5,
                   }}
                 >
-                  <ListItemAvatar
+                  {/* User Info Section */}
+                  <Box
                     sx={{
-                      minWidth: { xs: 48, sm: 56 },
-                      mr: { xs: 1.5, sm: 2 },
+                      display: "flex",
+                      alignItems: "center",
+                      width: "100%",
                     }}
                   >
                     <Avatar
                       src={user?.profileImage}
                       alt={user?.username || user?.nickname || "User"}
                       sx={{
-                        width: { xs: 48, sm: 56 },
-                        height: { xs: 48, sm: 56 },
-                        border: {
-                          xs: `2px solid ${theme.palette.primary.main}`,
-                          sm: `2px solid ${theme.palette.primary.main}`,
-                        },
+                        width: { xs: 48, md: 56 },
+                        height: { xs: 48, md: 56 },
+                        border: `2px solid ${theme.palette.primary.main}`,
                         cursor: "pointer",
                         transition: "all 0.2s ease",
+                        flexShrink: 0,
+                        mr: { xs: 1.5, md: 2 },
                         "&:hover": {
                           transform: "scale(1.1)",
                           boxShadow: `0 4px 12px ${alpha(
@@ -291,20 +301,23 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
                         user?.username && handleUserClick(user.username)
                       }
                     />
-                  </ListItemAvatar>
-                  <ListItemText
-                    sx={{
-                      flex: 1,
-                      minWidth: 0,
-                      mr: { xs: 0, sm: 2 },
-                    }}
-                    primary={
+                    <Box
+                      sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
+                    >
                       <Typography
                         sx={{
                           color: theme.palette.text.primary,
                           fontWeight: 600,
-                          fontSize: { xs: "0.95rem", sm: "1rem" },
+                          fontSize: { xs: "0.95rem", md: "1rem" },
                           cursor: "pointer",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
                           "&:hover": {
                             color: theme.palette.primary.main,
                           },
@@ -315,105 +328,82 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
                       >
                         {user?.username || user?.nickname || "Unknown User"}
                       </Typography>
-                    }
-                    secondary={
-                      request.createdAt && (
+                      {request.createdAt && (
                         <Typography
                           sx={{
                             color: theme.palette.text.secondary,
-                            fontSize: { xs: "0.75rem", sm: "0.85rem" },
+                            fontSize: { xs: "0.75rem", md: "0.85rem" },
                             mt: 0.5,
                           }}
                         >
                           {new Date(request.createdAt).toLocaleDateString()}
                         </Typography>
-                      )
-                    }
-                  />
+                      )}
+                    </Box>
+                  </Box>
+
+                  {/* Actions Section */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      gap: 1,
+                      alignItems: "center",
+                      width: "100%",
+                      justifyContent: "flex-end",
+                    }}
+                  >
+                    <Tooltip title={t("accept")}>
+                      <IconButton
+                        color="success"
+                        onClick={() => handleAccept(request.id)}
+                        disabled={isProcessing}
+                        sx={{
+                          bgcolor: alpha(theme.palette.success.main, 0.1),
+                          border: `1px solid ${alpha(
+                            theme.palette.success.main,
+                            0.3
+                          )}`,
+                          "&:hover": {
+                            bgcolor: theme.palette.success.main,
+                            color: theme.palette.getContrastText(
+                              theme.palette.success.main
+                            ),
+                          },
+                          width: 40,
+                          height: 40,
+                        }}
+                      >
+                        <CheckCircleIcon />
+                      </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title={t("reject")}>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleReject(request.id)}
+                        disabled={isProcessing}
+                        sx={{
+                          bgcolor: alpha(theme.palette.error.main, 0.1),
+                          border: `1px solid ${alpha(
+                            theme.palette.error.main,
+                            0.3
+                          )}`,
+                          "&:hover": {
+                            bgcolor: theme.palette.error.main,
+                            color: theme.palette.getContrastText(
+                              theme.palette.error.main
+                            ),
+                          },
+                          width: 40,
+                          height: 40,
+                        }}
+                      >
+                        <CancelIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </Box>
-                <Stack
-                  direction="row"
-                  spacing={{ xs: 1, sm: 1.5 }}
-                  sx={{
-                    width: { xs: "100%", sm: "auto" },
-                    justifyContent: { xs: "flex-end", sm: "flex-start" },
-                  }}
-                >
-                  <Tooltip title={t("accept")}>
-                    <IconButton
-                      color="success"
-                      onClick={() => handleAccept(request.id)}
-                      disabled={isProcessing}
-                      sx={{
-                        bgcolor: alpha(theme.palette.success.main, 0.1),
-                        border: `1px solid ${alpha(
-                          theme.palette.success.main,
-                          0.3
-                        )}`,
-                        "&:hover": {
-                          bgcolor: theme.palette.success.main,
-                          color: theme.palette.getContrastText(
-                            theme.palette.success.main
-                          ),
-                        },
-                        display: { xs: "flex", sm: "none" },
-                      }}
-                    >
-                      <CheckCircleIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Button
-                    variant="contained"
-                    color="success"
-                    size="small"
-                    startIcon={<CheckCircleIcon />}
-                    onClick={() => handleAccept(request.id)}
-                    disabled={isProcessing}
-                    sx={{
-                      display: { xs: "none", sm: "flex" },
-                      minWidth: { sm: 100 },
-                    }}
-                  >
-                    {t("accept")}
-                  </Button>
-                  <Tooltip title={t("reject")}>
-                    <IconButton
-                      color="error"
-                      onClick={() => handleReject(request.id)}
-                      disabled={isProcessing}
-                      sx={{
-                        bgcolor: alpha(theme.palette.error.main, 0.1),
-                        border: `1px solid ${alpha(
-                          theme.palette.error.main,
-                          0.3
-                        )}`,
-                        "&:hover": {
-                          bgcolor: theme.palette.error.main,
-                          color: theme.palette.getContrastText(
-                            theme.palette.error.main
-                          ),
-                        },
-                        display: { xs: "flex", sm: "none" },
-                      }}
-                    >
-                      <CancelIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    size="small"
-                    startIcon={<CancelIcon />}
-                    onClick={() => handleReject(request.id)}
-                    disabled={isProcessing}
-                    sx={{
-                      display: { xs: "none", sm: "flex" },
-                      minWidth: { sm: 100 },
-                    }}
-                  >
-                    {t("reject")}
-                  </Button>
-                </Stack>
               </ListItem>
             );
           })}

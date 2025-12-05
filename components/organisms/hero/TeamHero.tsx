@@ -12,6 +12,7 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import StarIcon from "@mui/icons-material/Star";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import PersonIcon from "@mui/icons-material/Person";
 import MilitaryTechIcon from "@mui/icons-material/MilitaryTech";
 import { useTheme, alpha } from "@mui/material/styles";
@@ -28,6 +29,8 @@ interface Props {
   onBack: () => void;
   showEditButton?: boolean;
   onEdit?: () => void;
+  showDeleteButton?: boolean;
+  onDelete?: () => void;
   isCreator?: boolean;
   isLeader?: boolean;
   creatorLabel?: string;
@@ -45,6 +48,8 @@ export const TeamHero: FC<Props> = ({
   onBack,
   showEditButton = false,
   onEdit,
+  showDeleteButton = false,
+  onDelete,
   isCreator = false,
   isLeader = false,
   creatorLabel = "Creador",
@@ -223,6 +228,27 @@ export const TeamHero: FC<Props> = ({
                   }}
                 >
                   <EditIcon />
+                </IconButton>
+              )}
+              {showDeleteButton && onDelete && (
+                <IconButton
+                  onClick={onDelete}
+                  size="small"
+                  sx={{
+                    bgcolor: "rgba(255, 255, 255, 0.1)",
+                    color: theme.palette.error.light,
+                    width: { xs: 32, md: 40 },
+                    height: { xs: 32, md: 40 },
+                    flexShrink: 0,
+                    "&:hover": {
+                      bgcolor: "rgba(211, 47, 47, 0.2)",
+                    },
+                    "& svg": {
+                      fontSize: { xs: "1.1rem", md: "1.5rem" },
+                    },
+                  }}
+                >
+                  <DeleteIcon />
                 </IconButton>
               )}
             </Stack>
