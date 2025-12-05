@@ -4,10 +4,11 @@ import { useTranslations } from "next-intl";
 import { PublicationCard } from "../../components/organisms";
 import { Post } from "../../interfaces";
 import { MainLayout } from "../../layouts";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { postService } from "../../services/post.service";
 import { UserContext } from "../../context/user";
 import { Box } from "@mui/material";
+import { useRouter } from "next/router";
 
 interface Props {
   post: Post;
@@ -15,8 +16,26 @@ interface Props {
 
 const PostPage: NextPage<Props> = ({ post }) => {
   const t = useTranslations("Profile");
+  const router = useRouter();
 
   const { user } = useContext(UserContext);
+
+  // Listen for post_deleted events to redirect if the current post is deleted
+  useEffect(() => {
+    const handlePostDeleted = (event: CustomEvent<{ postId: string }>) => {
+      if (event.detail.postId === post.id) {
+        // Redirect to home page if the post being viewed is deleted
+        router.push("/home");
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("postDeleted", handlePostDeleted as EventListener);
+      return () => {
+        window.removeEventListener("postDeleted", handlePostDeleted as EventListener);
+      };
+    }
+  }, [post.id, router]);
 
   return (
     <>

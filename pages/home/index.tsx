@@ -80,9 +80,34 @@ const HomePage = () => {
     };
 
     if (typeof window !== "undefined") {
-      window.addEventListener("postModerated", handlePostModerated as EventListener);
+      window.addEventListener(
+        "postModerated",
+        handlePostModerated as EventListener
+      );
       return () => {
-        window.removeEventListener("postModerated", handlePostModerated as EventListener);
+        window.removeEventListener(
+          "postModerated",
+          handlePostModerated as EventListener
+        );
+      };
+    }
+  }, [removePost]);
+
+  useEffect(() => {
+    const handlePostDeleted = (event: CustomEvent<{ postId: string }>) => {
+      removePost(event.detail.postId);
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener(
+        "postDeleted",
+        handlePostDeleted as EventListener
+      );
+      return () => {
+        window.removeEventListener(
+          "postDeleted",
+          handlePostDeleted as EventListener
+        );
       };
     }
   }, [removePost]);

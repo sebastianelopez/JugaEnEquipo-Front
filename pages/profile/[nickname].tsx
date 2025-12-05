@@ -107,9 +107,34 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
     }
   }, [userFound.username]);
 
+  const removePost = useCallback((postId: string) => {
+    setPosts((prevPosts) => {
+      return prevPosts.filter((post) => post.id !== postId);
+    });
+  }, []);
+
   useEffect(() => {
     loadPosts();
   }, [loadPosts]);
+
+  useEffect(() => {
+    const handlePostDeleted = (event: CustomEvent<{ postId: string }>) => {
+      removePost(event.detail.postId);
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener(
+        "postDeleted",
+        handlePostDeleted as EventListener
+      );
+      return () => {
+        window.removeEventListener(
+          "postDeleted",
+          handlePostDeleted as EventListener
+        );
+      };
+    }
+  }, [removePost]);
 
   const loadTeams = useCallback(async () => {
     try {
@@ -169,17 +194,21 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   const loadPlayers = useCallback(async () => {
     try {
       setIsLoadingPlayers(true);
-      // Filter players by userId
+
       const result = await playerService.search(
-        isLoggedUser && user?.id ? { userId: user.id } : { userId: userFound.id }
+        isLoggedUser && user?.id
+          ? { userId: user.id }
+          : { userId: userFound.id }
       );
       if (result.ok && result.data) {
         setPlayers(result.data || []);
-        
+
         // Load roles data for each unique game (gameName already comes in the response)
         const rolesMap = new Map<string, Role[]>();
-        const uniqueGameIds = Array.from(new Set(result.data.map((p: Player) => p.gameId)));
-        
+        const uniqueGameIds = Array.from(
+          new Set(result.data.map((p: Player) => p.gameId))
+        );
+
         for (const gameId of uniqueGameIds) {
           if (!rolesMap.has(gameId)) {
             const rolesResult = await roleService.findAllByGame(gameId);
@@ -188,7 +217,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
             }
           }
         }
-        
+
         setRolesData(rolesMap);
       } else {
         setPlayers([]);
@@ -270,7 +299,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   const games = players.map((player) => {
     const roles = rolesData.get(player.gameId) || [];
     const playerRoles = roles.filter((r) => player.gameRoleIds?.includes(r.id));
-    
+
     // Build account info string
     let accountInfo = "";
     if (player.accountData?.steamId) {
@@ -284,19 +313,25 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
         accountInfo += ` (${player.accountData.region})`;
       }
     }
-    
+
     return {
       name: player.gameName || "Unknown Game",
       icon: player.gameName ? getGameImage(player.gameName) : undefined,
-      rank: playerRoles.length > 0 ? playerRoles.map((r) => r.roleName).join(", ") : undefined,
+      rank:
+        playerRoles.length > 0
+          ? playerRoles.map((r) => r.roleName).join(", ")
+          : undefined,
       accountInfo: accountInfo || undefined,
-      roles: playerRoles.map((r) => ({ roleName: r.roleName, roleDescription: r.roleDescription })),
+      roles: playerRoles.map((r) => ({
+        roleName: r.roleName,
+        roleDescription: r.roleDescription,
+      })),
       gameRank: player.gameRank,
       gameId: player.gameId,
       isOwnershipVerified: player.isOwnershipVerified,
     };
   });
-  
+
   const hasGames = games.length > 0;
 
   const hasTeams = teams.length > 0;
