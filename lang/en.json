@@ -759,6 +759,8 @@
             "status": "Status",
             "active": "Active",
             "disabled": "Disabled",
+            "enable": "Enable User",
+            "disable": "Disable User",
             "noUsersFound": "No users found",
             "errorLoading": "Error loading users"
         },
@@ -916,7 +918,17 @@
             "close": "Close",
             "user": "User",
             "deleted": "Deleted",
-            "leaveEmpty": "Leave empty to keep current password"
+            "leaveEmpty": "Leave empty to keep current password",
+            "disableReason": "Reason for disabling",
+            "selectReason": "Select a reason",
+            "inappropriate_content": "Inappropriate Content",
+            "spam": "Spam",
+            "harassment": "Harassment",
+            "hate_speech": "Hate Speech",
+            "violence": "Violence",
+            "sexual_content": "Sexual Content",
+            "misinformation": "Misinformation",
+            "copyright_violation": "Copyright Violation"
         }
     }
 }

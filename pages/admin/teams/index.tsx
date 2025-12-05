@@ -22,6 +22,11 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import {
   VerifiedUser as VerifiedIcon,
@@ -42,6 +47,7 @@ import { formatDate } from "../../../utils/formatDate";
 import {
   backofficeService,
   type Team,
+  type DisableReason,
 } from "../../../services/backoffice.service";
 import { useTranslations } from "next-intl";
 import type { GetStaticPropsContext } from "next";
@@ -58,6 +64,21 @@ const colors = {
 export default function TeamsModeration() {
   const t = useTranslations("Admin.teams");
   const tCommon = useTranslations("Admin.common");
+
+  const disableReasons: {
+    value: DisableReason;
+    label: string;
+  }[] = [
+    { value: "inappropriate_content", label: tCommon("inappropriate_content") },
+    { value: "spam", label: tCommon("spam") },
+    { value: "harassment", label: tCommon("harassment") },
+    { value: "hate_speech", label: tCommon("hate_speech") },
+    { value: "violence", label: tCommon("violence") },
+    { value: "sexual_content", label: tCommon("sexual_content") },
+    { value: "misinformation", label: tCommon("misinformation") },
+    { value: "copyright_violation", label: tCommon("copyright_violation") },
+  ];
+
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +89,11 @@ export default function TeamsModeration() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [total, setTotal] = useState(0);
+  const [disableDialogOpen, setDisableDialogOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [disableReason, setDisableReason] = useState<DisableReason>(
+    "inappropriate_content"
+  );
 
   useEffect(() => {
     loadTeams();
@@ -102,9 +128,7 @@ export default function TeamsModeration() {
         setTeams(result.data.data || []);
         setTotal(result.data.metadata?.total || result.data.data?.length || 0);
       } else {
-        setError(
-          result.ok === false ? result.errorMessage : t("errorLoading")
-        );
+        setError(result.ok === false ? result.errorMessage : t("errorLoading"));
       }
     } catch (err: any) {
       setError(err?.message || t("errorLoading"));
@@ -113,22 +137,51 @@ export default function TeamsModeration() {
     }
   };
 
-  const handleToggleTeam = async (teamId: string, isDisabled: boolean) => {
+  const handleEnableTeam = async (teamId: string) => {
     try {
-      const result = isDisabled
-        ? await backofficeService.enableTeam(teamId)
-        : await backofficeService.disableTeam(teamId);
-
+      const result = await backofficeService.enableTeam(teamId);
       if (result.ok) {
         await loadTeams();
       } else {
         setError(
-          result.ok === false ? result.errorMessage : "Error al cambiar estado"
+          result.ok === false
+            ? result.errorMessage
+            : "Error al habilitar equipo"
         );
       }
     } catch (err: any) {
-      setError(err?.message || tCommon("error"));
+      setError(err?.message || "Error al habilitar equipo");
     }
+  };
+
+  const handleDisableTeam = async () => {
+    if (!selectedTeam) return;
+
+    try {
+      const result = await backofficeService.disableTeam(
+        selectedTeam.id,
+        disableReason
+      );
+      if (result.ok) {
+        await loadTeams();
+        setDisableDialogOpen(false);
+        setSelectedTeam(null);
+      } else {
+        setError(
+          result.ok === false
+            ? result.errorMessage
+            : "Error al deshabilitar equipo"
+        );
+      }
+    } catch (err: any) {
+      setError(err?.message || "Error al deshabilitar equipo");
+    }
+  };
+
+  const openDisableDialog = (team: Team) => {
+    setSelectedTeam(team);
+    setDisableReason("inappropriate_content");
+    setDisableDialogOpen(true);
   };
 
   return (
@@ -504,7 +557,11 @@ export default function TeamsModeration() {
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label={team.disabled ? t("disabled") : tCommon("active")}
+                              label={
+                                team.disabled
+                                  ? t("disabled")
+                                  : tCommon("active")
+                              }
                               size="small"
                               sx={{
                                 bgcolor: team.disabled
@@ -521,9 +578,7 @@ export default function TeamsModeration() {
                               {team.disabled ? (
                                 <IconButton
                                   size="small"
-                                  onClick={() =>
-                                    handleToggleTeam(team.id, true)
-                                  }
+                                  onClick={() => handleEnableTeam(team.id)}
                                   sx={{ color: colors.success }}
                                 >
                                   <CheckIcon />
@@ -531,9 +586,7 @@ export default function TeamsModeration() {
                               ) : (
                                 <IconButton
                                   size="small"
-                                  onClick={() =>
-                                    handleToggleTeam(team.id, false)
-                                  }
+                                  onClick={() => openDisableDialog(team)}
                                   sx={{ color: colors.error }}
                                 >
                                   <BlockIcon />
@@ -567,6 +620,88 @@ export default function TeamsModeration() {
             </>
           )}
         </TableContainer>
+
+        <Dialog
+          open={disableDialogOpen}
+          onClose={() => {
+            setDisableDialogOpen(false);
+            setSelectedTeam(null);
+          }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle sx={{ background: "#2D3436", color: "#fff" }}>
+            {t("disable")}
+          </DialogTitle>
+          <DialogContent sx={{ background: "#2D3436", pt: 3 }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography sx={{ color: "rgba(255,255,255,0.7)", mb: 1 }}>
+                {t("team")}: {selectedTeam?.name}
+              </Typography>
+              {selectedTeam?.description && (
+                <Typography
+                  sx={{
+                    color: "rgba(255,255,255,0.8)",
+                    p: 2,
+                    bgcolor: "rgba(255,255,255,0.05)",
+                    borderRadius: 1,
+                  }}
+                >
+                  {selectedTeam.description}
+                </Typography>
+              )}
+            </Box>
+            <FormControl fullWidth>
+              <InputLabel sx={{ color: "rgba(255,255,255,0.7)" }}>
+                {tCommon("disableReason")}
+              </InputLabel>
+              <Select
+                value={disableReason}
+                onChange={(e) =>
+                  setDisableReason(e.target.value as DisableReason)
+                }
+                label={tCommon("disableReason")}
+                sx={{
+                  color: "#fff",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(255,255,255,0.2)",
+                  },
+                  "& .MuiSvgIcon-root": { color: "rgba(255,255,255,0.7)" },
+                }}
+              >
+                {disableReasons.map((reason) => (
+                  <MenuItem key={reason.value} value={reason.value}>
+                    {reason.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions sx={{ background: "#2D3436", p: 2 }}>
+            <Button
+              onClick={() => {
+                setDisableDialogOpen(false);
+                setSelectedTeam(null);
+              }}
+              sx={{ color: "rgba(255,255,255,0.7)" }}
+            >
+              {tCommon("cancel")}
+            </Button>
+            <Button
+              onClick={handleDisableTeam}
+              variant="contained"
+              sx={{
+                background: "linear-gradient(135deg, #6C5CE7 0%, #00CEC9 100%)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #5B4BCF 0%, #00B8B1 100%)",
+                },
+              }}
+            >
+              {t("disable")}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </AdminLayout>
   );

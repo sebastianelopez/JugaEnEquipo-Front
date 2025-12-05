@@ -759,6 +759,8 @@
             "status": "Estado",
             "active": "Activo",
             "disabled": "Deshabilitado",
+            "enable": "Habilitar Usuario",
+            "disable": "Deshabilitar Usuario",
             "noUsersFound": "No se encontraron usuarios",
             "errorLoading": "Error al cargar usuarios"
         },
@@ -916,7 +918,17 @@
             "close": "Cerrar",
             "user": "Usuario",
             "deleted": "Eliminado",
-            "leaveEmpty": "Dejar vacío para mantener la contraseña actual"
+            "leaveEmpty": "Dejar vacío para mantener la contraseña actual",
+            "disableReason": "Motivo de deshabilitación",
+            "selectReason": "Selecciona un motivo",
+            "inappropriate_content": "Contenido Inapropiado",
+            "spam": "Spam",
+            "harassment": "Acoso",
+            "hate_speech": "Discurso de Odio",
+            "violence": "Violencia",
+            "sexual_content": "Contenido Sexual",
+            "misinformation": "Desinformación",
+            "copyright_violation": "Violación de Derechos de Autor"
         }
     }
 }
