@@ -3,16 +3,12 @@ import Cookies from "js-cookie";
 import https from "https";
 import { getAuthCookieOptions } from "../utils/cookies";
 
-// Determine if we're running on server or client
 const isServer = typeof window === "undefined";
 
-// Use absolute URL when on server, relative URL when on client (both dev and prod)
-// Using proxy in client-side avoids CORS issues
 const baseURL = isServer
   ? process.env.NEXT_PUBLIC_API_URL || "https://api.jugaenequipo.com/api"
   : "/api/proxy";
 
-// Create HTTPS agent for server-side requests
 const httpsAgent = isServer
   ? new https.Agent({
       rejectUnauthorized: process.env.NODE_ENV === "production",
@@ -21,22 +17,19 @@ const httpsAgent = isServer
 
 const axiosInstance = axios.create({
   baseURL,
-  timeout: 20000, // Increased from 10000ms to 20000ms (20 seconds) for better reliability
+  timeout: 20000,
   headers: {
     "Content-Type": "application/json",
   },
-  ...(httpsAgent && { httpsAgent }), // Only add httpsAgent for server-side requests
+  ...(httpsAgent && { httpsAgent }),
 });
 
-// Request interceptor to add auth token
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Don't add token for login endpoints (both regular and admin login)
     const url = config.url || "";
     const isLoginEndpoint = url.includes("/login") || url.endsWith("/login");
     
     if (!isLoginEndpoint) {
-      // Check if this is an admin request and use appropriate token
       const isAdminRequest = url.includes("/backoffice") || 
         (typeof window !== "undefined" && window.location.pathname.startsWith("/admin"));
       
@@ -54,16 +47,13 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Variable to prevent multiple refresh token requests
 let isRefreshing = false;
-// Store pending requests
 let failedQueue: Array<{
   resolve: (value: unknown) => void;
   reject: (reason?: any) => void;
   config: any;
 }> = [];
 
-// Process the queue of failed requests
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((request) => {
     if (error) {
@@ -78,7 +68,6 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-// Response interceptor to handle token refresh
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -88,7 +77,6 @@ axiosInstance.interceptors.response.use(
     const isLoginEndpoint = url.includes("/login") || url.endsWith("/login");
     const isRefreshTokenEndpoint = url.includes("refresh-token");
     
-    // Detect if this is an admin/backoffice request
     const isAdminRequest = url.includes("/backoffice") || 
       (typeof window !== "undefined" && window.location.pathname.startsWith("/admin"));
 
@@ -103,7 +91,6 @@ axiosInstance.interceptors.response.use(
     }
 
     if (isRefreshing) {
-      // If already refreshing, queue this request
       return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject, config: originalRequest });
       });
@@ -113,7 +100,6 @@ axiosInstance.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      // Get the refresh token (admin uses different cookie names)
       const refreshToken = isAdminRequest 
         ? Cookies.get("adminRefreshToken")
         : Cookies.get("refreshToken");
@@ -122,14 +108,11 @@ axiosInstance.interceptors.response.use(
         : Cookies.get("token");
       
       if (!refreshToken) {
-        // Determine the correct login page based on request type
         const loginPage = isAdminRequest ? "/admin/login" : "/auth/login";
         const isOnLoginPage = typeof window !== "undefined" && 
           (window.location.pathname === loginPage || window.location.pathname.startsWith(loginPage));
         
         if (!isOnLoginPage) {
-          // Only redirect if not already on login page
-          // Remove appropriate tokens based on context
           if (isAdminRequest) {
             Cookies.remove("adminToken");
             Cookies.remove("adminRefreshToken");
@@ -144,27 +127,21 @@ axiosInstance.interceptors.response.use(
         throw new Error("No refresh token available");
       }
 
-      // Use the same refresh token endpoint for both regular users and admin
-      const refreshEndpoint = `/refresh-token`;
+      const refreshEndpoint = isAdminRequest 
+        ? `/backoffice/refresh-token`
+        : `/refresh-token`;
 
-      // Call the refresh token endpoint using axiosInstance to go through proxy
-      // Don't send Authorization header for refresh token endpoint (it uses refreshToken in body)
       const response = await axiosInstance.post(
         refreshEndpoint,
         { refreshToken },
         {
-          headers: {
-            // Refresh token endpoint typically doesn't need Authorization header
-          },
+          headers: {},
         }
       );
 
-      // Handle both response structures: response.data.data or response.data
       const responseData = response.data?.data || response.data;
       const { token: newToken, refreshToken: newRefreshToken } = responseData;
 
-      // Update cookies with new tokens using mobile-compatible options
-      // Use appropriate cookie names based on context
       const cookieOptions = getAuthCookieOptions();
       if (isAdminRequest) {
         Cookies.set("adminToken", newToken, cookieOptions);
@@ -174,18 +151,14 @@ axiosInstance.interceptors.response.use(
         Cookies.set("refreshToken", newRefreshToken, cookieOptions);
       }
 
-      // Process queued requests
       processQueue(null, newToken);
 
-      // Retry the original request
       if (originalRequest) {
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return axiosInstance(originalRequest);
       }
     } catch (refreshError) {
-      // Handle refresh error - logout user
       processQueue(refreshError, null);
-      // Remove appropriate tokens based on context
       if (isAdminRequest) {
         Cookies.remove("adminToken");
         Cookies.remove("adminRefreshToken");
@@ -194,10 +167,8 @@ axiosInstance.interceptors.response.use(
         Cookies.remove("refreshToken");
       }
       
-      // Determine the correct login page based on request type
       const loginPage = isAdminRequest ? "/admin/login" : "/auth/login";
       
-      // Only redirect if not already on login page to avoid loops
       if (typeof window !== "undefined") {
         const isOnLoginPage = window.location.pathname === loginPage || 
           window.location.pathname.startsWith(loginPage);
