@@ -10,7 +10,6 @@ import {
   Paper,
   InputAdornment,
   CircularProgress,
-  Divider,
   useTheme,
   alpha,
   useMediaQuery,
@@ -37,6 +36,7 @@ import { useFeedback } from "../../../hooks/useFeedback";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/router";
 import { v4 as uuidv4 } from "uuid";
+import { formatDate } from "../../../utils/formatDate";
 
 interface ChatWindowProps {
   conversation: Conversation | null;
@@ -579,6 +579,33 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }, []);
 
+  // Helper function to check if two messages are from different days
+  const isDifferentDay = useCallback(
+    (date1: string, date2: string): boolean => {
+      const d1 = new Date(date1);
+      const d2 = new Date(date2);
+
+      return (
+        d1.getFullYear() !== d2.getFullYear() ||
+        d1.getMonth() !== d2.getMonth() ||
+        d1.getDate() !== d2.getDate()
+      );
+    },
+    []
+  );
+
+  // Helper function to format date for day separator (only date, no time)
+  const formatDaySeparator = useCallback(
+    (createdAt: string): string => {
+      const locale = (router.locale as "es" | "en" | "pt") || "es";
+      return formatDate(createdAt, {
+        locale,
+        includeTime: false,
+      });
+    },
+    [router.locale]
+  );
+
   if (!conversation) {
     return (
       <Grid
@@ -728,10 +755,40 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               {messages.map((message, index) => {
                 const isOwnMessage = message.username === user?.username;
                 const isOptimistic = message.id.startsWith("temp-");
-                const showDivider = index < messages.length - 1;
+
+                // Check if we need to show a day separator
+                const previousMessage = index > 0 ? messages[index - 1] : null;
+                const showDaySeparator =
+                  !previousMessage ||
+                  isDifferentDay(previousMessage.createdAt, message.createdAt);
 
                 return (
                   <React.Fragment key={message.id}>
+                    {showDaySeparator && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          my: 2,
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            px: 2,
+                            py: 0.5,
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            color: "text.secondary",
+                            borderRadius: 2,
+                            fontSize: "0.75rem",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {formatDaySeparator(message.createdAt)}
+                        </Typography>
+                      </Box>
+                    )}
                     <ListItem
                       sx={{
                         display: "flex",
@@ -817,7 +874,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                         </Box>
                       </Paper>
                     </ListItem>
-                    {showDivider && <Divider variant="middle" />}
                   </React.Fragment>
                 );
               })}
