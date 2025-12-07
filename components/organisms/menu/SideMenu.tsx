@@ -147,7 +147,10 @@ export const SideMenu = () => {
   };
 
   const navigateTo = (url: string) => {
+    console.log("navigateTo", url);
+    if (!url) return;
     toggleSideMenu();
+
     router.push(url);
   };
 
@@ -359,7 +362,13 @@ export const SideMenu = () => {
 
           <>
             <ListItem
-              onClick={() => navigateTo(`/profile/${user?.username}`)}
+              onClick={() => {
+                if (user?.username) {
+                  navigateTo(`/profile/${user.username}`);
+                } else {
+                  console.warn("[SideMenu] User not available in context");
+                }
+              }}
               sx={{
                 cursor: "pointer",
                 "&:hover": { backgroundColor: "action.hover" },
