@@ -143,6 +143,8 @@
     "Publication":{
         "comment": "Reply to this post...",
         "commentButton": "Comment",
+        "noCommentsYet": "No comments yet",
+        "addAComment": "Add a comment",
         "likeButton": "Like",
         "shareButton": "Share",
         "mediaButton": "Photo / Video",

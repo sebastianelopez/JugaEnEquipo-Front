@@ -6,6 +6,7 @@ import {
   Input,
   IconButton,
   Skeleton,
+  Avatar,
 } from "@mui/material";
 import { formatTimeElapsed } from "../../../../../utils/formatTimeElapsed";
 
@@ -84,6 +85,7 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
           user: user.username,
           comment: commentText,
           createdAt: new Date().toISOString(),
+          profileImage: user.profileImage || undefined,
         };
 
         setComments((prev) => [localComment, ...prev]);
@@ -174,73 +176,126 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
                 <Skeleton variant="text" width="30%" />
               </CardContent>
             ) : comments.length > 0 ? (
-              comments.map(({ id, comment, user: commentUser, createdAt }) => {
-                const isCurrentUser = user?.username === commentUser;
-                const isNewComment = id === newCommentId;
+              comments.map(
+                ({
+                  id,
+                  comment,
+                  user: commentUser,
+                  createdAt,
+                  profileImage,
+                }) => {
+                  const isCurrentUser = user?.username === commentUser;
+                  const isNewComment = id === newCommentId;
 
-                return (
-                  <Box
-                    key={id}
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: isCurrentUser ? "flex-end" : "flex-start",
-                      paddingX: 2,
-                      marginBottom: 1,
-                      width: "100%",
-                      animation: isNewComment
-                        ? "fadeSlideIn 0.5s ease-out"
-                        : "none",
-                      "@keyframes fadeSlideIn": {
-                        "0%": {
-                          opacity: 0,
-                          transform: "translateY(20px)",
-                        },
-                        "100%": {
-                          opacity: 1,
-                          transform: "translateY(0)",
-                        },
-                      },
-                    }}
-                  >
+                  return (
                     <Box
+                      key={id}
                       sx={{
-                        maxWidth: "70%",
-                        backgroundColor: isCurrentUser
-                          ? "primary.light"
-                          : "red.50",
-                        borderRadius: 2,
-                        paddingY: 1,
-                        paddingX: 1.5,
-                        mb: 0.5,
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "flex-start",
+                        gap: 1.5,
+                        paddingX: 2,
+                        marginBottom: 1,
+                        width: "100%",
+                        justifyContent: isCurrentUser
+                          ? "flex-end"
+                          : "flex-start",
+                        animation: isNewComment
+                          ? "fadeSlideIn 0.5s ease-out"
+                          : "none",
+                        "@keyframes fadeSlideIn": {
+                          "0%": {
+                            opacity: 0,
+                            transform: "translateY(20px)",
+                          },
+                          "100%": {
+                            opacity: 1,
+                            transform: "translateY(0)",
+                          },
+                        },
                       }}
                     >
-                      <Typography
-                        variant="subtitle2"
-                        color={isCurrentUser ? "white" : "text.primary"}
+                      {!isCurrentUser && (
+                        <Avatar
+                          src={profileImage}
+                          alt={commentUser}
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            flexShrink: 0,
+                          }}
+                        />
+                      )}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: isCurrentUser ? "flex-end" : "flex-start",
+                          maxWidth: "70%",
+                        }}
                       >
-                        {commentUser}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color={isCurrentUser ? "white" : "text.primary"}
-                      >
-                        {comment}
-                      </Typography>
+                        <Box
+                          sx={{
+                            backgroundColor: isCurrentUser
+                              ? "primary.light"
+                              : "action.hover",
+                            borderRadius: 2,
+                            paddingY: 1,
+                            paddingX: 1.5,
+                            mb: 0.5,
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            color={isCurrentUser ? "white" : "text.primary"}
+                            sx={{ fontWeight: 600 }}
+                          >
+                            {commentUser}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color={isCurrentUser ? "white" : "text.primary"}
+                          >
+                            {comment}
+                          </Typography>
+                        </Box>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            px: 1,
+                            color: "text.secondary",
+                            fontSize: "0.7rem",
+                          }}
+                        >
+                          {formatTimeElapsed(
+                            new Date(createdAt),
+                            timeTranslations
+                          )}
+                        </Typography>
+                      </Box>
+                      {isCurrentUser && (
+                        <Avatar
+                          src={user?.profileImage}
+                          alt={commentUser}
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            flexShrink: 0,
+                          }}
+                        />
+                      )}
                     </Box>
-                    <Typography variant="caption" sx={{ px: 1 }}>
-                      {formatTimeElapsed(new Date(createdAt), timeTranslations)}
-                    </Typography>
-                  </Box>
-                );
-              })
+                  );
+                }
+              )
             ) : (
               <>
                 <Typography variant="subtitle2" align="center">
-                  No comments yet
+                  {t("noCommentsYet")}
                 </Typography>
                 <Typography variant="body2" align="center">
-                  Add a comment
+                  {t("addAComment")}
                 </Typography>
               </>
             )}
