@@ -6,10 +6,7 @@ import {
   Button,
   MenuItem,
   Stack,
-  Typography,
-  Avatar,
 } from "@mui/material";
-import { PhotoCamera } from "@mui/icons-material";
 import { MyTextInput, MySelect, UserSearchSelect } from "../../atoms";
 import { MyDateTimePicker } from "../../atoms/MyDateTimePicker";
 import { gameService } from "../../../services/game.service";
@@ -19,13 +16,13 @@ import { Rank } from "../../../interfaces/rank";
 import type { CreateTournamentPayload } from "../../../interfaces";
 import { useTranslations } from "next-intl";
 import dayjs from "dayjs";
-import { handleImageFileChange } from "../../../utils/imageFileUtils";
 
 interface TournamentFormProps {
   initialValues?: Partial<CreateTournamentPayload>;
   onSubmit: (values: CreateTournamentPayload) => Promise<void> | void;
   submitting?: boolean;
   isAdminForm?: boolean; // If true, show creatorId and responsibleId fields
+  submitButtonText?: string; // Custom text for submit button
 }
 
 type FormValues = Omit<CreateTournamentPayload, "startAt" | "endAt"> & {
@@ -50,46 +47,19 @@ const GameIdWatcher: FC<{
   return null;
 };
 
-const ImageWatcher: FC<{
-  onImageChange: (image: string | null) => void;
-}> = ({ onImageChange }) => {
-  const { values } = useFormikContext<FormValues>();
-  const prevImageRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (values.image !== prevImageRef.current) {
-      prevImageRef.current = values.image || null;
-      // Update preview if it's a URL or base64
-      if (
-        values.image &&
-        (values.image.startsWith("http") ||
-          values.image.startsWith("https") ||
-          values.image.startsWith("data:image"))
-      ) {
-        onImageChange(values.image);
-      } else if (!values.image) {
-        onImageChange(null);
-      }
-    }
-  }, [values.image, onImageChange]);
-
-  return null;
-};
 
 export const TournamentForm: FC<TournamentFormProps> = ({
   initialValues,
   onSubmit,
   submitting,
   isAdminForm = false,
+  submitButtonText,
 }) => {
   const t = useTranslations("Tournaments");
   const [games, setGames] = useState<Game[]>([]);
   const [loadingGames, setLoadingGames] = useState(true);
   const [ranks, setRanks] = useState<Rank[]>([]);
   const [loadingRanks, setLoadingRanks] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    initialValues?.image || null
-  );
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -103,12 +73,6 @@ export const TournamentForm: FC<TournamentFormProps> = ({
     fetchGames();
   }, []);
 
-  // Update preview when initialValues change
-  useEffect(() => {
-    if (initialValues?.image) {
-      setImagePreview(initialValues.image);
-    }
-  }, [initialValues?.image]);
 
   const fetchRanks = async (gameId: string) => {
     if (!gameId) {
@@ -159,13 +123,6 @@ export const TournamentForm: FC<TournamentFormProps> = ({
             if (!value || !startAt) return false;
             return new Date(value) > new Date(startAt);
           }),
-        image: Yup.string()
-          .nullable()
-          .test("image-format", "Image must be a base64 string", (value) => {
-            if (!value) return true; // null/empty is allowed
-            // Only accept base64 data URLs
-            return /^data:image\//.test(value);
-          }),
         minGameRankId: Yup.string().nullable(),
         maxGameRankId: Yup.string().nullable(),
         creatorId: isAdminForm
@@ -200,7 +157,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
       maxTeams: initialValues?.maxTeams ?? 8,
       startAt: defaultStartAt,
       endAt: defaultEndAt,
-      image: initialValues?.image || null,
+      image: null,
       prize: initialValues?.prize || null,
       responsibleId: initialValues?.responsibleId || null,
       creatorId: initialValues?.creatorId || null,
@@ -226,7 +183,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
       description: values.description,
       maxTeams: values.maxTeams,
       isOfficial: values.isOfficial,
-      image: toNullIfEmpty(values.image),
+      image: null,
       prize: toNullIfEmpty(values.prize),
       region: values.region,
       startAt: values.startAt,
@@ -256,7 +213,6 @@ export const TournamentForm: FC<TournamentFormProps> = ({
         return (
           <Form>
             <GameIdWatcher onGameChange={handleGameChange} />
-            <ImageWatcher onImageChange={setImagePreview} />
             <Stack spacing={2} sx={{ width: "100%", maxWidth: 600 }}>
               <MyTextInput
                 name="name"
@@ -327,45 +283,6 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                 </>
               )}
 
-              <Box>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  {t("form.image")}
-                </Typography>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  {imagePreview && (
-                    <Avatar
-                      src={imagePreview}
-                      alt="Tournament preview"
-                      sx={{ width: 80, height: 80 }}
-                      variant="rounded"
-                    />
-                  )}
-                  <Box sx={{ flex: 1 }}>
-                    <Button
-                      variant="outlined"
-                      component="label"
-                      startIcon={<PhotoCamera />}
-                      size="small"
-                      fullWidth
-                    >
-                      {t("form.uploadImage")}
-                      <input
-                        hidden
-                        accept="image/*"
-                        type="file"
-                        onChange={(e) =>
-                          handleImageFileChange(
-                            e,
-                            formik.setFieldValue,
-                            setImagePreview
-                          )
-                        }
-                      />
-                    </Button>
-                  </Box>
-                </Stack>
-              </Box>
-
               <MyDateTimePicker
                 label={t("form.startDate")}
                 name="startAt"
@@ -423,7 +340,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                   !formik.isValid || formik.isSubmitting || Boolean(submitting)
                 }
               >
-                {t("create")}
+                {submitButtonText || t("create")}
               </Button>
             </Stack>
           </Form>
