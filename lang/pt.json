@@ -143,6 +143,8 @@
     "Publication":{
         "comment": "Responda a esta postagem...",
         "commentButton": "Comentar",
+        "noCommentsYet": "Ainda não há comentários",
+        "addAComment": "Adicione um comentário",
         "likeButton": "Curtir",
         "shareButton": "Compartilhar",
         "mediaButton": "Foto / Vídeo",

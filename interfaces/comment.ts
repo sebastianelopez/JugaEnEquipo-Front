@@ -3,4 +3,5 @@ export interface Comment {
   user: string;
   comment: string;
   createdAt: string;
+  profileImage?: string;
 }
