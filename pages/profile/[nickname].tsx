@@ -610,10 +610,7 @@ export const getServerSideProps: GetServerSideProps = async ({
 
   if (!nickname) {
     return {
-      redirect: {
-        destination: "/404",
-        permanent: false,
-      },
+      notFound: true,
     };
   }
 
@@ -626,10 +623,7 @@ export const getServerSideProps: GetServerSideProps = async ({
 
     if (!userFound) {
       return {
-        redirect: {
-          destination: "/404",
-          permanent: false,
-        },
+        notFound: true,
       };
     }
 
@@ -642,10 +636,7 @@ export const getServerSideProps: GetServerSideProps = async ({
   } catch (error) {
     console.error("Error fetching user data:", error);
     return {
-      redirect: {
-        destination: "/404",
-        permanent: false,
-      },
+      notFound: true,
     };
   }
 };

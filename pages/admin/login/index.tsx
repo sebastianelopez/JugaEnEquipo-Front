@@ -89,15 +89,12 @@ export default function AdminLoginPage() {
         return;
       }
 
-      // Store tokens in cookies
+      // Store admin tokens in cookies with different names to avoid conflicts
       const cookieOptions = getAuthCookieOptions();
-      Cookies.set("token", token, cookieOptions);
+      Cookies.set("adminToken", token, cookieOptions);
       if (refreshToken) {
-        Cookies.set("refreshToken", refreshToken, cookieOptions);
+        Cookies.set("adminRefreshToken", refreshToken, cookieOptions);
       }
-
-      // Store admin token in localStorage for admin panel check
-      localStorage.setItem("adminToken", token);
 
       // Redirect to admin dashboard
       router.push("/admin/dashboard");
