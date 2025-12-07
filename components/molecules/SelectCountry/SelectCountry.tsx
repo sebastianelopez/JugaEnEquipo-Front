@@ -1,7 +1,9 @@
 import { Select, MenuItem, Box } from "@mui/material";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { UserContext } from "../../../context/user";
+import { userService } from "../../../services/user.service";
 
 interface Props {
   height?: number;
@@ -11,10 +13,22 @@ interface Props {
 export const SelectCountry = ({ height, fullWidth = false }: Props) => {
   const t = useTranslations("Global");
   const { asPath, locale, push, query, pathname } = useRouter();
+  const { user } = useContext(UserContext);
   const [selectValue, setSelectValue] = useState(locale ? locale : "en");
 
-  const onSelectChange = (newLocale: string) => {
+  const onSelectChange = async (newLocale: string) => {
     setSelectValue(newLocale);
+
+    if (user) {
+      try {
+        await userService.updateUserPreferences({
+          lang: newLocale as "es" | "en" | "pt",
+        });
+      } catch (error) {
+        console.error("Error updating user language preference:", error);
+      }
+    }
+
     push({ pathname, query }, asPath, { locale: newLocale });
   };
 

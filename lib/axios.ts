@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
 import https from "https";
 import { getAuthCookieOptions } from "../utils/cookies";
+import { applyUserPreferences } from "../utils/userPreferences";
 
 const isServer = typeof window === "undefined";
 
@@ -140,7 +141,7 @@ axiosInstance.interceptors.response.use(
       );
 
       const responseData = response.data?.data || response.data;
-      const { token: newToken, refreshToken: newRefreshToken } = responseData;
+      const { token: newToken, refreshToken: newRefreshToken, preferences } = responseData;
 
       const cookieOptions = getAuthCookieOptions();
       if (isAdminRequest) {
@@ -149,6 +150,10 @@ axiosInstance.interceptors.response.use(
       } else {
         Cookies.set("token", newToken, cookieOptions);
         Cookies.set("refreshToken", newRefreshToken, cookieOptions);
+        
+        if (preferences) {
+          applyUserPreferences(preferences);
+        }
       }
 
       processQueue(null, newToken);

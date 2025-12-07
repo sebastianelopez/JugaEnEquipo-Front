@@ -82,6 +82,30 @@ export const userService = {
     }
   },
 
+  updateUserPreferences: async (preferences: {
+    theme?: "light" | "dark";
+    lang?: "es" | "en" | "pt";
+  }) => {
+    const token = await getToken();
+
+    if (!preferences.theme && !preferences.lang) {
+      throw new Error(
+        "At least one preference (theme or lang) must be provided"
+      );
+    }
+
+    const payload: { theme?: "light" | "dark"; lang?: "es" | "en" | "pt" } = {};
+
+    if (preferences.theme) {
+      payload.theme = preferences.theme;
+    }
+    if (preferences.lang) {
+      payload.lang = preferences.lang;
+    }
+
+    return api.put<void>(`/user/preference`, payload, token);
+  },
+
   updateUser: async (id: string, userData: Partial<User>) => {
     const token = await getToken();
     const response = await api.put<UserResponse>(
