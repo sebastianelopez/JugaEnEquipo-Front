@@ -3,11 +3,13 @@ import Cookies from "js-cookie";
 import axiosInstance from "../lib/axios";
 import type { ServiceResult } from "./types";
 import { getAuthCookieOptions } from "../utils/cookies";
+import { applyUserPreferences, UserPreferences } from "../utils/userPreferences";
 
 interface LoginResponse {
   data: {
     token: string;
     refreshToken: string;
+    preferences?: UserPreferences;
   };
 }
 
@@ -30,6 +32,7 @@ export const login = async (email: string, password: string) => {
 
     const token = response.data.token;
     const refreshToken = response.data.refreshToken;
+    const preferences = response.data.preferences;
 
     if (!token || !refreshToken) {
       throw new Error("Invalid response: missing tokens");
@@ -39,6 +42,10 @@ export const login = async (email: string, password: string) => {
 
     Cookies.set("token", token, cookieOptions);
     Cookies.set("refreshToken", refreshToken, cookieOptions);
+
+    if (preferences) {
+      applyUserPreferences(preferences);
+    }
 
     return token;
   } catch (error) {

@@ -30,18 +30,20 @@ function MyApp({ Component, pageProps, initialTheme }: CustomAppProps) {
       <ThemeProviderSelector>
         <FeedbackProvider>
           <UserProvider>
-            <PostProvider>
-              <NotificationProvider>
-                <NextIntlClientProvider
-                  messages={pageProps.messages}
-                  locale={router.locale}
-                >
-                  <CssBaseline />
-                  <Component {...pageProps} />
-                  <NotificationPopup />
-                </NextIntlClientProvider>
-              </NotificationProvider>
-            </PostProvider>
+            <UserPreferencesSync>
+              <PostProvider>
+                <NotificationProvider>
+                  <NextIntlClientProvider
+                    messages={pageProps.messages}
+                    locale={router.locale}
+                  >
+                    <CssBaseline />
+                    <Component {...pageProps} />
+                    <NotificationPopup />
+                  </NextIntlClientProvider>
+                </NotificationProvider>
+              </PostProvider>
+            </UserPreferencesSync>
           </UserProvider>
         </FeedbackProvider>
       </ThemeProviderSelector>
@@ -64,11 +66,16 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
 
 export default MyApp;
 
-// Local helper to choose theme based on context
 import { PropsWithChildren, useContext } from "react";
+import { useUserPreferences } from "../hooks/useUserPreferences";
 
 function ThemeProviderSelector({ children }: PropsWithChildren) {
   const { themeMode } = useContext(UiContext);
   const theme = themeMode === "dark" ? darkTheme : lightTheme;
   return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+}
+
+function UserPreferencesSync({ children }: PropsWithChildren) {
+  useUserPreferences();
+  return <>{children}</>;
 }

@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren, useEffect, useReducer } from "react";
+import { FC, PropsWithChildren, useEffect, useReducer, useRef } from "react";
 import { UiContext, uiReducer } from "./";
 import { getThemeFromCookie, setThemeCookie } from "../../utils/cookies";
 
@@ -33,7 +33,6 @@ export const UiProvider: FC<UiProviderProps> = ({ children, initialTheme }) => {
     dispatch({ type: "UI - ToggleTheme" });
   };
 
-  // Sync with cookie after mount and enable smooth transitions
   useEffect(() => {
     try {
       const cookieTheme = getThemeFromCookie();
@@ -41,22 +40,47 @@ export const UiProvider: FC<UiProviderProps> = ({ children, initialTheme }) => {
         dispatch({ type: "UI - SetTheme", payload: cookieTheme });
       }
       
-      // Enable smooth theme transitions after hydration
       setTimeout(() => {
         if (typeof window !== "undefined") {
           document.body.classList.add('theme-transitions');
         }
       }, 100);
+
+      const handlePreferencesChange = (event: CustomEvent) => {
+        if (event.detail.type === "theme") {
+          const newTheme = event.detail.value as "light" | "dark";
+          if (newTheme !== state.themeMode) {
+            dispatch({ type: "UI - SetTheme", payload: newTheme });
+          }
+        }
+      };
+
+      window.addEventListener("user-preferences-changed", handlePreferencesChange as EventListener);
+
+      return () => {
+        window.removeEventListener("user-preferences-changed", handlePreferencesChange as EventListener);
+      };
     } catch (error) {
       console.warn("Error reading theme cookie:", error);
     }
-  }, []);
+  }, [state.themeMode]);
 
-  // Update document attributes when theme changes
+  const isInitialMountRef = useRef(true);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       document.documentElement.setAttribute('data-theme', state.themeMode);
       document.body.className = `${state.themeMode}-theme theme-transitions`;
+      
+      if (!isInitialMountRef.current) {
+        window.dispatchEvent(
+          new CustomEvent("theme-changed", {
+            detail: { theme: state.themeMode },
+          })
+        );
+      } else {
+        isInitialMountRef.current = false;
+      }
     }
   }, [state.themeMode]);
 

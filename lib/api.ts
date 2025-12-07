@@ -23,7 +23,10 @@ export const api = {
   },
 
   put: async <T>(url: string, data?: any, token?: string) => {
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const headers = {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      "Content-Type": "application/json",
+    };
 
     const response = await axiosInstance.put<T>(url, data, { headers });
     return response.data;
