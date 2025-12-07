@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -17,22 +17,23 @@ import CloseIcon from "@mui/icons-material/Close";
 import { PhotoCamera } from "@mui/icons-material";
 import { TournamentForm } from "../../molecules/Form/TournamentForm";
 import { tournamentService } from "../../../services/tournament.service";
-import type { CreateTournamentPayload } from "../../../interfaces";
+import type { CreateTournamentPayload, Tournament } from "../../../interfaces";
 import { useFeedback } from "../../../hooks/useFeedback";
 import { useTranslations } from "next-intl";
-import { v4 as uuidv4 } from "uuid";
 import { fileToBase64 } from "../../../utils/imageFileUtils";
 
-interface CreateTournamentModalProps {
+interface EditTournamentModalProps {
   open: boolean;
   onClose: () => void;
-  onCreated?: () => void;
+  tournament: Tournament | null;
+  onUpdated?: () => void;
 }
 
-export const CreateTournamentModal: FC<CreateTournamentModalProps> = ({
+export const EditTournamentModal: FC<EditTournamentModalProps> = ({
   open,
   onClose,
-  onCreated,
+  tournament,
+  onUpdated,
 }) => {
   const [submitting, setSubmitting] = useState(false);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
@@ -41,6 +42,28 @@ export const CreateTournamentModal: FC<CreateTournamentModalProps> = ({
   const t = useTranslations("Tournaments");
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  useEffect(() => {
+    if (open && tournament?.id) {
+      const loadBackgroundImage = async () => {
+        try {
+          const result = await tournamentService.getBackgroundImage(tournament.id);
+          if (result.ok && result.data) {
+            setBackgroundImage(result.data);
+          } else {
+            setBackgroundImage(null);
+          }
+        } catch (error) {
+          console.error("Error loading background image:", error);
+          setBackgroundImage(null);
+        }
+      };
+      loadBackgroundImage();
+    } else {
+      setBackgroundImage(null);
+      setBackgroundImageFile(null);
+    }
+  }, [open, tournament?.id]);
 
   const handleBackgroundImageChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -62,32 +85,33 @@ export const CreateTournamentModal: FC<CreateTournamentModalProps> = ({
   };
 
   const handleSubmit = async (values: CreateTournamentPayload) => {
+    if (!tournament) return;
+
     setSubmitting(true);
-    const tournamentId = uuidv4();
     
     try {
-      // Create tournament (image is always null)
-      const createPayload: CreateTournamentPayload = {
+      // Update tournament data (image is always null for updates)
+      const updatePayload: CreateTournamentPayload = {
         ...values,
-        image: null, // Always null
+        image: null, // Always null for updates
       };
 
-      const result = await tournamentService.create(tournamentId, createPayload);
+      const result = await tournamentService.create(tournament.id, updatePayload);
       
       if (!result.ok) {
         showError({
-          title: t("errorTitle"),
-          message: result.errorMessage,
+          title: t("errorTitle") || "Error",
+          message: result.errorMessage || t("updateError") || "Error al actualizar el torneo",
         });
         setSubmitting(false);
         return;
       }
 
-      // Update background image if provided
-      if (backgroundImageFile && backgroundImage) {
+      // Update background image if changed
+      if (backgroundImageFile) {
         const bgResult = await tournamentService.updateBackgroundImage(
-          tournamentId,
-          backgroundImage
+          tournament.id,
+          backgroundImage || ""
         );
         
         if (!bgResult.ok) {
@@ -101,28 +125,44 @@ export const CreateTournamentModal: FC<CreateTournamentModalProps> = ({
       }
 
       showSuccess({
-        title: t("successTitle"),
-        message: t("successMessage"),
+        title: t("successTitle") || "Éxito",
+        message: t("updateSuccess") || "Torneo actualizado exitosamente",
       });
       onClose();
-      // Reset background image state
-      setBackgroundImage(null);
-      setBackgroundImageFile(null);
-      onCreated?.();
+      onUpdated?.();
     } catch (error: any) {
       showError({
-        title: t("errorTitle"),
-        message: error.message || t("errorTitle"),
+        title: t("errorTitle") || "Error",
+        message: error.message || t("updateError") || "Error al actualizar el torneo",
       });
+    } finally {
       setSubmitting(false);
     }
   };
 
+  if (!tournament) return null;
+
+  const initialValues: Partial<CreateTournamentPayload> = {
+    gameId: tournament.gameId,
+    responsibleId: tournament.responsibleId,
+    name: tournament.name,
+    description: tournament.description,
+    maxTeams: tournament.maxTeams,
+    isOfficial: tournament.isOfficial,
+    image: null, // Always null for updates
+    prize: tournament.prize,
+    region: tournament.region,
+    startAt: tournament.startAt,
+    endAt: tournament.endAt,
+    minGameRankId: tournament.minGameRankId || null,
+    maxGameRankId: tournament.maxGameRankId || null,
+  };
+
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      fullWidth 
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
       maxWidth="md"
       sx={{
         "& .MuiDialog-container": {
@@ -147,7 +187,7 @@ export const CreateTournamentModal: FC<CreateTournamentModalProps> = ({
           fontSize: { xs: "1.1rem", md: "1.25rem" },
         }}
       >
-        {t("modalTitle")}
+        {t("editTournament") || "Editar Torneo"}
         {isMobile && (
           <IconButton
             onClick={onClose}
@@ -162,7 +202,7 @@ export const CreateTournamentModal: FC<CreateTournamentModalProps> = ({
           </IconButton>
         )}
       </DialogTitle>
-      <DialogContent 
+      <DialogContent
         dividers
         sx={{
           px: { xs: 2, md: 3 },
@@ -171,7 +211,12 @@ export const CreateTournamentModal: FC<CreateTournamentModalProps> = ({
         }}
       >
         <Stack spacing={3}>
-          <TournamentForm onSubmit={handleSubmit} submitting={submitting} />
+          <TournamentForm
+            initialValues={initialValues}
+            onSubmit={handleSubmit}
+            submitting={submitting}
+            submitButtonText={t("updateTournament") || "Actualizar Torneo"}
+          />
 
           {/* Background Image Upload */}
           <Box>
@@ -245,18 +290,20 @@ export const CreateTournamentModal: FC<CreateTournamentModalProps> = ({
           borderTop: { xs: `1px solid ${theme.palette.divider}`, md: "none" },
         }}
       >
-        <Button 
-          onClick={onClose} 
+        <Button
+          onClick={onClose}
           color="inherit"
           fullWidth={isMobile}
+          disabled={submitting}
           sx={{
             fontSize: { xs: "0.875rem", md: "1rem" },
             py: { xs: 1.25, md: 0.75 },
           }}
         >
-          {t("cancel")}
+          {t("cancel") || "Cancelar"}
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
+
