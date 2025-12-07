@@ -1,5 +1,5 @@
 import { api } from "../lib/api";
-import { getToken } from "./auth.service";
+import { getAdminToken } from "./auth.service";
 import { ServiceResult } from "./types";
 
 // Types
@@ -273,7 +273,7 @@ export const backofficeService = {
   searchAdmins: async (
     params?: AdminSearchParams
   ): Promise<ServiceResult<{ data: Admin[]; metadata: SearchMetadata }>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<{ data: Admin[]; metadata: SearchMetadata }>(() =>
       api.get<AdminSearchResponse>("/backoffice/admins", params, token)
     );
@@ -288,14 +288,14 @@ export const backofficeService = {
       password: string;
     }
   ): Promise<ServiceResult<Admin>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<Admin>(() =>
       api.put<Admin>(`/backoffice/admin/${adminId}`, data, token)
     );
   },
 
   deleteAdmin: async (adminId: string): Promise<ServiceResult<void>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<void>(() =>
       api.delete<void>(`/backoffice/admin/${adminId}`, token)
     );
@@ -305,7 +305,7 @@ export const backofficeService = {
   searchUsers: async (
     params?: UserSearchParams
   ): Promise<ServiceResult<{ data: User[]; metadata: SearchMetadata }>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<{ data: User[]; metadata: SearchMetadata }>(() =>
       api.get<UserSearchResponse>("/backoffice/users", params, token)
     );
@@ -315,7 +315,7 @@ export const backofficeService = {
     userId: string,
     reason: DisableReason
   ): Promise<ServiceResult<void>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<void>(() =>
       api.post<void>(
         `/backoffice/user/${userId}/disable`,
@@ -327,7 +327,7 @@ export const backofficeService = {
   },
 
   enableUser: async (userId: string): Promise<ServiceResult<void>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<void>(() =>
       api.post<void>(`/backoffice/user/${userId}/enable`, {}, undefined, token)
     );
@@ -337,7 +337,7 @@ export const backofficeService = {
   searchPosts: async (
     params?: PostSearchParams
   ): Promise<ServiceResult<{ data: Post[]; metadata: SearchMetadata }>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<{ data: Post[]; metadata: SearchMetadata }>(() =>
       api.get<PostSearchResponse>("/backoffice/posts", params, token)
     );
@@ -347,7 +347,7 @@ export const backofficeService = {
     postId: string,
     reason: DisableReason
   ): Promise<ServiceResult<void>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<void>(() =>
       api.post<void>(
         `/backoffice/post/${postId}/disable`,
@@ -359,7 +359,7 @@ export const backofficeService = {
   },
 
   enablePost: async (postId: string): Promise<ServiceResult<void>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<void>(() =>
       api.post<void>(`/backoffice/post/${postId}/enable`, {}, undefined, token)
     );
@@ -369,7 +369,7 @@ export const backofficeService = {
   searchHashtags: async (
     params?: HashtagSearchParams
   ): Promise<ServiceResult<{ data: Hashtag[]; metadata: SearchMetadata }>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<{ data: Hashtag[]; metadata: SearchMetadata }>(() =>
       api.get<HashtagSearchResponse>("/backoffice/hashtags", params, token)
     );
@@ -379,7 +379,7 @@ export const backofficeService = {
     hashtagId: string,
     reason: DisableReason
   ): Promise<ServiceResult<void>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<void>(() =>
       api.put<void>(
         `/backoffice/hashtag/${hashtagId}/disable`,
@@ -390,7 +390,7 @@ export const backofficeService = {
   },
 
   enableHashtag: async (hashtagId: string): Promise<ServiceResult<void>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<void>(() =>
       api.put<void>(`/backoffice/hashtag/${hashtagId}/enable`, {}, token)
     );
@@ -400,7 +400,7 @@ export const backofficeService = {
   searchTeams: async (
     params?: TeamSearchParams
   ): Promise<ServiceResult<{ data: Team[]; metadata: SearchMetadata }>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<{ data: Team[]; metadata: SearchMetadata }>(() =>
       api.get<TeamSearchResponse>("/backoffice/teams", params, token)
     );
@@ -410,7 +410,7 @@ export const backofficeService = {
     teamId: string,
     reason: DisableReason
   ): Promise<ServiceResult<void>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<void>(() =>
       api.post<void>(
         `/backoffice/team/${teamId}/disable`,
@@ -422,7 +422,7 @@ export const backofficeService = {
   },
 
   enableTeam: async (teamId: string): Promise<ServiceResult<void>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<void>(() =>
       api.post<void>(`/backoffice/team/${teamId}/enable`, {}, undefined, token)
     );
@@ -434,7 +434,7 @@ export const backofficeService = {
   ): Promise<
     ServiceResult<{ data: Tournament[]; metadata: SearchMetadata }>
   > => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<{ data: Tournament[]; metadata: SearchMetadata }>(() =>
       api.get<TournamentSearchResponse>(
         "/backoffice/tournaments",
@@ -460,7 +460,7 @@ export const backofficeService = {
       endAt: string; // Format: "YYYY-MM-DD HH:mm:ss"
     }
   ): Promise<ServiceResult<Tournament>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<Tournament>(() =>
       api.put<Tournament>(
         `/backoffice/tournament/${tournamentId}`,
@@ -474,7 +474,7 @@ export const backofficeService = {
     tournamentId: string,
     reason: DisableReason
   ): Promise<ServiceResult<void>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<void>(() =>
       api.post<void>(
         `/backoffice/tournament/${tournamentId}/disable`,
@@ -488,7 +488,7 @@ export const backofficeService = {
   enableTournament: async (
     tournamentId: string
   ): Promise<ServiceResult<void>> => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<void>(() =>
       api.post<void>(
         `/backoffice/tournament/${tournamentId}/enable`,
@@ -503,7 +503,7 @@ export const backofficeService = {
   getDashboardStats: async (): Promise<
     ServiceResult<DashboardStatsResponse>
   > => {
-    const token = await getToken();
+    const token = getAdminToken();
     return safeCall<DashboardStatsResponse>(() =>
       api.get<DashboardStatsResponse>("/backoffice/dashboard/stats", {}, token)
     );

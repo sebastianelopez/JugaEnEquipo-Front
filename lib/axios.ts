@@ -36,7 +36,14 @@ axiosInstance.interceptors.request.use(
     const isLoginEndpoint = url.includes("/login") || url.endsWith("/login");
     
     if (!isLoginEndpoint) {
-      const token = Cookies.get("token");
+      // Check if this is an admin request and use appropriate token
+      const isAdminRequest = url.includes("/backoffice") || 
+        (typeof window !== "undefined" && window.location.pathname.startsWith("/admin"));
+      
+      const token = isAdminRequest 
+        ? Cookies.get("adminToken") 
+        : Cookies.get("token");
+      
       if (token) {
         config.headers = config.headers || {};
         config.headers.Authorization = `Bearer ${token}`;
@@ -106,9 +113,14 @@ axiosInstance.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      // Get the refresh token
-      const refreshToken = Cookies.get("refreshToken");
-      const token = Cookies.get("token");
+      // Get the refresh token (admin uses different cookie names)
+      const refreshToken = isAdminRequest 
+        ? Cookies.get("adminRefreshToken")
+        : Cookies.get("refreshToken");
+      const token = isAdminRequest 
+        ? Cookies.get("adminToken")
+        : Cookies.get("token");
+      
       if (!refreshToken) {
         // Determine the correct login page based on request type
         const loginPage = isAdminRequest ? "/admin/login" : "/auth/login";
@@ -117,8 +129,14 @@ axiosInstance.interceptors.response.use(
         
         if (!isOnLoginPage) {
           // Only redirect if not already on login page
-          Cookies.remove("token");
-          Cookies.remove("refreshToken");
+          // Remove appropriate tokens based on context
+          if (isAdminRequest) {
+            Cookies.remove("adminToken");
+            Cookies.remove("adminRefreshToken");
+          } else {
+            Cookies.remove("token");
+            Cookies.remove("refreshToken");
+          }
           if (typeof window !== "undefined") {
             window.location.href = loginPage;
           }
@@ -146,9 +164,15 @@ axiosInstance.interceptors.response.use(
       const { token: newToken, refreshToken: newRefreshToken } = responseData;
 
       // Update cookies with new tokens using mobile-compatible options
+      // Use appropriate cookie names based on context
       const cookieOptions = getAuthCookieOptions();
-      Cookies.set("token", newToken, cookieOptions);
-      Cookies.set("refreshToken", newRefreshToken, cookieOptions);
+      if (isAdminRequest) {
+        Cookies.set("adminToken", newToken, cookieOptions);
+        Cookies.set("adminRefreshToken", newRefreshToken, cookieOptions);
+      } else {
+        Cookies.set("token", newToken, cookieOptions);
+        Cookies.set("refreshToken", newRefreshToken, cookieOptions);
+      }
 
       // Process queued requests
       processQueue(null, newToken);
@@ -161,8 +185,14 @@ axiosInstance.interceptors.response.use(
     } catch (refreshError) {
       // Handle refresh error - logout user
       processQueue(refreshError, null);
-      Cookies.remove("token");
-      Cookies.remove("refreshToken");
+      // Remove appropriate tokens based on context
+      if (isAdminRequest) {
+        Cookies.remove("adminToken");
+        Cookies.remove("adminRefreshToken");
+      } else {
+        Cookies.remove("token");
+        Cookies.remove("refreshToken");
+      }
       
       // Determine the correct login page based on request type
       const loginPage = isAdminRequest ? "/admin/login" : "/auth/login";

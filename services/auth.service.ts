@@ -76,6 +76,10 @@ export const getToken = () => {
   return Cookies.get("token");
 };
 
+export const getAdminToken = () => {
+  return Cookies.get("adminToken");
+};
+
 export const isAuthenticated = (): boolean => {
   return !!Cookies.get("token") && !!Cookies.get("refreshToken");
 };

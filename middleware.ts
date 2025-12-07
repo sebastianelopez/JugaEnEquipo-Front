@@ -25,8 +25,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = request.cookies.get("token")?.value;
-  const refreshToken = request.cookies.get("refreshToken")?.value;
+  // Check if this is an admin route
+  const isAdminRoute = pathname.startsWith("/admin");
+  
+  // Get appropriate tokens based on route type
+  const token = isAdminRoute 
+    ? request.cookies.get("adminToken")?.value
+    : request.cookies.get("token")?.value;
+  const refreshToken = isAdminRoute
+    ? request.cookies.get("adminRefreshToken")?.value
+    : request.cookies.get("refreshToken")?.value;
   const isAuthenticated = Boolean(token && refreshToken);
 
   // Check if current path starts with any public route prefix
@@ -57,8 +65,6 @@ export function middleware(request: NextRequest) {
   // For protected routes: if not authenticated, go to login
   if (!isPublicRoute) {
     if (!isAuthenticated) {
-      // Check if this is an admin route
-      const isAdminRoute = pathname.startsWith("/admin");
       const loginPage = isAdminRoute ? "/admin/login" : "/auth/login";
       return NextResponse.redirect(new URL(loginPage, request.url));
     }
