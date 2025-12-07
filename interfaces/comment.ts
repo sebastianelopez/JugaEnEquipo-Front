@@ -1,6 +1,6 @@
 export interface Comment {
   id: string;
-  user: string;
+  username: string;
   comment: string;
   createdAt: string;
   profileImage?: string;
