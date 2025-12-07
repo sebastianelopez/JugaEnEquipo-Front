@@ -82,7 +82,7 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
 
         const localComment: Comment = {
           id: commentId,
-          user: user.username,
+          username: user.username,
           comment: commentText,
           createdAt: new Date().toISOString(),
           profileImage: user.profileImage || undefined,
@@ -180,7 +180,7 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
                 ({
                   id,
                   comment,
-                  user: commentUser,
+                  username: commentUser,
                   createdAt,
                   profileImage,
                 }) => {
