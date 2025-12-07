@@ -25,6 +25,11 @@ import {
   FormControl,
   InputLabel,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
@@ -36,17 +41,25 @@ import {
   Close as CloseIcon,
   HowToReg as RegisterIcon,
   ExitToApp as LeaveIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  RemoveCircle as RemoveCircleIcon,
 } from "@mui/icons-material";
 import { useTheme, alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
-import type { Game, Tournament, Team } from "../../interfaces";
+import type { Game, Tournament, Team, User } from "../../interfaces";
 import { tournamentService } from "../../services/tournament.service";
 import { formatDate } from "../../utils/formatDate";
 import { gameService } from "../../services/game.service";
 import { getGameImage } from "../../utils/gameImageUtils";
 import { teamService } from "../../services/team.service";
+import { userService } from "../../services/user.service";
 import { UserContext } from "../../context/user";
+import { formatFullName } from "../../utils/textFormatting";
 import { BackgroundFallback } from "../../components/atoms/BackgroundFallback";
+import { EditTournamentModal } from "../../components/organisms/modals/EditTournamentModal";
+import { TournamentRequestsAdmin } from "../../components/organisms/tournament/TournamentRequestsAdmin";
+import { TournamentTabs } from "../../components/organisms/tournament/TournamentTabs";
 
 interface Props {
   id: string;
@@ -73,6 +86,16 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
   const [tournamentTeams, setTournamentTeams] = useState<Team[]>([]);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [loadingBackground, setLoadingBackground] = useState(true);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [hasPendingRequest, setHasPendingRequest] = useState(false);
+  const [pendingRequestTeamId, setPendingRequestTeamId] = useState<string | null>(null);
+  const [responsibleUser, setResponsibleUser] = useState<User | null>(null);
+  const [loadingResponsible, setLoadingResponsible] = useState(false);
+  const [deleteTournamentDialogOpen, setDeleteTournamentDialogOpen] = useState(false);
+  const [deletingTournament, setDeletingTournament] = useState(false);
+  const [removeTeamDialogOpen, setRemoveTeamDialogOpen] = useState(false);
+  const [teamToRemove, setTeamToRemove] = useState<Team | null>(null);
+  const [removingTeam, setRemovingTeam] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -167,6 +190,69 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
     loadTournamentTeams();
   }, [tournament?.id]);
 
+  // Check for pending requests
+  useEffect(() => {
+    const checkPendingRequests = async () => {
+      const isCreator = user && tournament && tournament.responsibleId === user.id;
+      if (!tournament?.id || !user || isCreator || tournament?.isUserRegistered) {
+        return;
+      }
+
+      try {
+        const result = await tournamentService.findAllRequests(tournament.id);
+        if (result.ok && result.data) {
+          const pendingRequests = result.data.filter(
+            (req) => !req.status || req.status === "pending"
+          );
+          
+          // Check if user's teams have pending requests
+          const userTeamIds = userTeams.map((team) => team.id);
+          const hasUserPendingRequest = pendingRequests.some((req) =>
+            userTeamIds.includes(req.teamId)
+          );
+          
+          if (hasUserPendingRequest) {
+            const userPendingRequest = pendingRequests.find((req) =>
+              userTeamIds.includes(req.teamId)
+            );
+            setHasPendingRequest(true);
+            setPendingRequestTeamId(userPendingRequest?.teamId || null);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking pending requests:", error);
+      }
+    };
+
+    if (user && userTeams.length > 0 && tournament?.id) {
+      checkPendingRequests();
+    }
+  }, [tournament?.id, user, userTeams, tournament?.responsibleId, tournament?.isUserRegistered]);
+
+  // Load responsible user information
+  useEffect(() => {
+    const loadResponsibleUser = async () => {
+      if (!tournament?.responsibleId) {
+        setResponsibleUser(null);
+        return;
+      }
+
+      setLoadingResponsible(true);
+      try {
+        const userData = await userService.getUserById(tournament.responsibleId);
+        if (userData) {
+          setResponsibleUser(userData);
+        }
+      } catch (error) {
+        console.error("Error loading responsible user:", error);
+      } finally {
+        setLoadingResponsible(false);
+      }
+    };
+
+    loadResponsibleUser();
+  }, [tournament?.responsibleId]);
+
   const handleRegisterTeam = async () => {
     if (!selectedTeamId || !tournament) {
       setError(t("detail.selectTeamError") || "Por favor selecciona un equipo");
@@ -178,36 +264,28 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
     setSuccess(null);
 
     try {
-      const result = await tournamentService.addTeam(
+      const result = await tournamentService.requestAccess(
         tournament.id,
         selectedTeamId
       );
       if (result.ok) {
         setSuccess(
-          t("detail.registerSuccess") || "Equipo registrado exitosamente"
+          t("detail.requestSentSuccess") || "Solicitud enviada exitosamente"
         );
-
-        const res = await tournamentService.find(id);
-        if (res.ok && res.data) {
-          setTournament(res.data as any);
-        }
-
-        const teamsResult = await tournamentService.getTournamentTeams(id);
-        if (teamsResult.ok && teamsResult.data) {
-          setTournamentTeams(teamsResult.data);
-        }
+        setHasPendingRequest(true);
+        setPendingRequestTeamId(selectedTeamId);
       } else {
         setError(
           result.errorMessage ||
-            t("detail.registerError") ||
-            "Error al registrar el equipo"
+            t("detail.requestError") ||
+            "Error al enviar la solicitud"
         );
       }
     } catch (err: any) {
       setError(
         err.message ||
-          t("detail.registerError") ||
-          "Error al registrar el equipo"
+          t("detail.requestError") ||
+          "Error al enviar la solicitud"
       );
     } finally {
       setRegistering(false);
@@ -278,11 +356,120 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
     setSelectedTeam(null);
   };
 
+  const handleDeleteTournamentClick = () => {
+    setDeleteTournamentDialogOpen(true);
+  };
+
+  const handleCancelDeleteTournament = () => {
+    setDeleteTournamentDialogOpen(false);
+  };
+
+  const handleConfirmDeleteTournament = async () => {
+    if (!tournament) return;
+
+    setDeletingTournament(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const result = await tournamentService.delete(tournament.id);
+      if (result.ok) {
+        setDeleteTournamentDialogOpen(false);
+        router.push("/tournaments");
+      } else {
+        setError(
+          result.errorMessage ||
+            t("detail.deleteTournamentError") ||
+            "Error al eliminar el torneo"
+        );
+        setDeleteTournamentDialogOpen(false);
+      }
+    } catch (err: any) {
+      setError(
+        err.message ||
+          t("detail.deleteTournamentError") ||
+          "Error al eliminar el torneo"
+      );
+      setDeleteTournamentDialogOpen(false);
+    } finally {
+      setDeletingTournament(false);
+    }
+  };
+
+  const handleRemoveTeamClick = (team: Team) => {
+    setTeamToRemove(team);
+    setRemoveTeamDialogOpen(true);
+  };
+
+  const handleCancelRemoveTeam = () => {
+    setRemoveTeamDialogOpen(false);
+    setTeamToRemove(null);
+  };
+
+  const handleConfirmRemoveTeam = async () => {
+    if (!tournament || !teamToRemove) return;
+
+    setRemovingTeam(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const result = await tournamentService.deleteTeam(
+        tournament.id,
+        teamToRemove.id
+      );
+      if (result.ok) {
+        setSuccess(
+          t("detail.removeTeamSuccess") ||
+            `El equipo ${teamToRemove.name} ha sido removido del torneo`
+        );
+        setRemoveTeamDialogOpen(false);
+        setTeamToRemove(null);
+
+        // Reload tournament teams
+        const teamsResult = await tournamentService.getTournamentTeams(
+          tournament.id
+        );
+        if (teamsResult.ok && teamsResult.data) {
+          setTournamentTeams(teamsResult.data);
+        }
+
+        // Reload tournament data
+        const res = await tournamentService.find(tournament.id);
+        if (res.ok && res.data) {
+          setTournament(res.data as any);
+        }
+      } else {
+        setError(
+          result.errorMessage ||
+            t("detail.removeTeamError") ||
+            "Error al remover el equipo"
+        );
+        setRemoveTeamDialogOpen(false);
+        setTeamToRemove(null);
+      }
+    } catch (err: any) {
+      setError(
+        err.message ||
+          t("detail.removeTeamError") ||
+          "Error al remover el equipo"
+      );
+      setRemoveTeamDialogOpen(false);
+      setTeamToRemove(null);
+    } finally {
+      setRemovingTeam(false);
+    }
+  };
+
   const registeredCount = tournament?.registeredTeams ?? 0;
   const maxCapacity = tournament?.maxTeams ?? 0;
   const isTournamentCreator = useMemo(() => {
     return user && tournament && tournament.responsibleId === user.id;
   }, [user, tournament]);
+
+  const canEditTournament = useMemo(() => {
+    return isTournamentCreator;
+  }, [isTournamentCreator]);
   const startDateLabel = useMemo(() => {
     if (!tournament?.startAt) return "-";
     try {
@@ -402,17 +589,74 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
             >
               {t("detail.back")}
             </Button>
-            <Typography
-              variant="h2"
-              sx={{
-                color: theme.palette.common.white,
-                fontWeight: 800,
-                fontSize: { xs: "2rem", md: "3.5rem" },
-                mb: 2,
-              }}
+            <Stack
+              direction="row"
+              spacing={{ xs: 1, sm: 2 }}
+              alignItems="center"
+              flexWrap="wrap"
+              sx={{ mb: 2 }}
             >
-              {tournament?.name}
-            </Typography>
+              <Typography
+                variant="h2"
+                sx={{
+                  color: theme.palette.common.white,
+                  fontWeight: 800,
+                  fontSize: { xs: "2rem", md: "3.5rem" },
+                  lineHeight: 1.2,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
+                {tournament?.name}
+              </Typography>
+              {canEditTournament && (
+                <IconButton
+                  onClick={() => setEditModalOpen(true)}
+                  size="small"
+                  sx={{
+                    bgcolor: "rgba(255, 255, 255, 0.1)",
+                    color: theme.palette.common.white,
+                    width: { xs: 32, md: 40 },
+                    height: { xs: 32, md: 40 },
+                    flexShrink: 0,
+                    "&:hover": {
+                      bgcolor: "rgba(255, 255, 255, 0.2)",
+                    },
+                    "& svg": {
+                      fontSize: { xs: "1.1rem", md: "1.5rem" },
+                    },
+                  }}
+                >
+                  <EditIcon />
+                </IconButton>
+              )}
+              {canEditTournament && (
+                <IconButton
+                  onClick={handleDeleteTournamentClick}
+                  size="small"
+                  sx={{
+                    bgcolor: "rgba(255, 255, 255, 0.1)",
+                    color: theme.palette.error.light,
+                    width: { xs: 32, md: 40 },
+                    height: { xs: 32, md: 40 },
+                    flexShrink: 0,
+                    "&:hover": {
+                      bgcolor: "rgba(211, 47, 47, 0.2)",
+                    },
+                    "& svg": {
+                      fontSize: { xs: "1.1rem", md: "1.5rem" },
+                    },
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              )}
+            </Stack>
             <Stack direction="row" spacing={2} alignItems="center">
               {game && (
                 <Avatar
@@ -435,10 +679,668 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
         </Box>
 
         <Container maxWidth="xl" sx={{ mt: 4 }}>
+          {/* Mobile Tabs View */}
+          <TournamentTabs
+            informationContent={
+              <>
+                {/* Tournament Info Card */}
+                <Card
+                  sx={{
+                    bgcolor: theme.palette.background.paper,
+                    borderRadius: { xs: 2, md: 3 },
+                    border: `1px solid ${theme.palette.secondary.dark}`,
+                    mb: { xs: 2, md: 3 },
+                  }}
+                >
+                  <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        color: theme.palette.text.primary,
+                        fontWeight: 700,
+                        mb: 3,
+                        fontSize: {
+                          xs: "1.25rem",
+                          sm: "1.5rem",
+                          md: "1.75rem",
+                        },
+                      }}
+                    >
+                      {t("detail.tournamentInfo")}
+                    </Typography>
+
+                    <Stack spacing={3}>
+                      {/* Type and Mode */}
+                      <Stack direction="row" spacing={2} flexWrap="wrap">
+                        <Chip
+                          icon={<TrophyIcon />}
+                          label={
+                            tournament?.isOfficial
+                              ? t("detail.official")
+                              : t("detail.amateur")
+                          }
+                          sx={{
+                            bgcolor: tournament?.isOfficial
+                              ? theme.palette.warning.main
+                              : theme.palette.info.main,
+                            color: theme.palette.common.black,
+                            fontWeight: 600,
+                            fontSize: "0.9rem",
+                            py: 2.5,
+                          }}
+                        />
+                      </Stack>
+
+                      <Divider sx={{ bgcolor: theme.palette.secondary.dark }} />
+
+                      {/* Details Grid */}
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                          gap: 3,
+                        }}
+                      >
+                        <Box>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <CalendarIcon
+                              sx={{ color: theme.palette.info.main }}
+                            />
+                            <Box>
+                              <Typography
+                                sx={{
+                                  color: theme.palette.text.secondary,
+                                  fontSize: "0.85rem",
+                                }}
+                              >
+                                {t("detail.startDate")}
+                              </Typography>
+                              <Typography
+                                sx={{
+                                  color: theme.palette.text.primary,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {startDateLabel}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <CalendarIcon
+                              sx={{ color: theme.palette.info.main }}
+                            />
+                            <Box>
+                              <Typography
+                                sx={{
+                                  color: theme.palette.text.secondary,
+                                  fontSize: "0.85rem",
+                                }}
+                              >
+                                {t("detail.endDate")}
+                              </Typography>
+                              <Typography
+                                sx={{
+                                  color: theme.palette.text.primary,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {endDateLabel}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
+
+                        <Box>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <PublicIcon sx={{ color: theme.palette.info.main }} />
+                            <Box>
+                              <Typography
+                                sx={{
+                                  color: theme.palette.text.secondary,
+                                  fontSize: "0.85rem",
+                                }}
+                              >
+                                {t("detail.region")}
+                              </Typography>
+                              <Typography
+                                sx={{
+                                  color: theme.palette.text.primary,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {tournament?.region}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
+
+                        <Box>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <GroupsIcon sx={{ color: theme.palette.info.main }} />
+                            <Box>
+                              <Typography
+                                sx={{
+                                  color: theme.palette.text.secondary,
+                                  fontSize: "0.85rem",
+                                }}
+                              >
+                                {t("detail.registeredTeams")}
+                              </Typography>
+                              <Typography
+                                sx={{
+                                  color: theme.palette.text.primary,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {registeredCount}
+                                {maxCapacity ? ` / ${maxCapacity}` : ""}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
+
+                        <Box>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <TrophyIcon
+                              sx={{ color: theme.palette.warning.main }}
+                            />
+                            <Box>
+                              <Typography
+                                sx={{
+                                  color: theme.palette.text.secondary,
+                                  fontSize: "0.85rem",
+                                }}
+                              >
+                                {t("detail.prize")}
+                              </Typography>
+                              <Typography
+                                sx={{
+                                  color: theme.palette.warning.main,
+                                  fontWeight: 700,
+                                  fontSize: "1.1rem",
+                                }}
+                              >
+                                {(tournament as any)?.prize ?? "-"}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
+
+                        {tournament?.responsibleId && (
+                          <Box>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <PersonIcon sx={{ color: theme.palette.info.main }} />
+                              <Box sx={{ flex: 1 }}>
+                                <Typography
+                                  sx={{
+                                    color: theme.palette.text.secondary,
+                                    fontSize: "0.85rem",
+                                    mb: 0.5,
+                                  }}
+                                >
+                                  {t("detail.responsible") || "Responsable"}
+                                </Typography>
+                                {loadingResponsible ? (
+                                  <Typography
+                                    sx={{
+                                      color: theme.palette.text.secondary,
+                                      fontSize: "0.9rem",
+                                    }}
+                                  >
+                                    {t("detail.loading")}
+                                  </Typography>
+                                ) : responsibleUser ? (
+                                  <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    alignItems="center"
+                                    sx={{
+                                      cursor: "pointer",
+                                      "&:hover": {
+                                        opacity: 0.8,
+                                      },
+                                    }}
+                                    onClick={() => {
+                                      router.push(`/profile/${responsibleUser.username}`);
+                                    }}
+                                  >
+                                    <Avatar
+                                      src={
+                                        responsibleUser.profileImage ||
+                                        "/images/user-placeholder.png"
+                                      }
+                                      sx={{
+                                        width: 32,
+                                        height: 32,
+                                      }}
+                                    />
+                                    <Box>
+                                      <Typography
+                                        sx={{
+                                          color: theme.palette.text.primary,
+                                          fontWeight: 600,
+                                          fontSize: "0.9rem",
+                                        }}
+                                      >
+                                        {responsibleUser.username}
+                                      </Typography>
+                                      {(responsibleUser.firstname ||
+                                        responsibleUser.lastname) && (
+                                        <Typography
+                                          sx={{
+                                            color: theme.palette.text.secondary,
+                                            fontSize: "0.75rem",
+                                          }}
+                                        >
+                                          {formatFullName(
+                                            responsibleUser.firstname,
+                                            responsibleUser.lastname
+                                          )}
+                                        </Typography>
+                                      )}
+                                    </Box>
+                                  </Stack>
+                                ) : (
+                                  <Typography
+                                    sx={{
+                                      color: theme.palette.text.secondary,
+                                      fontSize: "0.9rem",
+                                    }}
+                                  >
+                                    -
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Stack>
+                          </Box>
+                        )}
+                      </Box>
+
+                      <Divider sx={{ bgcolor: theme.palette.secondary.dark }} />
+
+                      {/* Description */}
+                      <Box>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: theme.palette.text.primary,
+                            fontWeight: 600,
+                            mb: 2,
+                          }}
+                        >
+                          {t("detail.description")}
+                        </Typography>
+                        {tournament?.description && (
+                          <Typography
+                            sx={{
+                              color: theme.palette.text.secondary,
+                              lineHeight: 1.8,
+                            }}
+                          >
+                            {tournament.description}
+                          </Typography>
+                        )}
+                      </Box>
+
+                      {/* Rules */}
+                      <Box>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: theme.palette.text.primary,
+                            fontWeight: 600,
+                            mb: 2,
+                          }}
+                        >
+                          {t("detail.rules")}
+                        </Typography>
+                        {Array.isArray((tournament as any)?.rules) ? (
+                          <Stack spacing={1}>
+                            {(tournament as any).rules.map(
+                              (rule: string, index: number) => (
+                                <Stack key={index} direction="row" spacing={1}>
+                                  <Typography
+                                    sx={{ color: theme.palette.info.main }}
+                                  >
+                                    •
+                                  </Typography>
+                                  <Typography
+                                    sx={{ color: theme.palette.text.secondary }}
+                                  >
+                                    {rule}
+                                  </Typography>
+                                </Stack>
+                              )
+                            )}
+                          </Stack>
+                        ) : (tournament as any)?.rules ? (
+                          <Typography
+                            sx={{
+                              color: theme.palette.text.secondary,
+                              whiteSpace: "pre-wrap",
+                            }}
+                          >
+                            {String((tournament as any).rules)}
+                          </Typography>
+                        ) : null}
+                      </Box>
+                    </Stack>
+                  </CardContent>
+                </Card>
+
+                {/* Teams List */}
+                <Card
+                  sx={{
+                    bgcolor: theme.palette.background.paper,
+                    borderRadius: { xs: 2, md: 3 },
+                    border: `1px solid ${theme.palette.secondary.dark}`,
+                  }}
+                >
+                  <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        color: theme.palette.text.primary,
+                        fontWeight: 700,
+                        mb: 3,
+                        fontSize: {
+                          xs: "1.25rem",
+                          sm: "1.5rem",
+                          md: "1.75rem",
+                        },
+                      }}
+                    >
+                      {`${t("detail.participatingTeams")} (${
+                        tournament?.registeredTeams ?? 0
+                      })`}
+                    </Typography>
+
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                          xs: "1fr",
+                          sm: "1fr 1fr",
+                          md: "1fr 1fr 1fr",
+                        },
+                        gap: 2,
+                      }}
+                    >
+                      {tournamentTeams.map((team: Team) => (
+                        <Box key={team.id} sx={{ position: "relative" }}>
+                          {canEditTournament && (
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveTeamClick(team);
+                              }}
+                              sx={{
+                                position: "absolute",
+                                top: 8,
+                                right: 8,
+                                zIndex: 10,
+                                bgcolor: theme.palette.error.main,
+                                color: theme.palette.error.contrastText,
+                                width: 32,
+                                height: 32,
+                                "&:hover": {
+                                  bgcolor: theme.palette.error.dark,
+                                },
+                              }}
+                              size="small"
+                            >
+                              <RemoveCircleIcon fontSize="small" />
+                            </IconButton>
+                          )}
+                          <Card
+                            sx={{
+                              bgcolor:
+                                theme.palette.mode === "dark"
+                                  ? theme.palette.action.hover
+                                  : theme.palette.background.paper,
+                              borderRadius: 2,
+                              cursor: "pointer",
+                              transition: "all 0.3s ease",
+                              border: `1px solid ${theme.palette.divider}`,
+                              "&:hover": {
+                                borderColor: theme.palette.primary.main,
+                                bgcolor:
+                                  theme.palette.mode === "dark"
+                                    ? theme.palette.action.selected
+                                    : theme.palette.action.hover,
+                                transform: "translateY(-4px)",
+                                boxShadow: theme.shadows[4],
+                              },
+                            }}
+                            onClick={() => handleOpenModal(team)}
+                          >
+                            <CardContent sx={{ p: 2, textAlign: "center" }}>
+                              <Avatar
+                                src={team.image}
+                                alt={team.name}
+                                sx={{
+                                  width: 64,
+                                  height: 64,
+                                  mx: "auto",
+                                  mb: 1.5,
+                                  border: `2px solid ${theme.palette.primary.main}`,
+                                }}
+                              />
+                              <Typography
+                                sx={{
+                                  color: theme.palette.text.primary,
+                                  fontWeight: 600,
+                                  mb: 0.5,
+                                }}
+                              >
+                                {team.name}
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                        </Box>
+                      ))}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </>
+            }
+            secondTabContent={
+              canEditTournament ? (
+                <TournamentRequestsAdmin
+                  tournamentId={id}
+                  onRequestUpdated={() => {
+                    tournamentService.find(id).then((res) => {
+                      if (res.ok && res.data) {
+                        setTournament(res.data as any);
+                      }
+                    });
+                    tournamentService.getTournamentTeams(id).then((teamsResult) => {
+                      if (teamsResult.ok && teamsResult.data) {
+                        setTournamentTeams(teamsResult.data);
+                      }
+                    });
+                  }}
+                />
+              ) : (
+                <Card
+                  sx={{
+                    bgcolor: theme.palette.background.paper,
+                    borderRadius: { xs: 2, md: 3 },
+                    border: `1px solid ${theme.palette.secondary.dark}`,
+                  }}
+                >
+                  <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: theme.palette.text.primary,
+                        fontWeight: 700,
+                        mb: 3,
+                        textAlign: "center",
+                      }}
+                    >
+                      {t("detail.joinTournament")}
+                    </Typography>
+
+                    <Box
+                      sx={{
+                        bgcolor:
+                          theme.palette.mode === "dark"
+                            ? theme.palette.action.hover
+                            : theme.palette.grey[100],
+                        borderRadius: 2,
+                        p: 3,
+                        mb: 3,
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontSize: "0.9rem",
+                          mb: 1,
+                        }}
+                      >
+                        {t("detail.availableSlots")}
+                      </Typography>
+                      <Typography
+                        variant="h3"
+                        sx={{ color: theme.palette.info.main, fontWeight: 800 }}
+                      >
+                        {maxCapacity
+                          ? Math.max((maxCapacity as number) - registeredCount, 0)
+                          : "-"}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {maxCapacity ?? "-"} {t("detail.teams")}
+                      </Typography>
+                    </Box>
+
+                    {error && (
+                      <Alert severity="error" sx={{ mb: 2 }}>
+                        {error}
+                      </Alert>
+                    )}
+                    {success && (
+                      <Alert severity="success" sx={{ mb: 2 }}>
+                        {success}
+                      </Alert>
+                    )}
+
+                    {isTournamentCreator ? (
+                      <Alert severity="info" sx={{ mb: 2 }}>
+                        {t("detail.tournamentCreator")}
+                      </Alert>
+                    ) : tournament?.isUserRegistered ? (
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        size="large"
+                        startIcon={<LeaveIcon />}
+                        onClick={handleLeaveTournament}
+                        disabled={leaving}
+                        sx={{
+                          bgcolor: theme.palette.error.main,
+                          color: theme.palette.error.contrastText,
+                          py: 1.5,
+                          borderRadius: 2,
+                          fontWeight: 700,
+                          fontSize: "1rem",
+                          mb: 2,
+                          "&:hover": { bgcolor: theme.palette.error.dark },
+                        }}
+                      >
+                        {leaving
+                          ? t("detail.leaving")
+                          : t("detail.leaveTournament")}
+                      </Button>
+                    ) : hasPendingRequest ? (
+                      <Alert severity="info" sx={{ mb: 2 }}>
+                        {t("detail.waitingApproval") || "Esperando aprobación"}
+                      </Alert>
+                    ) : (
+                      <>
+                        {user && userTeams.length > 0 && (
+                          <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel>{t("detail.selectTeam")}</InputLabel>
+                            <Select
+                              value={selectedTeamId}
+                              onChange={(e) => setSelectedTeamId(e.target.value)}
+                              label={t("detail.selectTeam")}
+                              disabled={loadingTeams || registering || hasPendingRequest}
+                            >
+                              {userTeams.map((team) => (
+                                <MenuItem key={team.id} value={team.id}>
+                                  {team.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        )}
+
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          size="large"
+                          startIcon={<RegisterIcon />}
+                          onClick={handleRegisterTeam}
+                          disabled={
+                            registering ||
+                            loadingTeams ||
+                            !selectedTeamId ||
+                            userTeams.length === 0 ||
+                            hasPendingRequest
+                          }
+                          sx={{
+                            bgcolor: theme.palette.primary.main,
+                            color: theme.palette.primary.contrastText,
+                            py: 1.5,
+                            borderRadius: 2,
+                            fontWeight: 700,
+                            fontSize: "1rem",
+                            mb: 2,
+                            "&:hover": { bgcolor: theme.palette.primary.dark },
+                          }}
+                        >
+                          {registering
+                            ? t("detail.requesting") || "Solicitando..."
+                            : t("detail.requestAccess") || "Solicitar Acceso"}
+                        </Button>
+                      </>
+                    )}
+
+                    {!tournament?.isUserRegistered && !isTournamentCreator && (
+                      <Typography
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontSize: "0.75rem",
+                          textAlign: "center",
+                        }}
+                      >
+                        {t("detail.acceptRules")}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              )
+            }
+            secondTabLabel={
+              canEditTournament
+                ? (t("detail.administration") || "Administración")
+                : (t("detail.joinTournament") || "Unirse al Torneo")
+            }
+          />
+
+          {/* Desktop Grid View */}
           <Box
             sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", lg: "2fr 1fr" },
+              display: { xs: "none", lg: "grid" },
+              gridTemplateColumns: "2fr 1fr",
               gap: 4,
             }}
           >
@@ -621,6 +1523,95 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                           </Box>
                         </Stack>
                       </Box>
+
+                      {tournament?.responsibleId && (
+                        <Box>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <PersonIcon sx={{ color: theme.palette.info.main }} />
+                            <Box sx={{ flex: 1 }}>
+                              <Typography
+                                sx={{
+                                  color: theme.palette.text.secondary,
+                                  fontSize: "0.85rem",
+                                  mb: 0.5,
+                                }}
+                              >
+                                {t("detail.responsible") || "Responsable"}
+                              </Typography>
+                              {loadingResponsible ? (
+                                <Typography
+                                  sx={{
+                                    color: theme.palette.text.secondary,
+                                    fontSize: "0.9rem",
+                                  }}
+                                >
+                                  Cargando...
+                                </Typography>
+                              ) : responsibleUser ? (
+                                <Stack
+                                  direction="row"
+                                  spacing={1}
+                                  alignItems="center"
+                                  sx={{
+                                    cursor: "pointer",
+                                    "&:hover": {
+                                      opacity: 0.8,
+                                    },
+                                  }}
+                                  onClick={() => {
+                                    router.push(`/profile/${responsibleUser.username}`);
+                                  }}
+                                >
+                                  <Avatar
+                                    src={
+                                      responsibleUser.profileImage ||
+                                      "/images/user-placeholder.png"
+                                    }
+                                    sx={{
+                                      width: 32,
+                                      height: 32,
+                                    }}
+                                  />
+                                  <Box>
+                                    <Typography
+                                      sx={{
+                                        color: theme.palette.text.primary,
+                                        fontWeight: 600,
+                                        fontSize: "0.9rem",
+                                      }}
+                                    >
+                                      {responsibleUser.username}
+                                    </Typography>
+                                    {(responsibleUser.firstname ||
+                                      responsibleUser.lastname) && (
+                                      <Typography
+                                        sx={{
+                                          color: theme.palette.text.secondary,
+                                          fontSize: "0.75rem",
+                                        }}
+                                      >
+                                        {formatFullName(
+                                          responsibleUser.firstname,
+                                          responsibleUser.lastname
+                                        )}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                </Stack>
+                              ) : (
+                                <Typography
+                                  sx={{
+                                    color: theme.palette.text.secondary,
+                                    fontSize: "0.9rem",
+                                  }}
+                                >
+                                  -
+                                </Typography>
+                              )}
+                            </Box>
+                          </Stack>
+                        </Box>
+                      )}
                     </Box>
 
                     <Divider sx={{ bgcolor: theme.palette.secondary.dark }} />
@@ -729,7 +1720,31 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                     }}
                   >
                     {tournamentTeams.map((team: Team) => (
-                      <Box key={team.id}>
+                      <Box key={team.id} sx={{ position: "relative" }}>
+                        {canEditTournament && (
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveTeamClick(team);
+                            }}
+                            sx={{
+                              position: "absolute",
+                              top: 8,
+                              right: 8,
+                              zIndex: 10,
+                              bgcolor: theme.palette.error.main,
+                              color: theme.palette.error.contrastText,
+                              width: 32,
+                              height: 32,
+                              "&:hover": {
+                                bgcolor: theme.palette.error.dark,
+                              },
+                            }}
+                            size="small"
+                          >
+                            <RemoveCircleIcon fontSize="small" />
+                          </IconButton>
+                        )}
                         <Card
                           sx={{
                             bgcolor:
@@ -867,6 +1882,26 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                     </Alert>
                   )}
 
+                  {canEditTournament && (
+                    <TournamentRequestsAdmin
+                      tournamentId={id}
+                      onRequestUpdated={() => {
+                        // Reload tournament data
+                        tournamentService.find(id).then((res) => {
+                          if (res.ok && res.data) {
+                            setTournament(res.data as any);
+                          }
+                        });
+                        // Reload teams
+                        tournamentService.getTournamentTeams(id).then((teamsResult) => {
+                          if (teamsResult.ok && teamsResult.data) {
+                            setTournamentTeams(teamsResult.data);
+                          }
+                        });
+                      }}
+                    />
+                  )}
+
                   {isTournamentCreator ? (
                     <Alert severity="info" sx={{ mb: 2 }}>
                       {t("detail.tournamentCreator")}
@@ -894,6 +1929,10 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                         ? t("detail.leaving")
                         : t("detail.leaveTournament")}
                     </Button>
+                  ) : hasPendingRequest ? (
+                    <Alert severity="info" sx={{ mb: 2 }}>
+                      {t("detail.waitingApproval") || "Esperando aprobación"}
+                    </Alert>
                   ) : (
                     <>
                       {user && userTeams.length > 0 && (
@@ -903,7 +1942,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                             value={selectedTeamId}
                             onChange={(e) => setSelectedTeamId(e.target.value)}
                             label={t("detail.selectTeam")}
-                            disabled={loadingTeams || registering}
+                            disabled={loadingTeams || registering || hasPendingRequest}
                           >
                             {userTeams.map((team) => (
                               <MenuItem key={team.id} value={team.id}>
@@ -924,7 +1963,8 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                           registering ||
                           loadingTeams ||
                           !selectedTeamId ||
-                          userTeams.length === 0
+                          userTeams.length === 0 ||
+                          hasPendingRequest
                         }
                         sx={{
                           bgcolor: theme.palette.primary.main,
@@ -938,8 +1978,8 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                         }}
                       >
                         {registering
-                          ? t("detail.registering")
-                          : t("detail.registerTeam")}
+                          ? t("detail.requesting") || "Solicitando..."
+                          : t("detail.requestAccess") || "Solicitar Acceso"}
                       </Button>
                     </>
                   )}
@@ -1069,13 +2109,115 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
               )}
             </List>
           </Box>
-        </Modal>
-      </Box>
-    </MainLayout>
-  );
-};
+          </Modal>
+        </Box>
 
-export default TournamentDetailPage;
+        <EditTournamentModal
+          open={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          tournament={tournament}
+          onUpdated={() => {
+            // Reload tournament data
+            tournamentService.find(id).then((res) => {
+              if (res.ok && res.data) {
+                setTournament(res.data as any);
+              }
+            });
+            // Reload background image
+            tournamentService.getBackgroundImage(id).then((result) => {
+              if (result.ok && result.data) {
+                setBackgroundImage(result.data);
+              }
+            });
+            // Reload teams
+            tournamentService.getTournamentTeams(id).then((teamsResult) => {
+              if (teamsResult.ok && teamsResult.data) {
+                setTournamentTeams(teamsResult.data);
+              }
+            });
+          }}
+        />
+
+        {/* Delete Tournament Confirmation Dialog */}
+        <Dialog
+          open={deleteTournamentDialogOpen}
+          onClose={() => !deletingTournament && setDeleteTournamentDialogOpen(false)}
+          aria-labelledby="delete-tournament-dialog-title"
+          aria-describedby="delete-tournament-dialog-description"
+        >
+          <DialogTitle id="delete-tournament-dialog-title">
+            {t("detail.deleteTournamentTitle") || "Eliminar Torneo"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="delete-tournament-dialog-description">
+              {t("detail.deleteTournamentConfirmation", { tournamentName: tournament?.name || "" }) ||
+                `¿Estás seguro de que deseas eliminar el torneo "${tournament?.name || ""}"? Esta acción no se puede deshacer.`}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setDeleteTournamentDialogOpen(false)}
+              variant="outlined"
+              disabled={deletingTournament}
+            >
+              {t("detail.cancel")}
+            </Button>
+            <Button
+              onClick={handleConfirmDeleteTournament}
+              color="error"
+              variant="contained"
+              disabled={deletingTournament}
+              autoFocus
+            >
+              {deletingTournament
+                ? t("detail.deletingTournament") || "Eliminando..."
+                : t("detail.delete")}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Remove Team Confirmation Dialog */}
+        <Dialog
+          open={removeTeamDialogOpen}
+          onClose={() => !removingTeam && setRemoveTeamDialogOpen(false)}
+          aria-labelledby="remove-team-dialog-title"
+          aria-describedby="remove-team-dialog-description"
+        >
+          <DialogTitle id="remove-team-dialog-title">
+            {t("detail.removeTeamTitle") || "Remover Equipo del Torneo"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="remove-team-dialog-description">
+              {t("detail.removeTeamConfirmation", { teamName: teamToRemove?.name ?? "" }) ||
+                `¿Estás seguro de que deseas remover el equipo "${teamToRemove?.name ?? ""}" del torneo?`}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={handleCancelRemoveTeam}
+              variant="outlined"
+              disabled={removingTeam}
+            >
+              {t("detail.cancel")}
+            </Button>
+            <Button
+              onClick={handleConfirmRemoveTeam}
+              color="error"
+              variant="contained"
+              disabled={removingTeam}
+              autoFocus
+            >
+              {removingTeam
+                ? t("detail.removingTeam") || "Removiendo..."
+                : t("detail.removeTeam") || "Remover"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </MainLayout>
+    );
+  };
+
+  export default TournamentDetailPage;
 
 export const getServerSideProps: GetServerSideProps = async ({
   locale,
