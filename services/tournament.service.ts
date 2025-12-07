@@ -3,6 +3,16 @@ import { ServiceResult } from "./types";
 import { getToken } from "./auth.service";
 import type { Tournament, CreateTournamentPayload, Team } from "../interfaces";
 
+export interface TournamentRequest {
+  id: string;
+  tournamentId: string;
+  tournamentName?: string;
+  teamId: string;
+  teamName?: string;
+  status?: string;
+  createdAt?: string;
+}
+
 async function safeCall<T>(fn: () => Promise<any>): Promise<ServiceResult<T>> {
   try {
     const data = await fn();
@@ -199,6 +209,67 @@ export const tournamentService = {
         { image: imageDataUri },
         token
       )
+    );
+  },
+
+  /**
+   * Request access to a tournament (team requests to join)
+   * PUT /api/tournament/:tournament_id/team/:team_id/request-access
+   */
+  requestAccess: async (
+    tournamentId: string,
+    teamId: string
+  ): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    return safeCall<void>(() =>
+      api.put(`/tournament/${tournamentId}/team/${teamId}/request-access`, undefined, token)
+    );
+  },
+
+  /**
+   * Find all tournament requests
+   * GET /api/tournament/requests?tournamentId=:tournamentId
+   */
+  findAllRequests: async (
+    tournamentId: string
+  ): Promise<ServiceResult<TournamentRequest[]>> => {
+    const token = await getToken();
+    try {
+      const response = await api.get<{ requests: TournamentRequest[] }>(
+        "/tournament/requests",
+        { tournamentId },
+        token
+      );
+
+      const requests =
+        (response as any)?.requests || (response as any)?.data?.requests || [];
+      return { ok: true, data: requests };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || "Unknown error";
+      return { ok: false, errorMessage: message, error };
+    }
+  },
+
+  /**
+   * Accept a tournament request
+   * PUT /api/tournament/request/:request_id/accept
+   */
+  acceptRequest: async (requestId: string): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    return safeCall<void>(() =>
+      api.put(`/tournament/request/${requestId}/accept`, undefined, token)
+    );
+  },
+
+  /**
+   * Reject/Decline a tournament request
+   * PUT /api/tournament/request/:request_id/decline
+   */
+  rejectRequest: async (requestId: string): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    return safeCall<void>(() =>
+      api.put(`/tournament/request/${requestId}/decline`, undefined, token)
     );
   },
 };

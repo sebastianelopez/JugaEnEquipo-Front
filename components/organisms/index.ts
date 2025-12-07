@@ -45,6 +45,8 @@ export { AchievementsList } from "./team/AchievementsList";
 export { JoinCard } from "./team/JoinCard";
 export { TeamRequestsAdmin } from "./team/TeamRequestsAdmin";
 export { TeamTabs } from "./team/TeamTabs";
+//Tournament sections
+export { TournamentTabs } from "./tournament/TournamentTabs";
 // Profile
 export { ProfileHero } from "./profile/ProfileHero";
 export { ProfileTabs } from "./profile/ProfileTabs";
