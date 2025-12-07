@@ -82,8 +82,55 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, []);
 
+  // Track previous last message ID to detect new messages
+  const previousLastMessageIdRef = useRef<string | null>(null);
+  const shouldAutoScrollRef = useRef<boolean>(true); // Track if we should auto-scroll
+
+  // Handle scroll events to detect user scrolling up
   useEffect(() => {
-    scrollToBottom();
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      // If user scrolls up significantly, disable auto-scroll
+      const threshold = 200;
+      const isNearBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        threshold;
+      shouldAutoScrollRef.current = isNearBottom;
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (messages.length === 0) {
+      previousLastMessageIdRef.current = null;
+      return;
+    }
+
+    const lastMessage = messages[messages.length - 1];
+    const lastMessageId = lastMessage?.id;
+    const previousLastMessageId = previousLastMessageIdRef.current;
+
+    // Auto-scroll if:
+    // 1. First time loading messages (previousLastMessageId is null)
+    // 2. A new message was added (last message ID changed)
+    // 3. User is near the bottom (shouldAutoScrollRef is true)
+    if (
+      previousLastMessageId === null ||
+      (lastMessageId !== previousLastMessageId && shouldAutoScrollRef.current)
+    ) {
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+
+    previousLastMessageIdRef.current = lastMessageId;
   }, [messages, scrollToBottom]);
 
   const markMessageAsRead = useCallback(
@@ -171,6 +218,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
     // Update the ref
     conversationIdRef.current = conversationId;
+    // Reset auto-scroll state when conversation changes
+    shouldAutoScrollRef.current = true;
+    previousLastMessageIdRef.current = null;
 
     // Close previous connection if exists
     if (eventSourceRef.current) {
@@ -505,6 +555,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           const newMessages = [...prev, optimisticMessage];
           return sortMessagesByDate(newMessages);
         });
+
+        // Force scroll when user sends a message
+        shouldAutoScrollRef.current = true;
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
 
         // Send message to server
         const result = await chatService.sendMessage(
