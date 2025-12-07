@@ -10,7 +10,6 @@ import {
   Paper,
   InputAdornment,
   CircularProgress,
-  Divider,
   useTheme,
   alpha,
   useMediaQuery,
@@ -37,6 +36,7 @@ import { useFeedback } from "../../../hooks/useFeedback";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/router";
 import { v4 as uuidv4 } from "uuid";
+import { formatDate } from "../../../utils/formatDate";
 
 interface ChatWindowProps {
   conversation: Conversation | null;
@@ -82,8 +82,55 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, []);
 
+  // Track previous last message ID to detect new messages
+  const previousLastMessageIdRef = useRef<string | null>(null);
+  const shouldAutoScrollRef = useRef<boolean>(true); // Track if we should auto-scroll
+
+  // Handle scroll events to detect user scrolling up
   useEffect(() => {
-    scrollToBottom();
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      // If user scrolls up significantly, disable auto-scroll
+      const threshold = 200;
+      const isNearBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        threshold;
+      shouldAutoScrollRef.current = isNearBottom;
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (messages.length === 0) {
+      previousLastMessageIdRef.current = null;
+      return;
+    }
+
+    const lastMessage = messages[messages.length - 1];
+    const lastMessageId = lastMessage?.id;
+    const previousLastMessageId = previousLastMessageIdRef.current;
+
+    // Auto-scroll if:
+    // 1. First time loading messages (previousLastMessageId is null)
+    // 2. A new message was added (last message ID changed)
+    // 3. User is near the bottom (shouldAutoScrollRef is true)
+    if (
+      previousLastMessageId === null ||
+      (lastMessageId !== previousLastMessageId && shouldAutoScrollRef.current)
+    ) {
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+
+    previousLastMessageIdRef.current = lastMessageId;
   }, [messages, scrollToBottom]);
 
   const markMessageAsRead = useCallback(
@@ -171,6 +218,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
     // Update the ref
     conversationIdRef.current = conversationId;
+    // Reset auto-scroll state when conversation changes
+    shouldAutoScrollRef.current = true;
+    previousLastMessageIdRef.current = null;
 
     // Close previous connection if exists
     if (eventSourceRef.current) {
@@ -506,6 +556,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           return sortMessagesByDate(newMessages);
         });
 
+        // Force scroll when user sends a message
+        shouldAutoScrollRef.current = true;
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
+
         // Send message to server
         const result = await chatService.sendMessage(
           conversationId,
@@ -578,6 +634,33 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     const date = new Date(createdAt);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }, []);
+
+  // Helper function to check if two messages are from different days
+  const isDifferentDay = useCallback(
+    (date1: string, date2: string): boolean => {
+      const d1 = new Date(date1);
+      const d2 = new Date(date2);
+
+      return (
+        d1.getFullYear() !== d2.getFullYear() ||
+        d1.getMonth() !== d2.getMonth() ||
+        d1.getDate() !== d2.getDate()
+      );
+    },
+    []
+  );
+
+  // Helper function to format date for day separator (only date, no time)
+  const formatDaySeparator = useCallback(
+    (createdAt: string): string => {
+      const locale = (router.locale as "es" | "en" | "pt") || "es";
+      return formatDate(createdAt, {
+        locale,
+        includeTime: false,
+      });
+    },
+    [router.locale]
+  );
 
   if (!conversation) {
     return (
@@ -728,10 +811,40 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               {messages.map((message, index) => {
                 const isOwnMessage = message.username === user?.username;
                 const isOptimistic = message.id.startsWith("temp-");
-                const showDivider = index < messages.length - 1;
+
+                // Check if we need to show a day separator
+                const previousMessage = index > 0 ? messages[index - 1] : null;
+                const showDaySeparator =
+                  !previousMessage ||
+                  isDifferentDay(previousMessage.createdAt, message.createdAt);
 
                 return (
                   <React.Fragment key={message.id}>
+                    {showDaySeparator && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          my: 2,
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            px: 2,
+                            py: 0.5,
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            color: "text.secondary",
+                            borderRadius: 2,
+                            fontSize: "0.75rem",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {formatDaySeparator(message.createdAt)}
+                        </Typography>
+                      </Box>
+                    )}
                     <ListItem
                       sx={{
                         display: "flex",
@@ -817,7 +930,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                         </Box>
                       </Paper>
                     </ListItem>
-                    {showDivider && <Divider variant="middle" />}
                   </React.Fragment>
                 );
               })}

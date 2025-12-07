@@ -30,8 +30,13 @@ export const NotificationsButton = ({}: Props) => {
   const theme = useTheme();
   const timeTranslations = useTimeTranslations();
 
-  const { notifications, unreadCount, markAsRead, refreshNotifications } =
-    useContext(NotificationContext);
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    refreshNotifications,
+    isLoading,
+  } = useContext(NotificationContext);
 
   const handleClick = async (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -40,8 +45,9 @@ export const NotificationsButton = ({}: Props) => {
     await refreshNotifications();
   };
 
+  // Mark notifications as read when menu opens and notifications finish loading
   useEffect(() => {
-    if (anchorEl && !hasMarkedAsReadRef.current) {
+    if (anchorEl && !hasMarkedAsReadRef.current && !isLoading) {
       const unreadNotifications = notifications.filter(
         (n) => n.read === undefined || !n.read
       );
@@ -53,10 +59,12 @@ export const NotificationsButton = ({}: Props) => {
           unreadNotifications.map((notification) => markAsRead(notification.id))
         ).catch((error) => {
           console.error("Error marking notifications as read:", error);
+
+          hasMarkedAsReadRef.current = false;
         });
       }
     }
-  }, [anchorEl, notifications, markAsRead]);
+  }, [anchorEl, notifications, markAsRead, isLoading]);
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -85,9 +93,15 @@ export const NotificationsButton = ({}: Props) => {
       router.push(`/post/${notification.postId}`);
     } else if (notification.type === "new_follower") {
       router.push(`/profile/${notification.username}`);
-    } else if (notification.type === "team_request_received" && notification.teamId) {
+    } else if (
+      notification.type === "team_request_received" &&
+      notification.teamId
+    ) {
       router.push(`/teams/${notification.teamId}`);
-    } else if (notification.type === "tournament_request_received" && notification.tournamentId) {
+    } else if (
+      notification.type === "tournament_request_received" &&
+      notification.tournamentId
+    ) {
       router.push(`/tournaments/${notification.tournamentId}`);
     }
 
@@ -138,7 +152,8 @@ export const NotificationsButton = ({}: Props) => {
           horizontal: "right",
         }}
       >
-        {notifications.filter((n) => n.type !== "post_moderated").length === 0 ? (
+        {notifications.filter((n) => n.type !== "post_moderated").length ===
+        0 ? (
           <MenuItem onClick={handleClose}>
             {t("Notifications.noNotifications")}
           </MenuItem>
@@ -146,60 +161,60 @@ export const NotificationsButton = ({}: Props) => {
           notifications
             .filter((n) => n.type !== "post_moderated")
             .map((notification) => {
-            const isRead =
-              notification.read === undefined ? false : notification.read;
+              const isRead =
+                notification.read === undefined ? false : notification.read;
 
-            return (
-              <MenuItem
-                key={notification.id}
-                onClick={() => handleNotificationClick(notification.id)}
-                sx={{
-                  backgroundColor: isRead
-                    ? "inherit"
-                    : alpha(theme.palette.primary.main, 0.15),
-                  whiteSpace: "normal",
-                  width: "100%",
-                  display: "flex",
-                  "&:hover": {
+              return (
+                <MenuItem
+                  key={notification.id}
+                  onClick={() => handleNotificationClick(notification.id)}
+                  sx={{
                     backgroundColor: isRead
-                      ? alpha(theme.palette.action.hover, 0.5)
-                      : alpha(theme.palette.primary.main, 0.12),
-                  },
-                }}
-              >
-                <ListItemAvatar>
-                  <Avatar
-                    alt={notification.username}
-                    src="/images/user-placeholder.png"
-                  >
-                    {notification.username?.[0]?.toUpperCase()}
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  id={notification.id}
-                  primary={renderNotificationMessage(
-                    notification.type,
-                    notification.username,
-                    notification.message,
-                    t,
-                    isRead
-                  )}
-                  secondary={formatTimeElapsed(
-                    new Date(notification.date),
-                    timeTranslations
-                  )}
-                  slotProps={{
-                    primary: {
-                      style: {
-                        width: "100%",
-                      },
+                      ? "inherit"
+                      : alpha(theme.palette.primary.main, 0.15),
+                    whiteSpace: "normal",
+                    width: "100%",
+                    display: "flex",
+                    "&:hover": {
+                      backgroundColor: isRead
+                        ? alpha(theme.palette.action.hover, 0.5)
+                        : alpha(theme.palette.primary.main, 0.12),
                     },
                   }}
-                  sx={{ flex: 1 }}
-                />
-              </MenuItem>
-            );
-          })
+                >
+                  <ListItemAvatar>
+                    <Avatar
+                      alt={notification.username}
+                      src="/images/user-placeholder.png"
+                    >
+                      {notification.username?.[0]?.toUpperCase()}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    id={notification.id}
+                    primary={renderNotificationMessage(
+                      notification.type,
+                      notification.username,
+                      notification.message,
+                      t,
+                      isRead
+                    )}
+                    secondary={formatTimeElapsed(
+                      new Date(notification.date),
+                      timeTranslations
+                    )}
+                    slotProps={{
+                      primary: {
+                        style: {
+                          width: "100%",
+                        },
+                      },
+                    }}
+                    sx={{ flex: 1 }}
+                  />
+                </MenuItem>
+              );
+            })
         )}
       </Menu>
     </>
