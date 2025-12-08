@@ -115,8 +115,9 @@ export const eventService = {
       if (response && typeof response === "object") {
         if ("data" in response && response.data) {
           event = response.data;
-        } else if (typeof response === "object" && "id" in response) {
-          event = response as Event;
+        } else if ("id" in response) {
+          // Handle case where API returns Event directly instead of EventResponse
+          event = response as unknown as Event;
         }
       }
 
