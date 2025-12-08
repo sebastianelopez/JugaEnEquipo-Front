@@ -352,7 +352,16 @@
     },
     "Events": {
         "upcomingEvents": "Upcoming events",
-        "seeAll": "See all"
+        "seeAll": "See all",
+        "title": "Events",
+        "subtitle": "Discover and participate in upcoming events",
+        "pageDescription": "Events page",
+        "noEvents": "No events found",
+        "date": "Date & Time",
+        "start": "Start",
+        "end": "End",
+        "description": "Description",
+        "createdAt": "Created"
     },
     "Chat": {
         "title": "Messages",

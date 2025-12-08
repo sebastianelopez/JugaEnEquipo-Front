@@ -352,7 +352,16 @@
     },
     "Events": {
         "upcomingEvents": "Próximos eventos",
-        "seeAll": "Ver todos"
+        "seeAll": "Ver todos",
+        "title": "Eventos",
+        "subtitle": "Descubra e participe dos próximos eventos",
+        "pageDescription": "Página de eventos",
+        "noEvents": "Nenhum evento encontrado",
+        "date": "Data e Hora",
+        "start": "Início",
+        "end": "Fim",
+        "description": "Descrição",
+        "createdAt": "Criado"
     },
     "Chat": {
         "title": "Mensagens",
