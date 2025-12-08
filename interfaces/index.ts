@@ -16,3 +16,5 @@ export type {
   JoinTournamentPayload,
   CreateBackofficeTournamentPayload,
 } from "./tournament";
+
+export type { Event, EventsResponse, EventResponse } from "./event";

@@ -10,7 +10,9 @@ import { MainLayout } from "../../layouts";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { UserContext } from "../../context/user";
 import { postService } from "../../services/post.service";
+import { eventService } from "../../services/event.service";
 import { Post } from "../../interfaces/post";
+import { Event } from "../../interfaces/event";
 import { PostList } from "../../components/molecules/Post/PostList";
 import { NewPostsAvailable } from "../../components/molecules/Post/NewPostsAvailable";
 import { sortPostsByDate } from "../../utils/sortPosts";
@@ -38,6 +40,8 @@ const HomePage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasUserScrolled, setHasUserScrolled] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
 
   const addNewPost = useCallback((newPost: Post) => {
     setPosts((prevPosts) => {
@@ -201,6 +205,28 @@ const HomePage = () => {
     loadInitialPosts();
   }, [loadInitialPosts]);
 
+  const loadEvents = useCallback(async () => {
+    try {
+      setIsLoadingEvents(true);
+      const result = await eventService.getEvents({
+        type: "presencial",
+        limit: 3,
+        offset: 0,
+      });
+      if (result.data && result.data.data) {
+        setEvents(result.data.data);
+      }
+    } catch (error) {
+      console.error("Error loading events:", error);
+    } finally {
+      setIsLoadingEvents(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadEvents();
+  }, [loadEvents]);
+
   useEffect(() => {
     const target = sentinelRef.current;
     if (!target) return;
@@ -318,7 +344,7 @@ const HomePage = () => {
             display: { xs: "none", md: "flex" },
           }}
         >
-          <UpcomingEventsCard />
+          <UpcomingEventsCard events={events} isLoading={isLoadingEvents} />
         </Grid>
       </Grid>
     </MainLayout>

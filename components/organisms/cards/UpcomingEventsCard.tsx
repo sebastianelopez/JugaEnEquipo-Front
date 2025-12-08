@@ -9,60 +9,45 @@ import {
   ListItemText,
   Paper,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import { FC, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/router";
 import { formatEventDateTime } from "../../../utils/formatDate";
-import { ComingSoon } from "../../atoms/ComingSoon";
-
-interface UpcomingEventItem {
-  id: string;
-  title: string;
-  game: string;
-  startAt: string;
-}
+import { Event } from "../../../interfaces/event";
 
 interface Props {
-  events?: UpcomingEventItem[];
+  events?: Event[];
+  isLoading?: boolean;
 }
 
-export const UpcomingEventsCard: FC<Props> = ({ events }) => {
+export const UpcomingEventsCard: FC<Props> = ({ events, isLoading = false }) => {
   const t = useTranslations("Events");
   const router = useRouter();
   const locale = (router.locale as "es" | "en" | "pt") || "es";
 
-  const fallbackEvents: UpcomingEventItem[] = useMemo(
-    () => [
-      {
-        id: "1",
-        title: "Valorant Showdown",
-        game: "Valorant",
-        startAt: "2025-10-06T14:00:00.000Z", // Fixed date
-      },
-      {
-        id: "2",
-        title: "League Clash Cup",
-        game: "League of Legends",
-        startAt: "2025-10-07T16:00:00.000Z",
-      },
-      {
-        id: "3",
-        title: "Overwatch Community Night",
-        game: "Overwatch",
-        startAt: "2025-10-08T20:00:00.000Z",
-      },
-      {
-        id: "4",
-        title: "CS2 Weekend Cup",
-        game: "Counter-Strike 2",
-        startAt: "2025-10-10T12:00:00.000Z",
-      },
-    ],
-    []
-  );
+  // Parse date range string to get start date
+  const parseStartDate = (dateRange: string): string => {
+    // Format: "2025-12-30T10:00:00-03:00 - 2025-12-30T18:00:00-03:00"
+    const startDate = dateRange.split(" - ")[0];
+    return startDate;
+  };
 
-  const displayEvents = events && events.length > 0 ? events : fallbackEvents;
+  // Convert Event to display format
+  const displayEvents = useMemo(() => {
+    if (!events || events.length === 0) return [];
+    
+    return events
+      .map((event) => ({
+        id: event.id,
+        name: event.name,
+        game: event.game,
+        startAt: parseStartDate(event.date),
+        image: event.image,
+      }))
+      .slice(0, 3); // Limit to 3 events
+  }, [events]);
 
   return (
     <Paper
@@ -75,40 +60,46 @@ export const UpcomingEventsCard: FC<Props> = ({ events }) => {
       }}
     >
       <Box
-        sx={{
-          opacity: 0.6,
-          filter: "grayscale(20%)",
-          pointerEvents: "none",
-        }}
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        mb={1}
       >
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          mb={1}
+        <Typography variant="h5" fontWeight="bold">
+          {t("upcomingEvents")}
+        </Typography>
+        <Button
+          size="small"
+          sx={{
+            textTransform: "none",
+          }}
+          onClick={() => router.push("/events")}
         >
-          <Typography variant="h5" fontWeight="bold" sx={{ opacity: 0.8 }}>
-            {t("upcomingEvents")}
-          </Typography>
-          <Button
-            size="small"
-            sx={{
-              textTransform: "none",
-              cursor: "not-allowed",
-              pointerEvents: "none",
-            }}
-          >
-            {t("seeAll")}
-          </Button>
-        </Box>
+          {t("seeAll")}
+        </Button>
+      </Box>
 
+      {isLoading ? (
+        <Box display="flex" justifyContent="center" py={3}>
+          <CircularProgress size={24} />
+        </Box>
+      ) : displayEvents.length === 0 ? (
+        <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+          {t("noEvents") || "No hay eventos próximos"}
+        </Typography>
+      ) : (
         <List dense>
           {displayEvents.map((event) => (
-            <ListItem key={event.id} alignItems="flex-start" sx={{ px: 0 }}>
+            <ListItem 
+              key={event.id} 
+              alignItems="flex-start" 
+              sx={{ px: 0, cursor: "pointer" }}
+              onClick={() => router.push(`/events/${event.id}`)}
+            >
               <ListItemAvatar>
                 <Avatar
                   alt={event.game}
-                  src="/images/image-placeholder.png"
+                  src={event.image || "/images/image-placeholder.png"}
                   sx={{ width: 36, height: 36 }}
                 />
               </ListItemAvatar>
@@ -117,7 +108,7 @@ export const UpcomingEventsCard: FC<Props> = ({ events }) => {
                 primary={
                   <Box display="flex" alignItems="center" gap={1}>
                     <Typography variant="body1" fontWeight="bold">
-                      {event.title}
+                      {event.name}
                     </Typography>
                   </Box>
                 }
@@ -138,10 +129,7 @@ export const UpcomingEventsCard: FC<Props> = ({ events }) => {
             </ListItem>
           ))}
         </List>
-      </Box>
-      <Box sx={{ mt: 2, opacity: 1, filter: "none", pointerEvents: "auto" }}>
-        <ComingSoon variant="minimal" />
-      </Box>
+      )}
     </Paper>
   );
 };
