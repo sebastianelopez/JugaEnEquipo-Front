@@ -60,6 +60,7 @@ import { BackgroundFallback } from "../../components/atoms/BackgroundFallback";
 import { EditTournamentModal } from "../../components/organisms/modals/EditTournamentModal";
 import { TournamentRequestsAdmin } from "../../components/organisms/tournament/TournamentRequestsAdmin";
 import { TournamentTabs } from "../../components/organisms/tournament/TournamentTabs";
+import { SuccessSnackbar } from "../../components/atoms/SuccessSnackbar";
 
 interface Props {
   id: string;
@@ -83,6 +84,9 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
   const [leaving, setLeaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
   const [tournamentTeams, setTournamentTeams] = useState<Team[]>([]);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [loadingBackground, setLoadingBackground] = useState(true);
@@ -312,9 +316,11 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
           teamId
         );
         if (result.ok) {
-          setSuccess(
+          setSnackbarMessage(
             t("detail.leaveSuccess") || "Has dejado el torneo exitosamente"
           );
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
 
           const res = await tournamentService.find(id);
           if (res.ok && res.data) {
@@ -326,21 +332,27 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
             setTournamentTeams(teamsResult.data);
           }
         } else {
-          setError(
+          setSnackbarMessage(
             result.errorMessage ||
               t("detail.leaveError") ||
               "Error al dejar el torneo"
           );
+          setSnackbarSeverity("error");
+          setSnackbarOpen(true);
         }
       } else {
-        setError(
+        setSnackbarMessage(
           t("detail.noTeamFound") || "No se encontró un equipo registrado"
         );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     } catch (err: any) {
-      setError(
+      setSnackbarMessage(
         err.message || t("detail.leaveError") || "Error al dejar el torneo"
       );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     } finally {
       setLeaving(false);
     }
@@ -2213,6 +2225,12 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
             </Button>
           </DialogActions>
         </Dialog>
+        <SuccessSnackbar
+          open={snackbarOpen}
+          message={snackbarMessage}
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+        />
       </MainLayout>
     );
   };

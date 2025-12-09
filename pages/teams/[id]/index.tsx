@@ -40,6 +40,7 @@ import type { Team, Game } from "../../../interfaces";
 import { UserContext } from "../../../context/user";
 import { getGameImage } from "../../../utils/gameImageUtils";
 import { useFeedback } from "../../../hooks/useFeedback";
+import { SuccessSnackbar } from "../../../components/atoms/SuccessSnackbar";
 
 interface Props {
   id: string;
@@ -67,6 +68,9 @@ export default function TeamDetailPage({ id }: Props) {
   const [joinCardState, setJoinCardState] = useState<
     "request" | "pending" | "member" | "hidden"
   >("hidden");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
   useEffect(() => {
     const loadTeam = async () => {
@@ -283,18 +287,18 @@ export default function TeamDetailPage({ id }: Props) {
 
     // Prevent creator from leaving
     if (isCreator) {
-      showError({
-        message: t("creatorCannotLeave") as string,
-      });
+      setSnackbarMessage(t("creatorCannotLeave") as string);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       return;
     }
 
     try {
       const result = await teamService.leaveTeam(id);
       if (result.ok) {
-        showSuccess({
-          message: t("leaveTeamSuccess") as string,
-        });
+        setSnackbarMessage(t("leaveTeamSuccess") as string);
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
         setIsMember(false);
         setJoinCardState("request");
         // Reload team data
@@ -302,19 +306,17 @@ export default function TeamDetailPage({ id }: Props) {
       } else {
         // If endpoint is not implemented, show appropriate message
         if (result.errorMessage?.includes("not yet implemented")) {
-          showError({
-            message: t("leaveTeamNotImplemented") as string,
-          });
+          setSnackbarMessage(t("leaveTeamNotImplemented") as string);
         } else {
-          showError({
-            message: result.errorMessage || (t("leaveTeamError") as string),
-          });
+          setSnackbarMessage(result.errorMessage || (t("leaveTeamError") as string));
         }
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     } catch (err: any) {
-      showError({
-        message: err?.message || (t("leaveTeamError") as string),
-      });
+      setSnackbarMessage(err?.message || (t("leaveTeamError") as string));
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -1217,6 +1219,12 @@ export default function TeamDetailPage({ id }: Props) {
           </Button>
         </DialogActions>
       </Dialog>
+      <SuccessSnackbar
+        open={snackbarOpen}
+        message={snackbarMessage}
+        onClose={() => setSnackbarOpen(false)}
+        severity={snackbarSeverity}
+      />
     </MainLayout>
   );
 }
