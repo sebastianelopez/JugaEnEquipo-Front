@@ -9,6 +9,7 @@ interface NotificationProps {
   isLoading: boolean;
   setNotifications: (notifications: Notification[]) => void;
   addNotification: (notification: Notification) => void;
+  removeNotification: (notificationId: string) => void;
   markAsRead: (notificationId: string) => Promise<void>;
   refreshNotifications: () => Promise<void>;
 }

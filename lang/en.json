@@ -474,6 +474,7 @@
         "postCommented": "{username} commented on your post",
         "postLiked": "{username} liked your post",
         "postShared": "{username} shared your post",
+        "postModerated": "Your post has been moderated and was not published due to inappropriate content. Please review our community policies.",
         "userMentioned": "{username} mentioned you in a post",
         "teamRequestReceived": "{username} requested to join your team",
         "tournamentRequestReceived": "{username} requested to join your tournament",

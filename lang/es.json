@@ -474,6 +474,7 @@
         "postCommented": "{username} comentó en tu publicación",
         "postLiked": "A {username} le gustó tu publicación",
         "postShared": "{username} compartió tu publicación",
+        "postModerated": "Tu publicación ha sido moderada y no se ha publicado debido a contenido inapropiado. Por favor, revisa nuestras políticas de comunidad.",
         "userMentioned": "{username} te mencionó en una publicación",
         "teamRequestReceived": "{username} solicitó unirse a tu equipo",
         "tournamentRequestReceived": "{username} solicitó unirse a tu torneo",

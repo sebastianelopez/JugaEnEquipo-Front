@@ -25,6 +25,7 @@ import { tournamentService, TournamentRequest } from "../../../services/tourname
 import { useFeedback } from "../../../hooks/useFeedback";
 import { teamService } from "../../../services/team.service";
 import { useRouter } from "next/router";
+import { SuccessSnackbar } from "../../atoms/SuccessSnackbar";
 
 interface Team {
   id: string;
@@ -46,6 +47,9 @@ export const TournamentRequestsAdmin: FC<Props> = ({ tournamentId, onRequestUpda
   const [teams, setTeams] = useState<Record<string, Team>>({});
   const [loading, setLoading] = useState(true);
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
   useEffect(() => {
     loadRequests();
@@ -84,22 +88,33 @@ export const TournamentRequestsAdmin: FC<Props> = ({ tournamentId, onRequestUpda
   const handleAccept = async (requestId: string) => {
     try {
       setProcessingIds((prev) => new Set(prev).add(requestId));
+      // Obtener el equipo antes de aceptar para mostrar en el mensaje
+      const request = requests.find((r) => r.id === requestId);
+      const team = request ? teams[request.teamId] : null;
+      const teamName = team?.name || request?.teamName || "equipo";
+      
       const result = await tournamentService.acceptRequest(requestId);
       if (result.ok) {
-        showSuccess({
-          message: t("requestAcceptedSuccess") as string,
-        });
+        setSnackbarMessage(
+          t("requestAcceptedSuccess") || `Solicitud del ${teamName} aceptada exitosamente`
+        );
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
         await loadRequests();
         onRequestUpdated?.();
       } else {
-        showError({
-          message: result.errorMessage || (t("requestAcceptedError") as string),
-        });
+        setSnackbarMessage(
+          result.errorMessage || (t("requestAcceptedError") as string) || "Error al aceptar la solicitud"
+        );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     } catch (err: any) {
-      showError({
-        message: err?.message || (t("requestAcceptedError") as string),
-      });
+      setSnackbarMessage(
+        err?.message || (t("requestAcceptedError") as string) || "Error al aceptar la solicitud"
+      );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     } finally {
       setProcessingIds((prev) => {
         const next = new Set(prev);
@@ -399,6 +414,12 @@ export const TournamentRequestsAdmin: FC<Props> = ({ tournamentId, onRequestUpda
           })}
         </List>
       </CardContent>
+      <SuccessSnackbar
+        open={snackbarOpen}
+        message={snackbarMessage}
+        onClose={() => setSnackbarOpen(false)}
+        severity={snackbarSeverity}
+      />
     </Card>
   );
 };
