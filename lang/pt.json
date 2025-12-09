@@ -478,6 +478,8 @@
         "userMentioned": "{username} te mencionou em uma publicação",
         "teamRequestReceived": "{username} solicitou entrar no seu time",
         "tournamentRequestReceived": "{username} solicitou entrar no seu torneio",
+        "teamRequestAccepted": "Sua solicitação para entrar no time foi aceita",
+        "tournamentRequestAccepted": "Sua solicitação para entrar no torneio foi aceita",
         "noNotifications": "Não há novas notificações"
     },
     "MobileApp": {

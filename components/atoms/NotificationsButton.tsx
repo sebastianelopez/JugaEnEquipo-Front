@@ -94,12 +94,14 @@ export const NotificationsButton = ({}: Props) => {
     } else if (notification.type === "new_follower") {
       router.push(`/profile/${notification.username}`);
     } else if (
-      notification.type === "team_request_received" &&
+      (notification.type === "team_request_received" ||
+        notification.type === "team_request_accepted") &&
       notification.teamId
     ) {
       router.push(`/teams/${notification.teamId}`);
     } else if (
-      notification.type === "tournament_request_received" &&
+      (notification.type === "tournament_request_received" ||
+        notification.type === "tournament_request_accepted") &&
       notification.tournamentId
     ) {
       router.push(`/tournaments/${notification.tournamentId}`);
@@ -185,7 +187,7 @@ export const NotificationsButton = ({}: Props) => {
                   <ListItemAvatar>
                     <Avatar
                       alt={notification.username}
-                      src="/images/user-placeholder.png"
+                      src={notification.profileImage || "/images/user-placeholder.png"}
                     >
                       {notification.username?.[0]?.toUpperCase()}
                     </Avatar>

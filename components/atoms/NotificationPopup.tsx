@@ -112,6 +112,18 @@ export const NotificationPopup: React.FC = () => {
       router.push(`/post/${currentNotification.postId}`);
     } else if (currentNotification.type === "new_follower") {
       router.push(`/profile/${currentNotification.username}`);
+    } else if (
+      (currentNotification.type === "team_request_received" ||
+        currentNotification.type === "team_request_accepted") &&
+      currentNotification.teamId
+    ) {
+      router.push(`/teams/${currentNotification.teamId}`);
+    } else if (
+      (currentNotification.type === "tournament_request_received" ||
+        currentNotification.type === "tournament_request_accepted") &&
+      currentNotification.tournamentId
+    ) {
+      router.push(`/tournaments/${currentNotification.tournamentId}`);
     }
 
     handleClose();
@@ -204,7 +216,7 @@ export const NotificationPopup: React.FC = () => {
           {currentNotification.type !== "post_moderated" && (
             <Avatar
               alt={currentNotification.username}
-              src="/images/user-placeholder.png"
+              src={currentNotification.profileImage || "/images/user-placeholder.png"}
               sx={{ width: 40, height: 40 }}
             >
               {currentNotification.username?.[0]?.toUpperCase()}

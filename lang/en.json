@@ -478,6 +478,8 @@
         "userMentioned": "{username} mentioned you in a post",
         "teamRequestReceived": "{username} requested to join your team",
         "tournamentRequestReceived": "{username} requested to join your tournament",
+        "teamRequestAccepted": "Your request to join the team was accepted",
+        "tournamentRequestAccepted": "Your request to join the tournament was accepted",
         "noNotifications": "No new notifications"
     },
     "MobileApp": {
