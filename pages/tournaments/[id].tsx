@@ -100,6 +100,9 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
   const [removeTeamDialogOpen, setRemoveTeamDialogOpen] = useState(false);
   const [teamToRemove, setTeamToRemove] = useState<Team | null>(null);
   const [removingTeam, setRemovingTeam] = useState(false);
+  const [leaveTeamDialogOpen, setLeaveTeamDialogOpen] = useState(false);
+  const [userRegisteredTeams, setUserRegisteredTeams] = useState<Team[]>([]);
+  const [selectedLeaveTeamId, setSelectedLeaveTeamId] = useState<string>("");
 
   useEffect(() => {
     let mounted = true;
@@ -194,6 +197,45 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
     loadTournamentTeams();
   }, [tournament?.id]);
 
+  // Calcular los equipos registrados del usuario donde es líder o creador
+  useEffect(() => {
+    if (!user || !tournamentTeams.length) {
+      setUserRegisteredTeams([]);
+      setSelectedLeaveTeamId("");
+      return;
+    }
+
+    // Obtener los equipos del usuario donde es líder o creador
+    const getUserTeamsAsLeader = async () => {
+      const teamsResult = await teamService.search({ mine: true });
+      if (teamsResult.ok && teamsResult.data) {
+        // Filtrar equipos donde el usuario es líder o creador
+        const userLeaderTeams = teamsResult.data.filter(
+          (team) => team.leaderId === user.id || team.creatorId === user.id
+        );
+
+        // Encontrar cuáles de esos equipos están registrados en el torneo
+        const tournamentTeamIds = tournamentTeams.map((team) => team.id);
+        const registered = userLeaderTeams.filter((team) =>
+          tournamentTeamIds.includes(team.id)
+        );
+
+        setUserRegisteredTeams(registered);
+        // Si hay solo un equipo, establecerlo como seleccionado
+        if (registered.length === 1) {
+          setSelectedLeaveTeamId(registered[0].id);
+        } else if (registered.length > 1) {
+          // Si hay múltiples, establecer el primero como predeterminado
+          setSelectedLeaveTeamId(registered[0].id);
+        } else {
+          setSelectedLeaveTeamId("");
+        }
+      }
+    };
+
+    getUserTeamsAsLeader();
+  }, [user?.id, tournamentTeams]);
+
   // Check for pending requests
   useEffect(() => {
     const checkPendingRequests = async () => {
@@ -259,7 +301,9 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
 
   const handleRegisterTeam = async () => {
     if (!selectedTeamId || !tournament) {
-      setError(t("detail.selectTeamError") || "Por favor selecciona un equipo");
+      setSnackbarMessage(t("detail.selectTeamError") || "Por favor selecciona un equipo");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       return;
     }
 
@@ -273,76 +317,97 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
         selectedTeamId
       );
       if (result.ok) {
-        setSuccess(
+        setSnackbarMessage(
           t("detail.requestSentSuccess") || "Solicitud enviada exitosamente"
         );
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
         setHasPendingRequest(true);
         setPendingRequestTeamId(selectedTeamId);
       } else {
-        setError(
+        setSnackbarMessage(
           result.errorMessage ||
             t("detail.requestError") ||
             "Error al enviar la solicitud"
         );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     } catch (err: any) {
-      setError(
+      setSnackbarMessage(
         err.message ||
           t("detail.requestError") ||
           "Error al enviar la solicitud"
       );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     } finally {
       setRegistering(false);
     }
   };
 
-  const handleLeaveTournament = async () => {
+  const handleLeaveTournament = () => {
     if (!tournament) return;
 
-    // Necesitamos obtener el teamId del usuario registrado
-    // Por ahora, vamos a intentar obtenerlo de los equipos del usuario
+    // Si no hay equipos registrados, mostrar error
+    if (userRegisteredTeams.length === 0) {
+      setSnackbarMessage(
+        t("detail.noTeamFound") || "No se encontró un equipo registrado en este torneo"
+      );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    // Si hay más de un equipo, abrir diálogo de selección
+    if (userRegisteredTeams.length > 1) {
+      // Establecer el primer equipo como seleccionado si no hay ninguno
+      if (!selectedLeaveTeamId && userRegisteredTeams.length > 0) {
+        setSelectedLeaveTeamId(userRegisteredTeams[0].id);
+      }
+      setLeaveTeamDialogOpen(true);
+      return;
+    }
+
+    // Si hay solo un equipo, proceder directamente
+    executeLeaveTournament(userRegisteredTeams[0].id);
+  };
+
+  const executeLeaveTournament = async (teamId: string) => {
+    if (!tournament) return;
+
     setLeaving(true);
     setError(null);
     setSuccess(null);
+    setLeaveTeamDialogOpen(false);
 
     try {
-      // Obtener los equipos del usuario para encontrar el que está registrado
-      const teamsResult = await teamService.search({ mine: true });
-      if (teamsResult.ok && teamsResult.data && teamsResult.data.length > 0) {
-        // Por ahora, usamos el primer equipo. En el futuro, el backend debería devolver el teamId registrado
-        const teamId = teamsResult.data[0].id;
-        const result = await tournamentService.leaveTournament(
-          tournament.id,
-          teamId
+      const result = await tournamentService.leaveTournament(
+        tournament.id,
+        teamId
+      );
+      
+      if (result.ok) {
+        setSnackbarMessage(
+          t("detail.leaveSuccess") || "Has dejado el torneo exitosamente"
         );
-        if (result.ok) {
-          setSnackbarMessage(
-            t("detail.leaveSuccess") || "Has dejado el torneo exitosamente"
-          );
-          setSnackbarSeverity("success");
-          setSnackbarOpen(true);
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
 
-          const res = await tournamentService.find(id);
-          if (res.ok && res.data) {
-            setTournament(res.data as any);
-          }
+        const res = await tournamentService.find(id);
+        if (res.ok && res.data) {
+          setTournament(res.data as any);
+        }
 
-          const teamsResult = await tournamentService.getTournamentTeams(id);
-          if (teamsResult.ok && teamsResult.data) {
-            setTournamentTeams(teamsResult.data);
-          }
-        } else {
-          setSnackbarMessage(
-            result.errorMessage ||
-              t("detail.leaveError") ||
-              "Error al dejar el torneo"
-          );
-          setSnackbarSeverity("error");
-          setSnackbarOpen(true);
+        const teamsResult = await tournamentService.getTournamentTeams(id);
+        if (teamsResult.ok && teamsResult.data) {
+          setTournamentTeams(teamsResult.data);
         }
       } else {
         setSnackbarMessage(
-          t("detail.noTeamFound") || "No se encontró un equipo registrado"
+          result.errorMessage ||
+            t("detail.leaveError") ||
+            "Error al dejar el torneo"
         );
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
@@ -355,6 +420,17 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
       setSnackbarOpen(true);
     } finally {
       setLeaving(false);
+    }
+  };
+
+  const handleCancelLeaveTeam = () => {
+    setLeaveTeamDialogOpen(false);
+    setSelectedLeaveTeamId(userRegisteredTeams.length === 1 ? userRegisteredTeams[0].id : "");
+  };
+
+  const handleConfirmLeaveTeam = () => {
+    if (selectedLeaveTeamId) {
+      executeLeaveTournament(selectedLeaveTeamId);
     }
   };
 
@@ -389,19 +465,23 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
         setDeleteTournamentDialogOpen(false);
         router.push("/tournaments");
       } else {
-        setError(
+        setSnackbarMessage(
           result.errorMessage ||
             t("detail.deleteTournamentError") ||
             "Error al eliminar el torneo"
         );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         setDeleteTournamentDialogOpen(false);
       }
     } catch (err: any) {
-      setError(
+      setSnackbarMessage(
         err.message ||
           t("detail.deleteTournamentError") ||
           "Error al eliminar el torneo"
       );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       setDeleteTournamentDialogOpen(false);
     } finally {
       setDeletingTournament(false);
@@ -431,10 +511,12 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
         teamToRemove.id
       );
       if (result.ok) {
-        setSuccess(
+        setSnackbarMessage(
           t("detail.removeTeamSuccess") ||
             `El equipo ${teamToRemove.name} ha sido removido del torneo`
         );
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
         setRemoveTeamDialogOpen(false);
         setTeamToRemove(null);
 
@@ -452,20 +534,24 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
           setTournament(res.data as any);
         }
       } else {
-        setError(
+        setSnackbarMessage(
           result.errorMessage ||
             t("detail.removeTeamError") ||
             "Error al remover el equipo"
         );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         setRemoveTeamDialogOpen(false);
         setTeamToRemove(null);
       }
     } catch (err: any) {
-      setError(
+      setSnackbarMessage(
         err.message ||
           t("detail.removeTeamError") ||
           "Error al remover el equipo"
       );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       setRemoveTeamDialogOpen(false);
       setTeamToRemove(null);
     } finally {
@@ -1233,17 +1319,6 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       </Typography>
                     </Box>
 
-                    {error && (
-                      <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
-                      </Alert>
-                    )}
-                    {success && (
-                      <Alert severity="success" sx={{ mb: 2 }}>
-                        {success}
-                      </Alert>
-                    )}
-
                     {isTournamentCreator ? (
                       <Alert severity="info" sx={{ mb: 2 }}>
                         {t("detail.tournamentCreator")}
@@ -1883,17 +1958,6 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                     </Typography>
                   </Box>
 
-                  {error && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
-                      {error}
-                    </Alert>
-                  )}
-                  {success && (
-                    <Alert severity="success" sx={{ mb: 2 }}>
-                      {success}
-                    </Alert>
-                  )}
-
                   {canEditTournament && (
                     <TournamentRequestsAdmin
                       tournamentId={id}
@@ -2225,6 +2289,60 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Select Team to Leave Tournament Dialog */}
+        <Dialog
+          open={leaveTeamDialogOpen}
+          onClose={handleCancelLeaveTeam}
+          aria-labelledby="leave-team-dialog-title"
+          aria-describedby="leave-team-dialog-description"
+        >
+          <DialogTitle id="leave-team-dialog-title">
+            {t("detail.selectTeamToLeave") || "Seleccionar Equipo para Dejar el Torneo"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="leave-team-dialog-description" sx={{ mb: 2 }}>
+              {t("detail.selectTeamToLeaveDescription") ||
+                "Tienes múltiples equipos registrados en este torneo. Selecciona cuál equipo deseas que deje el torneo:"}
+            </DialogContentText>
+            <FormControl fullWidth>
+              <InputLabel>{t("detail.selectTeam") || "Equipo"}</InputLabel>
+              <Select
+                value={selectedLeaveTeamId}
+                onChange={(e) => setSelectedLeaveTeamId(e.target.value)}
+                label={t("detail.selectTeam") || "Equipo"}
+                disabled={leaving}
+              >
+                {userRegisteredTeams.map((team) => (
+                  <MenuItem key={team.id} value={team.id}>
+                    {team.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={handleCancelLeaveTeam}
+              variant="outlined"
+              disabled={leaving}
+            >
+              {t("detail.cancel")}
+            </Button>
+            <Button
+              onClick={handleConfirmLeaveTeam}
+              color="error"
+              variant="contained"
+              disabled={leaving || !selectedLeaveTeamId}
+              autoFocus
+            >
+              {leaving
+                ? t("detail.leaving") || "Dejando..."
+                : t("detail.leaveTournament") || "Dejar Torneo"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <SuccessSnackbar
           open={snackbarOpen}
           message={snackbarMessage}

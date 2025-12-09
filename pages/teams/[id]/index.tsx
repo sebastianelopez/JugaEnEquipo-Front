@@ -265,20 +265,24 @@ export default function TeamDetailPage({ id }: Props) {
     try {
       const result = await teamService.requestAccess(id, user.id);
       if (result.ok) {
-        showSuccess({
-          message: t("requestJoinSuccess") as string,
-        });
+        setSnackbarMessage(t("requestJoinSuccess") as string || "Solicitud enviada exitosamente");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
         setHasPendingRequest(true);
         setJoinCardState("pending");
       } else {
-        showError({
-          message: result.errorMessage || (t("requestJoinError") as string),
-        });
+        setSnackbarMessage(
+          result.errorMessage || (t("requestJoinError") as string) || "Error al enviar la solicitud"
+        );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     } catch (err: any) {
-      showError({
-        message: err?.message || (t("requestJoinError") as string),
-      });
+      setSnackbarMessage(
+        err?.message || (t("requestJoinError") as string) || "Error al enviar la solicitud"
+      );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -323,9 +327,9 @@ export default function TeamDetailPage({ id }: Props) {
   const handleUpdateLeader = async (userId: string) => {
     if (!id || !user?.id) {
       const errorMessage = "Team ID or user ID is missing";
-      showError({
-        message: errorMessage,
-      });
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       throw new Error(errorMessage);
     }
 
@@ -333,23 +337,23 @@ export default function TeamDetailPage({ id }: Props) {
       const result = await teamService.updateLeader(id, userId);
 
       if (result.ok) {
-        showSuccess({
-          message: t("leaderUpdatedSuccess") as string,
-        });
+        setSnackbarMessage(t("leaderUpdatedSuccess") as string || "Líder actualizado exitosamente");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
         await handleTeamUpdated();
       } else {
         const errorMessage =
-          result.errorMessage || (t("leaderUpdatedError") as string);
-        showError({
-          message: errorMessage,
-        });
+          result.errorMessage || (t("leaderUpdatedError") as string) || "Error al actualizar el líder";
+        setSnackbarMessage(errorMessage);
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         throw new Error(errorMessage);
       }
     } catch (err: any) {
-      const errorMessage = err?.message || (t("leaderUpdatedError") as string);
-      showError({
-        message: errorMessage,
-      });
+      const errorMessage = err?.message || (t("leaderUpdatedError") as string) || "Error al actualizar el líder";
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       throw err;
     }
   };
@@ -363,49 +367,49 @@ export default function TeamDetailPage({ id }: Props) {
     // Validate permissions
     if (memberToRemove?.isCreator) {
       const errorMessage = t("cannotRemoveCreator") as string;
-      showError({
-        message: errorMessage,
-      });
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       throw new Error(errorMessage);
     }
 
     if (memberToRemove?.isLeader && !isCreator) {
       const errorMessage = t("cannotRemoveLeader") as string;
-      showError({
-        message: errorMessage,
-      });
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       throw new Error(errorMessage);
     }
 
     if (!isLeader && !isCreator) {
       const errorMessage = t("onlyLeaderCreatorCanRemove") as string;
-      showError({
-        message: errorMessage,
-      });
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       throw new Error(errorMessage);
     }
 
     try {
       const result = await teamService.removeMember(id, userId);
       if (result.ok) {
-        showSuccess({
-          message: t("memberRemovedSuccess") as string,
-        });
+        setSnackbarMessage(t("memberRemovedSuccess") as string || "Miembro removido exitosamente");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
         await handleTeamUpdated();
       } else {
         const errorMessage =
-          result.errorMessage || (t("memberRemovedError") as string);
-        showError({
-          message: errorMessage,
-        });
+          result.errorMessage || (t("memberRemovedError") as string) || "Error al remover el miembro";
+        setSnackbarMessage(errorMessage);
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         // Throw error so the calling component can handle it
         throw new Error(errorMessage);
       }
     } catch (err: any) {
-      const errorMessage = err?.message || (t("memberRemovedError") as string);
-      showError({
-        message: errorMessage,
-      });
+      const errorMessage = err?.message || (t("memberRemovedError") as string) || "Error al remover el miembro";
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       // Re-throw the error so the calling component can handle it
       throw err;
     }
@@ -418,24 +422,28 @@ export default function TeamDetailPage({ id }: Props) {
     try {
       const result = await teamService.delete(id);
       if (result.ok) {
-        showSuccess({
-          message: t("deleteTeamSuccess") as string,
-        });
+        setSnackbarMessage(t("deleteTeamSuccess") as string || "Equipo eliminado exitosamente");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
         setDeleteDialogOpen(false);
         // Redirect to teams page after a short delay
         setTimeout(() => {
           router.push("/teams");
         }, 1000);
       } else {
-        showError({
-          message: result.errorMessage || (t("deleteTeamError") as string),
-        });
+        setSnackbarMessage(
+          result.errorMessage || (t("deleteTeamError") as string) || "Error al eliminar el equipo"
+        );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         setIsDeleting(false);
       }
     } catch (err: any) {
-      showError({
-        message: err?.message || (t("deleteTeamError") as string),
-      });
+      setSnackbarMessage(
+        err?.message || (t("deleteTeamError") as string) || "Error al eliminar el equipo"
+      );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       setIsDeleting(false);
     }
   };

@@ -25,6 +25,7 @@ import { teamService } from "../../../services/team.service";
 import { useFeedback } from "../../../hooks/useFeedback";
 import { userService } from "../../../services/user.service";
 import { useRouter } from "next/router";
+import { SuccessSnackbar } from "../../atoms/SuccessSnackbar";
 
 interface TeamRequest {
   id: string;
@@ -55,6 +56,9 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
   const [users, setUsers] = useState<Record<string, User>>({});
   const [loading, setLoading] = useState(true);
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
   useEffect(() => {
     loadRequests();
@@ -93,22 +97,33 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
   const handleAccept = async (requestId: string) => {
     try {
       setProcessingIds((prev) => new Set(prev).add(requestId));
+      // Obtener el usuario antes de aceptar para mostrar en el mensaje
+      const request = requests.find((r) => r.id === requestId);
+      const user = request ? users[request.userId] : null;
+      const userName = user?.username || user?.nickname || "usuario";
+      
       const result = await teamService.acceptAccess(requestId);
       if (result.ok) {
-        showSuccess({
-          message: t("requestAcceptedSuccess") as string,
-        });
+        setSnackbarMessage(
+          t("requestAcceptedSuccess") || `Solicitud de ${userName} aceptada exitosamente`
+        );
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
         await loadRequests();
         onRequestUpdated?.();
       } else {
-        showError({
-          message: result.errorMessage || (t("requestAcceptedError") as string),
-        });
+        setSnackbarMessage(
+          result.errorMessage || (t("requestAcceptedError") as string) || "Error al aceptar la solicitud"
+        );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
     } catch (err: any) {
-      showError({
-        message: err?.message || (t("requestAcceptedError") as string),
-      });
+      setSnackbarMessage(
+        err?.message || (t("requestAcceptedError") as string) || "Error al aceptar la solicitud"
+      );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     } finally {
       setProcessingIds((prev) => {
         const next = new Set(prev);
@@ -409,6 +424,12 @@ export const TeamRequestsAdmin: FC<Props> = ({ teamId, onRequestUpdated }) => {
           })}
         </List>
       </CardContent>
+      <SuccessSnackbar
+        open={snackbarOpen}
+        message={snackbarMessage}
+        onClose={() => setSnackbarOpen(false)}
+        severity={snackbarSeverity}
+      />
     </Card>
   );
 };
