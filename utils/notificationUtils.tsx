@@ -19,6 +19,8 @@ export const getNotificationTranslationKey = (
     post_moderated: "postModerated",
     team_request_received: "teamRequestReceived",
     tournament_request_received: "tournamentRequestReceived",
+    team_request_accepted: "teamRequestAccepted",
+    tournament_request_accepted: "tournamentRequestAccepted",
     user_mentioned: "userMentioned",
   };
   return translationKeys[type] || "newMessage";

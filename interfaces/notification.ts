@@ -7,6 +7,8 @@ export type NotificationType =
   | "post_moderated"
   | "team_request_received"
   | "tournament_request_received"
+  | "team_request_accepted"
+  | "tournament_request_accepted"
   | "user_mentioned";
 
 export interface Notification {
@@ -14,6 +16,7 @@ export interface Notification {
   type: NotificationType;
   userId: string;
   username: string;
+  profileImage?: string | null;
   postId?: string;
   teamId?: string;
   tournamentId?: string;

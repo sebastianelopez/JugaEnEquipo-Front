@@ -478,6 +478,8 @@
         "userMentioned": "{username} te mencionó en una publicación",
         "teamRequestReceived": "{username} solicitó unirse a tu equipo",
         "tournamentRequestReceived": "{username} solicitó unirse a tu torneo",
+        "teamRequestAccepted": "Tu solicitud para unirse al equipo fue aceptada",
+        "tournamentRequestAccepted": "Tu solicitud para unirse al torneo fue aceptada",
         "noNotifications": "No hay notificaciones nuevas"
     },
     "MobileApp": {
