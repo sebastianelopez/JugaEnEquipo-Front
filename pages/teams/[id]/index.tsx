@@ -86,8 +86,15 @@ export default function TeamDetailPage({ id }: Props) {
           setIsCreator(userIsCreator);
           setCanEdit(userIsLeader || userIsCreator);
 
-          if (teamData.games) {
+          // Load games - try from team data first, then fetch separately if needed
+          if (teamData.games && teamData.games.length > 0) {
             setTeamGames(teamData.games);
+          } else {
+            // If not in team data, fetch them separately
+            const gamesResult = await teamService.findAllGames(id);
+            if (gamesResult.ok && gamesResult.data) {
+              setTeamGames(gamesResult.data);
+            }
           }
 
           // Load team members first, then check user status
@@ -210,6 +217,9 @@ export default function TeamDetailPage({ id }: Props) {
 
   const handleTeamUpdated = async () => {
     if (id) {
+      // Preserve current games before updating
+      const currentGamesSnapshot = [...teamGames];
+      
       const result = await teamService.find(id);
       if (result.ok && result.data) {
         const teamData = result.data;
@@ -221,9 +231,21 @@ export default function TeamDetailPage({ id }: Props) {
         setIsCreator(userIsCreator);
         setCanEdit(userIsLeader || userIsCreator);
 
-        const gamesResult = await teamService.findAllGames(id);
-        if (gamesResult.ok && gamesResult.data) {
-          setTeamGames(gamesResult.data);
+        // Try to load games from the team data first (if available)
+        if (teamData.games && teamData.games.length > 0) {
+          setTeamGames(teamData.games);
+        } else {
+          // If not in team data, try to fetch them separately
+          const gamesResult = await teamService.findAllGames(id);
+          if (gamesResult.ok && gamesResult.data && gamesResult.data.length > 0) {
+            setTeamGames(gamesResult.data);
+          } else if (currentGamesSnapshot.length > 0) {
+            // Preserve existing games if fetch fails
+            setTeamGames(currentGamesSnapshot);
+          } else {
+            // Only clear if we had no games before
+            setTeamGames([]);
+          }
         }
         const reloadedMembers = await loadMembers(id, teamData);
         if (user?.id) {
