@@ -14,7 +14,6 @@ import { Notification } from "../../interfaces/notification";
 import { getToken } from "../../services/auth.service";
 import { UserContext } from "../user";
 import { decodeUserIdByToken } from "../../utils/decodeIdByToken";
-import { FeedbackContext } from "../feedback/FeedbackContext";
 
 export interface NotificationState {
   notifications: Notification[];
@@ -30,7 +29,6 @@ const NOTIFICATION_INITIAL_STATE: NotificationState = {
 
 export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
   const { user } = useContext(UserContext);
-  const feedbackContext = useContext(FeedbackContext);
   const [state, dispatch] = useReducer(
     notificationReducer,
     NOTIFICATION_INITIAL_STATE
@@ -56,6 +54,13 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
     dispatch({
       type: "[Notification] - Add notification",
       payload: notification,
+    });
+  }, []);
+
+  const removeNotification = useCallback((notificationId: string) => {
+    dispatch({
+      type: "[Notification] - Remove notification",
+      payload: notificationId,
     });
   }, []);
 
@@ -160,20 +165,15 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
                 read: false,
               };
               
-              // Handle post_moderated notifications - show alert to user and remove optimistic post
+              // Handle post_moderated notifications - show snackbar to user and remove optimistic post
               if (notification.type === "post_moderated") {
                 // Only show once per notification ID to avoid duplicates
                 if (!processedModerationNotificationsRef.current.has(notification.id)) {
                   processedModerationNotificationsRef.current.add(notification.id);
                   
-                  // Show error dialog to inform user
-                  if (feedbackContext?.showError) {
-                    feedbackContext.showError({
-                      title: "Publicación moderada",
-                      message: notification.message || 
-                        "Tu publicación ha sido moderada y no se ha publicado debido a contenido inapropiado. Por favor, revisa nuestras políticas de comunidad.",
-                    });
-                  }
+                  // Add notification temporarily to show in snackbar
+                  // It will be automatically removed after being displayed
+                  addNotification(notification);
                   
                   // Emit custom event to remove optimistic post if postId is available
                   if (notification.postId) {
@@ -192,8 +192,16 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
                       idsArray.slice(-100)
                     );
                   }
+                  
+                  // Remove notification from list after snackbar is shown (12 seconds)
+                  setTimeout(() => {
+                    dispatch({
+                      type: "[Notification] - Remove notification",
+                      payload: notification.id,
+                    });
+                  }, 12000);
                 }
-                // Don't add post_moderated notifications to the list - return early
+                // Don't add post_moderated notifications to the permanent list - return early
                 return;
               }
               
@@ -254,6 +262,7 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
         isLoading: state.isLoading,
         setNotifications,
         addNotification,
+        removeNotification,
         markAsRead,
         refreshNotifications,
       }}

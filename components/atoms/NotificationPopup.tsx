@@ -18,7 +18,7 @@ import { useRouter } from "next/router";
 export const NotificationPopup: React.FC = () => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
-  const { notifications, isLoading } = useContext(NotificationContext);
+  const { notifications, isLoading, removeNotification } = useContext(NotificationContext);
   const [open, setOpen] = useState(false);
   const [currentNotification, setCurrentNotification] =
     useState<Notification | null>(null);
@@ -60,11 +60,10 @@ export const NotificationPopup: React.FC = () => {
         previousNotificationsRef.current.map((n) => n.id)
       );
 
-      // Filter out new_message and post_moderated notifications - they should not show in popup
+      // Filter out new_message notifications - post_moderated should show in snackbar
       const newNotification = notifications.find(
         (n) => 
           n.type !== "new_message" &&
-          n.type !== "post_moderated" &&
           (n.read === undefined || !n.read) && 
           !previousIds.has(n.id)
       );
@@ -86,6 +85,11 @@ export const NotificationPopup: React.FC = () => {
       return;
     }
     setOpen(false);
+
+    // Remove post_moderated notifications immediately when snackbar closes
+    if (currentNotification?.type === "post_moderated") {
+      removeNotification(currentNotification.id);
+    }
 
     setTimeout(() => {
       setCurrentNotification(null);
@@ -120,10 +124,13 @@ export const NotificationPopup: React.FC = () => {
   const isRead =
     currentNotification.read === undefined ? false : currentNotification.read;
 
+  const isPostModerated = currentNotification.type === "post_moderated";
+  const autoHideDuration = isPostModerated ? 12000 : 5000; // 12 seconds for post_moderated, 5 seconds for others
+
   return (
     <Snackbar
       open={open}
-      autoHideDuration={5000}
+      autoHideDuration={autoHideDuration}
       onClose={handleClose}
       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       sx={{
@@ -133,19 +140,29 @@ export const NotificationPopup: React.FC = () => {
     >
       <Alert
         onClose={handleClose}
-        severity="info"
+        severity={isPostModerated ? "error" : "info"}
         icon={false}
         sx={{
           minWidth: 320,
           maxWidth: 400,
           width: "100%",
           cursor: "pointer",
-          backgroundColor: theme.palette.background.paper,
+          backgroundColor: isPostModerated 
+            ? theme.palette.mode === "dark" 
+              ? "rgba(211, 47, 47, 0.15)" // Dark red background for dark mode
+              : "rgba(244, 67, 54, 0.1)" // Light red background for light mode
+            : theme.palette.background.paper,
           color: theme.palette.text.primary,
-          border: `1px solid ${theme.palette.primary.main}`,
+          border: isPostModerated
+            ? `1px solid ${theme.palette.error.main}`
+            : `1px solid ${theme.palette.primary.main}`,
           boxShadow: theme.shadows[4],
           "&:hover": {
-            backgroundColor: theme.palette.action.hover,
+            backgroundColor: isPostModerated
+              ? theme.palette.mode === "dark"
+                ? "rgba(211, 47, 47, 0.25)"
+                : "rgba(244, 67, 54, 0.15)"
+              : theme.palette.action.hover,
           },
           "& .MuiAlert-message": {
             width: "100%",
@@ -184,13 +201,15 @@ export const NotificationPopup: React.FC = () => {
             color: theme.palette.text.primary,
           }}
         >
-          <Avatar
-            alt={currentNotification.username}
-            src="/images/user-placeholder.png"
-            sx={{ width: 40, height: 40 }}
-          >
-            {currentNotification.username?.[0]?.toUpperCase()}
-          </Avatar>
+          {currentNotification.type !== "post_moderated" && (
+            <Avatar
+              alt={currentNotification.username}
+              src="/images/user-placeholder.png"
+              sx={{ width: 40, height: 40 }}
+            >
+              {currentNotification.username?.[0]?.toUpperCase()}
+            </Avatar>
+          )}
           <Box sx={{ flex: 1, minWidth: 0, color: theme.palette.text.primary }}>
             {renderNotificationMessage(
               currentNotification.type,

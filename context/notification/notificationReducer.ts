@@ -28,6 +28,10 @@ type NotificationAction =
     }
   | {
       type: "[Notification] - Clear notifications";
+    }
+  | {
+      type: "[Notification] - Remove notification";
+      payload: string;
     };
 
 export const notificationReducer = (
@@ -103,6 +107,14 @@ export const notificationReducer = (
         notifications: [],
         messageNotifications: [],
         isLoading: false,
+      };
+
+    case "[Notification] - Remove notification":
+      return {
+        ...state,
+        notifications: state.notifications.filter(
+          (n) => n.id !== action.payload
+        ),
       };
 
     default:
