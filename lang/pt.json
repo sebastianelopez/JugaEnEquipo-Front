@@ -476,10 +476,10 @@
         "postShared": "{username} compartilhou sua publicação",
         "postModerated": "Sua publicação foi moderada e não foi publicada devido a conteúdo inadequado. Por favor, revise nossas políticas da comunidade.",
         "userMentioned": "{username} te mencionou em uma publicação",
-        "teamRequestReceived": "{username} solicitou entrar no seu time",
-        "tournamentRequestReceived": "{username} solicitou entrar no seu torneio",
-        "teamRequestAccepted": "Sua solicitação para entrar no time foi aceita",
-        "tournamentRequestAccepted": "Sua solicitação para entrar no torneio foi aceita",
+        "teamRequestReceived": "{username} solicitou entrar no seu time{teamName}",
+        "tournamentRequestReceived": "{username} solicitou entrar no seu torneio{tournamentName}",
+        "teamRequestAccepted": "Sua solicitação para entrar no time{teamName} foi aceita",
+        "tournamentRequestAccepted": "Sua solicitação para entrar no torneio{tournamentName} foi aceita",
         "noNotifications": "Não há novas notificações"
     },
     "MobileApp": {

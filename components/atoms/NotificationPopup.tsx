@@ -228,7 +228,9 @@ export const NotificationPopup: React.FC = () => {
               currentNotification.username,
               currentNotification.message,
               t,
-              isRead
+              isRead,
+              currentNotification.teamName,
+              currentNotification.tournamentName
             )}
           </Box>
         </Box>

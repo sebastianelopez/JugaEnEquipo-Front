@@ -199,7 +199,9 @@ export const NotificationsButton = ({}: Props) => {
                       notification.username,
                       notification.message,
                       t,
-                      isRead
+                      isRead,
+                      notification.teamName,
+                      notification.tournamentName
                     )}
                     secondary={formatTimeElapsed(
                       new Date(notification.date),
