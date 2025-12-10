@@ -116,6 +116,7 @@ export const NotificationsButton = ({}: Props) => {
         aria-label="notifications"
         aria-pressed={pressed}
         onClick={handleClick}
+        sx={{ color: "white" }}
       >
         <Badge
           badgeContent={unreadCount}

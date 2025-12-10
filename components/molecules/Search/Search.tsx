@@ -224,7 +224,7 @@ export const Search = ({ sx }: SearchProps) => {
               </IconButton>
             ) : (
               <IconButton onClick={handleExpand} edge="end">
-                <SearchOutlined />
+                <SearchOutlined sx={{ color: "white" }} />
               </IconButton>
             )}
           </Box>
