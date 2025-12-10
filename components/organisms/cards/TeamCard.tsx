@@ -179,11 +179,11 @@ export const TeamCard: FC<Props> = ({
                 fontWeight: 600,
               }}
             >
-              {team.members.length} {membersLabel}
+              {team.members?.length || 0} {membersLabel}
             </Typography>
           </Stack>
           <Box sx={{ display: "flex", overflow: "hidden" }}>
-            {team.members.slice(0, 5).map((m, i) => (
+            {(team.members || []).slice(0, 5).map((m, i) => (
               <Avatar
                 key={i}
                 src={m.avatar}

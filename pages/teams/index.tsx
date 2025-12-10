@@ -63,11 +63,23 @@ export default function TeamsPage() {
                   }))
                 : [];
 
-            const members =
+            // Try to get members from team.users first, if not available, fetch them
+            let members =
               (team as any).users?.map((user: any) => ({
                 name: user.username || `${user.firstname} ${user.lastname}`,
                 avatar: user.profileImage || "/default-avatar.png",
               })) || [];
+
+            // If no members in response, try to fetch them
+            if (members.length === 0) {
+              const membersResult = await teamService.findMembers(String(team.id));
+              if (membersResult.ok && membersResult.data) {
+                members = membersResult.data.map((user: any) => ({
+                  name: user.username || `${user.firstname} ${user.lastname}`,
+                  avatar: user.profileImage || "/default-avatar.png",
+                }));
+              }
+            }
 
             return {
               id: team.id,
