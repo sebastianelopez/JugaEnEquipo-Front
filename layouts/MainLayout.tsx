@@ -69,7 +69,7 @@ export const MainLayout: FC<Props> = ({
           padding: "0",
           paddingX: { xs: "8px", sm: "30px" },
           width: "100vw",
-          marginTop: "75px",
+          marginTop: "88px",
           minHeight: 0,
           display: "flex",
           flexDirection: "column",
