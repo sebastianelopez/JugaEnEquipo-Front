@@ -170,8 +170,8 @@ export const TournamentCard: FC<TournamentCardProps> = ({
           size="small"
           sx={{
             position: "absolute",
-            top: 8,
-            right: 8,
+            top: { xs: 12, md: 16 },
+            right: { xs: 12, md: 16 },
             zIndex: 1,
             bgcolor: theme.palette.success.main,
             color: theme.palette.getContrastText(theme.palette.success.main),
@@ -188,8 +188,8 @@ export const TournamentCard: FC<TournamentCardProps> = ({
           size="small"
           sx={{
             position: "absolute",
-            top: 8,
-            right: 8,
+            top: { xs: 12, md: 16 },
+            right: { xs: 12, md: 16 },
             zIndex: 1,
             bgcolor: theme.palette.grey[600],
             color: theme.palette.getContrastText(theme.palette.grey[600]),
@@ -206,8 +206,8 @@ export const TournamentCard: FC<TournamentCardProps> = ({
           size="small"
           sx={{
             position: "absolute",
-            top: 8,
-            right: 8,
+            top: { xs: 12, md: 16 },
+            right: { xs: 12, md: 16 },
             zIndex: 1,
             bgcolor: theme.palette.warning.main,
             color: theme.palette.getContrastText(theme.palette.warning.main),
@@ -311,6 +311,15 @@ export const TournamentCard: FC<TournamentCardProps> = ({
               fontWeight: 600,
               fontSize: { xs: "0.7rem", md: "0.875rem" },
               height: { xs: 24, md: 32 },
+              px: { xs: 1, md: 1.5 },
+              "& .MuiChip-icon": {
+                marginLeft: { xs: "8px", md: "10px" },
+                marginRight: { xs: "-4px", md: "-2px" },
+              },
+              "& .MuiChip-label": {
+                paddingLeft: { xs: "4px", md: "6px" },
+                paddingRight: { xs: "8px", md: "10px" },
+              },
             }}
           />
         </Stack>
