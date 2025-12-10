@@ -23,6 +23,7 @@ interface TournamentFormProps {
   submitting?: boolean;
   isAdminForm?: boolean; // If true, show creatorId and responsibleId fields
   submitButtonText?: string; // Custom text for submit button
+  whiteText?: boolean;
 }
 
 type FormValues = Omit<CreateTournamentPayload, "startAt" | "endAt"> & {
@@ -54,6 +55,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
   submitting,
   isAdminForm = false,
   submitButtonText,
+  whiteText = false,
 }) => {
   const t = useTranslations("Tournaments");
   const [games, setGames] = useState<Game[]>([]);
@@ -126,10 +128,10 @@ export const TournamentForm: FC<TournamentFormProps> = ({
         minGameRankId: Yup.string().nullable(),
         maxGameRankId: Yup.string().nullable(),
         creatorId: isAdminForm
-          ? Yup.string().required("El creador es requerido")
+          ? Yup.string().required(t("form.creatorRequired"))
           : Yup.string().nullable(),
         responsibleId: isAdminForm
-          ? Yup.string().required("El responsable es requerido")
+          ? Yup.string().required(t("form.responsibleRequired"))
           : Yup.string().nullable(),
       }),
     [t, minStartISO, isAdminForm]
@@ -218,6 +220,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                 name="name"
                 label={t("form.name")}
                 placeholder={t("form.name")}
+                whiteText={whiteText}
               />
               <MyTextInput
                 name="description"
@@ -225,6 +228,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                 placeholder={t("form.description")}
                 multiline
                 rows={3}
+                whiteText={whiteText}
               />
 
               <MySelect
@@ -233,6 +237,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                 displayEmpty
                 fullWidth
                 disabled={loadingGames}
+                whiteText={whiteText}
               >
                 <MenuItem value={"LATAM"}>{"LATAM"}</MenuItem>
               </MySelect>
@@ -244,6 +249,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                   displayEmpty
                   fullWidth
                   disabled={loadingGames}
+                  whiteText={whiteText}
                 >
                   {games.map((g) => (
                     <MenuItem key={g.id} value={g.id}>
@@ -258,6 +264,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                 label={t("form.maxTeams")}
                 displayEmpty
                 fullWidth
+                whiteText={whiteText}
               >
                 {[2, 4, 6, 8, 10, 12, 14, 16, 18, 20].map((num) => (
                   <MenuItem key={num} value={num}>
@@ -270,15 +277,17 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                 <>
                   <UserSearchSelect
                     name="creatorId"
-                    label="Creador del torneo"
-                    placeholder="Buscar usuario creador..."
+                    label={t("form.creator")}
+                    placeholder={t("form.creatorPlaceholder")}
                     required
+                    whiteText={whiteText}
                   />
                   <UserSearchSelect
                     name="responsibleId"
-                    label="Responsable del torneo"
-                    placeholder="Buscar usuario responsable..."
+                    label={t("form.responsible")}
+                    placeholder={t("form.responsiblePlaceholder")}
                     required
+                    whiteText={whiteText}
                   />
                 </>
               )}
@@ -287,12 +296,14 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                 label={t("form.startDate")}
                 name="startAt"
                 minDateTime={dayjs().add(1, "hour")}
+                whiteText={whiteText}
               />
 
               <MyDateTimePicker
                 label={t("form.endDate")}
                 name="endAt"
                 minDateTime={dayjs(formik.values.startAt).add(1, "hour")}
+                whiteText={whiteText}
               />
 
               {formik.values.gameId && ranks.length > 0 && (
@@ -303,6 +314,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                     displayEmpty
                     fullWidth
                     disabled={loadingRanks}
+                    whiteText={whiteText}
                   >
                     <MenuItem value="">
                       <em>{t("form.none")}</em>
@@ -320,6 +332,7 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                     displayEmpty
                     fullWidth
                     disabled={loadingRanks}
+                    whiteText={whiteText}
                   >
                     <MenuItem value="">
                       <em>{t("form.none")}</em>

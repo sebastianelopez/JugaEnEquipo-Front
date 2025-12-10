@@ -87,7 +87,7 @@ export function HomeNavbar() {
         <Toolbar sx={{ justifyContent: "space-between", py: 1 }}>
           <NextLink href={"/"} passHref>
             <Link component="span" sx={{ textDecoration: "none" }}>
-              <ResponsiveLogo size="medium" />
+              <ResponsiveLogo size="medium" violet />
             </Link>
           </NextLink>
 

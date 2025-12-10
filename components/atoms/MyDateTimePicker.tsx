@@ -13,12 +13,13 @@ interface Props {
   label: string;
   name: string;
   minDateTime?: Dayjs;
+  whiteText?: boolean;
   [x: string]: any;
 }
 
 export const MyDateTimePicker: FC<
   Props & Omit<DateTimePickerProps<Dayjs>, "value" | "onChange" | "label">
-> = ({ label, name, minDateTime, ...props }) => {
+> = ({ label, name, minDateTime, whiteText = false, ...props }) => {
   const [field, , helpers] = useField(name);
   const { submitCount } = useFormikContext<any>();
 
@@ -35,14 +36,38 @@ export const MyDateTimePicker: FC<
           marginBottom: "10px",
         }}
       >
-        <FormLabel htmlFor={name}>{label}</FormLabel>
+        <FormLabel 
+          htmlFor={name}
+          sx={whiteText ? { color: "#fff" } : {}}
+        >
+          {label}
+        </FormLabel>
         <DateTimePicker
           value={value}
           onChange={(newValue) => {
             helpers.setValue(newValue ? newValue.toISOString() : "");
           }}
           minDateTime={minDateTime}
-          slotProps={{ textField: { size: "small" } }}
+          slotProps={{ 
+            textField: { 
+              size: "small",
+              sx: whiteText ? {
+                color: "#fff",
+                "& .MuiOutlinedInput-root": {
+                  color: "#fff",
+                  "& fieldset": { borderColor: "rgba(255, 255, 255, 0.42)" },
+                  "&:hover fieldset": { borderColor: "rgba(255, 255, 255, 0.87)" },
+                  "&.Mui-focused fieldset": { borderColor: "#fff" },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "rgba(255, 255, 255, 0.7)",
+                },
+                "& .MuiInputBase-input": {
+                  color: "#fff",
+                },
+              } : {}
+            } 
+          }}
           {...props}
         />
         <ErrorMessage name={name} component="span" />

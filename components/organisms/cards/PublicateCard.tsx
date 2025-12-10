@@ -52,7 +52,7 @@ export const PublicateCard = ({
           {
             width: "100%",
             maxWidth: 530,
-            mb: 5,
+            mb: 3,
           },
           ...(Array.isArray(sx) ? sx : [sx]),
         ]}

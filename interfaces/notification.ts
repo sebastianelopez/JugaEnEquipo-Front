@@ -20,6 +20,8 @@ export interface Notification {
   postId?: string;
   teamId?: string;
   tournamentId?: string;
+  teamName?: string | null;
+  tournamentName?: string | null;
   message: string | null;
   date: string;
   read?: boolean;

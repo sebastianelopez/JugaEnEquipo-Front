@@ -14,7 +14,11 @@ export const MessagesButton = ({}: Props) => {
   };
 
   return (
-    <IconButton aria-label="messages" onClick={handleClick}>
+    <IconButton
+      aria-label="messages"
+      onClick={handleClick}
+      sx={{ color: "white" }}
+    >
       <Badge
         badgeContent={totalUnreadMessages > 99 ? "99+" : totalUnreadMessages}
         sx={{

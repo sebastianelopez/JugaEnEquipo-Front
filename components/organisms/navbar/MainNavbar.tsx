@@ -5,14 +5,11 @@ import {
   IconButton,
   Link,
   Toolbar,
-  Typography,
   Tooltip,
 } from "@mui/material";
-import Image from "next/image";
 import NextLink from "next/link";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { UiContext } from "../../../context";
-import { gsap } from "gsap";
 import { useTranslations } from "next-intl";
 import HomeIcon from "@mui/icons-material/Home";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -57,7 +54,7 @@ export const MainNavbar = () => {
         >
           <NextLink href={"/home"} passHref>
             <Link component="span">
-              <IconButton>
+              <IconButton sx={{ color: "white" }}>
                 <HomeIcon />
               </IconButton>
             </Link>
@@ -65,14 +62,14 @@ export const MainNavbar = () => {
           <MessagesButton />
           <NextLink href={"/teams"} passHref>
             <Link component="span">
-              <IconButton>
+              <IconButton sx={{ color: "white" }}>
                 <GroupsIcon />
               </IconButton>
             </Link>
           </NextLink>
           <NextLink href={"/tournaments"} passHref>
             <Link component="span">
-              <IconButton>
+              <IconButton sx={{ color: "white" }}>
                 <EmojiEventsIcon />
               </IconButton>
             </Link>
@@ -101,6 +98,7 @@ export const MainNavbar = () => {
               onClick={toggleTheme}
               aria-label={tGlobal("toggleTheme")}
               sx={{
+                color: "white",
                 display: "none",
                 "@media (min-width: 680px)": {
                   display: "inline-flex",
@@ -114,6 +112,7 @@ export const MainNavbar = () => {
             color="secondary"
             onClick={toggleSideMenu}
             aria-label={tGlobal("toggleSideMenu")}
+            sx={{ color: "white" }}
           >
             <MenuIcon />
           </Button>

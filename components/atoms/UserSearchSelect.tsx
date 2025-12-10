@@ -16,6 +16,7 @@ interface UserSearchSelectProps {
   label: string;
   placeholder?: string;
   required?: boolean;
+  whiteText?: boolean;
 }
 
 export const UserSearchSelect: FC<UserSearchSelectProps> = ({
@@ -23,6 +24,7 @@ export const UserSearchSelect: FC<UserSearchSelectProps> = ({
   label,
   placeholder,
   required = false,
+  whiteText = false,
 }) => {
   const [field, meta, helpers] = useField(name);
   const [searchTerm, setSearchTerm] = useState("");
@@ -214,7 +216,7 @@ export const UserSearchSelect: FC<UserSearchSelectProps> = ({
               <>
                 <Person
                   sx={{
-                    color: "rgba(255, 255, 255, 0.5)",
+                    color: whiteText ? "rgba(255, 255, 255, 0.5)" : undefined,
                     mr: 1,
                     fontSize: 20,
                   }}
@@ -231,7 +233,7 @@ export const UserSearchSelect: FC<UserSearchSelectProps> = ({
               </>
             ),
           }}
-          sx={{
+          sx={whiteText ? {
             "& .MuiOutlinedInput-root": {
               color: "#fff",
               "& fieldset": { borderColor: "rgba(255,255,255,0.2)" },
@@ -244,7 +246,7 @@ export const UserSearchSelect: FC<UserSearchSelectProps> = ({
             "& .MuiFormHelperText-root": {
               color: "rgba(255, 255, 255, 0.5)",
             },
-          }}
+          } : {}}
         />
       )}
       renderOption={(props, option) => (

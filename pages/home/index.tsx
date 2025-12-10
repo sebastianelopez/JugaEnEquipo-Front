@@ -1,4 +1,4 @@
-import { Grid, useMediaQuery, useTheme } from "@mui/material";
+import { Box, useMediaQuery, useTheme } from "@mui/material";
 import { GetStaticPropsContext } from "next";
 import {
   IdentityCard,
@@ -291,28 +291,39 @@ const HomePage = () => {
 
   return (
     <MainLayout title={"Home"} pageDescription={""}>
-      <Grid container spacing={4}>
-        <Grid
-          size={{ md: 3 }}
-          position="relative"
-          justifyContent="start"
-          alignItems="end"
-          flexDirection="column"
+      <Box
+        sx={{
+          display: "flex",
+          gap: 4,
+          flexDirection: { xs: "column", md: "row" },
+        }}
+      >
+        <Box
           sx={{
-            display: { xs: "none", md: "flex" },
+            display: "none",
+            "@media (min-width: 1024px)": {
+              display: "flex",
+            },
+            flexDirection: "column",
+            flex: { md: "1 1 33.333%" },
+            justifyContent: "flex-start",
+            alignItems: "flex-end",
+            position: "relative",
           }}
         >
           {user && <IdentityCard user={user} />}
           <HashtagsCard />
-        </Grid>
-        <Grid
-          display="flex"
-          size={{ xs: 12, md: 6 }}
-          flexDirection="column"
-          justifyContent="flex-start"
-          alignItems="center"
-          position="relative"
-          sx={{ marginX: { xs: 3, md: "auto" } }}
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            position: "relative",
+            flex: { xs: "1 1 100%", md: "1 1 33.333%" },
+            marginX: { xs: 3, md: "auto" },
+          }}
         >
           <PublicateCard
             userProfileImage={user?.profileImage}
@@ -333,20 +344,23 @@ const HomePage = () => {
             onPostCreated={addNewPost}
           />
           <div ref={sentinelRef} style={{ height: 1 }} />
-        </Grid>
-        <Grid
-          size={{ md: 3 }}
-          position="relative"
-          justifyContent="start"
-          alignItems="start"
-          flexDirection="column"
+        </Box>
+        <Box
           sx={{
-            display: { xs: "none", md: "flex" },
+            display: "none",
+            "@media (min-width: 1024px)": {
+              display: "flex",
+            },
+            flexDirection: "column",
+            flex: { md: "1 1 33.333%" },
+            justifyContent: "flex-start",
+            alignItems: "flex-start",
+            position: "relative",
           }}
         >
           <UpcomingEventsCard events={events} isLoading={isLoadingEvents} />
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </MainLayout>
   );
 };

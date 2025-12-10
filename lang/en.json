@@ -476,10 +476,10 @@
         "postShared": "{username} shared your post",
         "postModerated": "Your post has been moderated and was not published due to inappropriate content. Please review our community policies.",
         "userMentioned": "{username} mentioned you in a post",
-        "teamRequestReceived": "{username} requested to join your team",
-        "tournamentRequestReceived": "{username} requested to join your tournament",
-        "teamRequestAccepted": "Your request to join the team was accepted",
-        "tournamentRequestAccepted": "Your request to join the tournament was accepted",
+        "teamRequestReceived": "{username} requested to join your team{teamName}",
+        "tournamentRequestReceived": "{username} requested to join your tournament{tournamentName}",
+        "teamRequestAccepted": "Your request to join the team{teamName} was accepted",
+        "tournamentRequestAccepted": "Your request to join the tournament{tournamentName} was accepted",
         "noNotifications": "No new notifications"
     },
     "MobileApp": {
@@ -591,7 +591,13 @@
             "minRank": "Minimum Rank (Optional)",
             "maxRank": "Maximum Rank (Optional)",
             "none": "None",
-            "maxTeamsInvalid": "Must select a valid number of teams"
+            "maxTeamsInvalid": "Must select a valid number of teams",
+            "creator": "Tournament creator",
+            "creatorPlaceholder": "Search creator user...",
+            "creatorRequired": "Creator is required",
+            "responsible": "Tournament responsible",
+            "responsiblePlaceholder": "Search responsible user...",
+            "responsibleRequired": "Responsible is required"
         },
         "modes": { "team": "Teams", "individual": "Solo" },
         "table": {
