@@ -591,7 +591,13 @@
             "minRank": "Rango Mínimo (Opcional)",
             "maxRank": "Rango Máximo (Opcional)",
             "none": "Ninguno",
-            "maxTeamsInvalid": "Debe seleccionar un número válido de equipos"
+            "maxTeamsInvalid": "Debe seleccionar un número válido de equipos",
+            "creator": "Creador del torneo",
+            "creatorPlaceholder": "Buscar usuario creador...",
+            "creatorRequired": "El creador es requerido",
+            "responsible": "Responsable del torneo",
+            "responsiblePlaceholder": "Buscar usuario responsable...",
+            "responsibleRequired": "El responsable es requerido"
         },
         "modes": { "team": "Equipos", "individual": "Individual" },
         "table": {

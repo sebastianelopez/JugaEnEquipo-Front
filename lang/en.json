@@ -591,7 +591,13 @@
             "minRank": "Minimum Rank (Optional)",
             "maxRank": "Maximum Rank (Optional)",
             "none": "None",
-            "maxTeamsInvalid": "Must select a valid number of teams"
+            "maxTeamsInvalid": "Must select a valid number of teams",
+            "creator": "Tournament creator",
+            "creatorPlaceholder": "Search creator user...",
+            "creatorRequired": "Creator is required",
+            "responsible": "Tournament responsible",
+            "responsiblePlaceholder": "Search responsible user...",
+            "responsibleRequired": "Responsible is required"
         },
         "modes": { "team": "Teams", "individual": "Solo" },
         "table": {

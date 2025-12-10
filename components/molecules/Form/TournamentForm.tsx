@@ -126,10 +126,10 @@ export const TournamentForm: FC<TournamentFormProps> = ({
         minGameRankId: Yup.string().nullable(),
         maxGameRankId: Yup.string().nullable(),
         creatorId: isAdminForm
-          ? Yup.string().required("El creador es requerido")
+          ? Yup.string().required(t("form.creatorRequired"))
           : Yup.string().nullable(),
         responsibleId: isAdminForm
-          ? Yup.string().required("El responsable es requerido")
+          ? Yup.string().required(t("form.responsibleRequired"))
           : Yup.string().nullable(),
       }),
     [t, minStartISO, isAdminForm]
@@ -270,14 +270,14 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                 <>
                   <UserSearchSelect
                     name="creatorId"
-                    label="Creador del torneo"
-                    placeholder="Buscar usuario creador..."
+                    label={t("form.creator")}
+                    placeholder={t("form.creatorPlaceholder")}
                     required
                   />
                   <UserSearchSelect
                     name="responsibleId"
-                    label="Responsable del torneo"
-                    placeholder="Buscar usuario responsable..."
+                    label={t("form.responsible")}
+                    placeholder={t("form.responsiblePlaceholder")}
                     required
                   />
                 </>
