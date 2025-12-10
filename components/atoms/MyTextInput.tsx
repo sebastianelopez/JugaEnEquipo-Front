@@ -14,12 +14,14 @@ interface Props {
     | "datetime-local";
   placeholder?: string;
   onlyShowRequiredError?: boolean;
+  whiteText?: boolean;
   [x: string]: any;
 }
 
 export const MyTextInput = ({
   label,
   onlyShowRequiredError,
+  whiteText = false,
   ...props
 }: Props) => {
   const [field, meta] = useField(props);
@@ -35,9 +37,32 @@ export const MyTextInput = ({
         marginBottom: "10px",
       }}
     >
-      <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
+      <FormLabel 
+        htmlFor={props.id || props.name}
+        sx={whiteText ? { color: "#fff" } : {}}
+      >
+        {label}
+      </FormLabel>
 
-      <Input {...field} {...props} />
+      <Input 
+        {...field} 
+        {...props}
+        sx={whiteText ? {
+          color: "#fff",
+          "&::before": {
+            borderBottom: "1px solid rgba(255, 255, 255, 0.42)",
+          },
+          "&:hover:not(.Mui-disabled)::before": {
+            borderBottom: "1px solid rgba(255, 255, 255, 0.87)",
+          },
+          "&::after": {
+            borderBottom: "2px solid #fff",
+          },
+          "& input": {
+            color: "#fff",
+          },
+        } : {}}
+      />
       <ErrorMessage name={props.name}>
         {(msg) => {
           const isEmpty = !field.value;
