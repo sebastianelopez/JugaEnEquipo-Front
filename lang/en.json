@@ -310,7 +310,8 @@
         "confirmDeleteSocialNetwork": "Are you sure you want to remove this social network?",
         "cancel": "Cancel",
         "save": "Save",
-        "delete": "Delete"
+        "delete": "Delete",
+        "rankNotFound": "Rank not found"
     },
     "SideMenu":{
         "profile": "Profile",

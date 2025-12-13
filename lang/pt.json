@@ -310,7 +310,8 @@
         "confirmDeleteSocialNetwork": "Tem certeza de que deseja remover esta rede social?",
         "cancel": "Cancelar",
         "save": "Salvar",
-        "delete": "Excluir"
+        "delete": "Excluir",
+        "rankNotFound": "Rank não encontrado"
     },
     "SideMenu":{
         "profile": "Perfil",

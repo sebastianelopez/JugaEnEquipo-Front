@@ -24,6 +24,7 @@ interface GamesGridProps {
 export const GamesGrid = ({ games }: GamesGridProps) => {
   const theme = useTheme();
   const t = useTranslations("Settings");
+  const tProfile = useTranslations("Profile");
 
   return (
     <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5 }}>
@@ -165,7 +166,32 @@ export const GamesGrid = ({ games }: GamesGridProps) => {
                 />
               </Box>
             )}
-            {game.rank && !game.gameRank && (
+            {!game.gameRank && game.gameId && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  mb: { xs: 0.75, sm: 1 },
+                }}
+              >
+                <Chip
+                  label={tProfile("rankNotFound")}
+                  size="small"
+                  color="default"
+                  sx={{
+                    fontWeight: 500,
+                    fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                    height: { xs: 20, sm: 24 },
+                    bgcolor: theme.palette.mode === "dark" 
+                      ? "rgba(255, 255, 255, 0.08)" 
+                      : "rgba(0, 0, 0, 0.06)",
+                    color: theme.palette.text.secondary,
+                  }}
+                />
+              </Box>
+            )}
+            {game.rank && !game.gameRank && !game.gameId && (
               <Chip
                 label={game.rank}
                 size="small"
