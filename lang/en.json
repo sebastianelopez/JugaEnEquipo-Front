@@ -776,7 +776,8 @@
         "noUsersFound": "No users found for your search",
         "noGroupsFound": "No groups found for your search",
         "clearSearch": "Clear search",
-        "enterSearchTerm": "Enter a search term to get started"
+        "enterSearchTerm": "Enter a search term to get started",
+        "filters": "Filters"
     },
     "Admin": {
         "navbar": {

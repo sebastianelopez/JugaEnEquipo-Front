@@ -776,7 +776,8 @@
         "noUsersFound": "Nenhum usuário encontrado para sua pesquisa",
         "noGroupsFound": "Nenhum grupo encontrado para sua pesquisa",
         "clearSearch": "Limpar pesquisa",
-        "enterSearchTerm": "Digite um termo de pesquisa para começar"
+        "enterSearchTerm": "Digite um termo de pesquisa para começar",
+        "filters": "Filtros"
     },
     "Admin": {
         "navbar": {

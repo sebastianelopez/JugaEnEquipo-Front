@@ -381,115 +381,121 @@ const SearchPage: NextPage<Props> = ({
             </Typography>
           </Box>
         ) : (
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Paper sx={{ p: 2, mb: 2 }}>
-                <Typography variant="h5" component="h2" gutterBottom>
-                  {t("users")}
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", md: "row" },
-                    gap: 2,
-                    mb: 3,
-                  }}
-                >
-                  <FormControl fullWidth size="small">
-                    <InputLabel>{t("game")}</InputLabel>
-                    <Select
-                      value={selectedGame}
-                      label={t("game")}
-                      onChange={handleGameChange}
-                    >
-                      <MenuItem value="all">{t("allGames")}</MenuItem>
-                      {availableGames.map((game) => (
-                        <MenuItem key={game.id} value={game.name}>
-                          {game.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <FormControl
-                    fullWidth
-                    size="small"
-                    disabled={selectedGame === "all" || loadingRanks}
+          <>
+            <Paper sx={{ p: 2, mb: 3 }}>
+              <Typography variant="h6" component="h2" gutterBottom>
+                {t("filters")}
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", md: "row" },
+                  gap: 2,
+                }}
+              >
+                <FormControl fullWidth size="small">
+                  <InputLabel>{t("game")}</InputLabel>
+                  <Select
+                    value={selectedGame}
+                    label={t("game")}
+                    onChange={handleGameChange}
                   >
-                    <InputLabel>{t("ranking")}</InputLabel>
-                    <Select
-                      value={selectedRank}
-                      label={t("ranking")}
-                      onChange={handleRankChange}
-                      renderValue={(value) => {
-                        if (value === "all") return t("allRankings");
-                        const rank = availableRanks.find((r) => r.id === value);
-                        if (!rank) return "";
-                        const game = availableGames.find(
-                          (g) => g.name === selectedGame
-                        );
-                        if (!game) return getRankDisplayName(rank);
-                        return (
+                    <MenuItem value="all">{t("allGames")}</MenuItem>
+                    {availableGames.map((game) => (
+                      <MenuItem key={game.id} value={game.name}>
+                        {game.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl
+                  fullWidth
+                  size="small"
+                  disabled={selectedGame === "all" || loadingRanks}
+                >
+                  <InputLabel>{t("ranking")}</InputLabel>
+                  <Select
+                    value={selectedRank}
+                    label={t("ranking")}
+                    onChange={handleRankChange}
+                    renderValue={(value) => {
+                      if (value === "all") return t("allRankings");
+                      const rank = availableRanks.find((r) => r.id === value);
+                      if (!rank) return "";
+                      const game = availableGames.find(
+                        (g) => g.name === selectedGame
+                      );
+                      if (!game) return getRankDisplayName(rank);
+                      return (
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <Image
+                            src={getRankImage({
+                              gameId: game.id,
+                              gameName: game.name,
+                              rankId: rank.rankId,
+                              rankName: rank.rankName,
+                              level: rank.level,
+                            })}
+                            alt={rank.rankName}
+                            width={20}
+                            height={20}
+                            style={{ objectFit: "contain" }}
+                          />
+                          <span>{getRankDisplayName(rank)}</span>
+                        </Box>
+                      );
+                    }}
+                  >
+                    <MenuItem value="all">{t("allRankings")}</MenuItem>
+                    {availableRanks.map((rank) => {
+                      const game = availableGames.find(
+                        (g) => g.name === selectedGame
+                      );
+                      return (
+                        <MenuItem key={rank.id} value={rank.id}>
                           <Box
-                            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
                           >
-                            <Image
-                              src={getRankImage({
-                                gameId: game.id,
-                                gameName: game.name,
-                                rankId: rank.rankId,
-                                rankName: rank.rankName,
-                                level: rank.level,
-                              })}
-                              alt={rank.rankName}
-                              width={20}
-                              height={20}
-                              style={{ objectFit: "contain" }}
-                            />
+                            {game && (
+                              <Image
+                                src={getRankImage({
+                                  gameId: game.id,
+                                  gameName: game.name,
+                                  rankId: rank.rankId,
+                                  rankName: rank.rankName,
+                                  level: rank.level,
+                                })}
+                                alt={rank.rankName}
+                                width={20}
+                                height={20}
+                                style={{ objectFit: "contain" }}
+                              />
+                            )}
                             <span>{getRankDisplayName(rank)}</span>
                           </Box>
-                        );
-                      }}
-                    >
-                      <MenuItem value="all">{t("allRankings")}</MenuItem>
-                      {availableRanks.map((rank) => {
-                        const game = availableGames.find(
-                          (g) => g.name === selectedGame
-                        );
-                        return (
-                          <MenuItem key={rank.id} value={rank.id}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                              }}
-                            >
-                              {game && (
-                                <Image
-                                  src={getRankImage({
-                                    gameId: game.id,
-                                    gameName: game.name,
-                                    rankId: rank.rankId,
-                                    rankName: rank.rankName,
-                                    level: rank.level,
-                                  })}
-                                  alt={rank.rankName}
-                                  width={20}
-                                  height={20}
-                                  style={{ objectFit: "contain" }}
-                                />
-                              )}
-                              <span>{getRankDisplayName(rank)}</span>
-                            </Box>
-                          </MenuItem>
-                        );
-                      })}
-                    </Select>
-                  </FormControl>
-                </Box>
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                </FormControl>
+              </Box>
+            </Paper>
+
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Paper sx={{ p: 2, mb: 2 }}>
+                  <Typography variant="h5" component="h2" gutterBottom>
+                    {t("users")}
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
 
                 {loadingUsers ? (
                   <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
@@ -574,6 +580,7 @@ const SearchPage: NextPage<Props> = ({
               </Paper>
             </Grid>
           </Grid>
+          </>
         )}
       </Box>
     </MainLayout>
