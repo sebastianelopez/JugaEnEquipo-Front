@@ -714,7 +714,9 @@
             "removeTeamError": "Error al remover el equipo",
             "cancel": "Cancelar",
             "delete": "Eliminar",
-            "loading": "Cargando..."
+            "loading": "Cargando...",
+            "tournamentStarted": "Este torneo ya ha comenzado",
+            "tournamentStartedMessage": "Este torneo ya ha comenzado. No se pueden enviar más solicitudes."
         }
     },
     "AboutUs": {

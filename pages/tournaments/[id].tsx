@@ -307,6 +307,14 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
       return;
     }
 
+    // Check if tournament has started (no new registrations allowed after start)
+    if (hasTournamentStarted) {
+      setSnackbarMessage(t("detail.tournamentStarted") || "Este torneo ya ha comenzado");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
     setRegistering(true);
     setError(null);
     setSuccess(null);
@@ -568,6 +576,18 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
   const canEditTournament = useMemo(() => {
     return isTournamentCreator;
   }, [isTournamentCreator]);
+
+  // Check if tournament has started (no new registrations allowed after start)
+  const hasTournamentStarted = useMemo(() => {
+    if (!tournament?.startAt) return false;
+    try {
+      const startDate = new Date(tournament.startAt);
+      const now = new Date();
+      return startDate < now;
+    } catch {
+      return false;
+    }
+  }, [tournament?.startAt]);
   const startDateLabel = useMemo(() => {
     if (!tournament?.startAt) return "-";
     try {
@@ -1350,6 +1370,10 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       <Alert severity="info" sx={{ mb: 2 }}>
                         {t("detail.waitingApproval") || "Esperando aprobación"}
                       </Alert>
+                    ) : hasTournamentStarted ? (
+                      <Alert severity="warning" sx={{ mb: 2 }}>
+                        {t("detail.tournamentStartedMessage") || "Este torneo ya ha comenzado. No se pueden enviar más solicitudes."}
+                      </Alert>
                     ) : (
                       <>
                         {user && userTeams.length > 0 && (
@@ -1359,7 +1383,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                               value={selectedTeamId}
                               onChange={(e) => setSelectedTeamId(e.target.value)}
                               label={t("detail.selectTeam")}
-                              disabled={loadingTeams || registering || hasPendingRequest}
+                              disabled={loadingTeams || registering || hasPendingRequest || hasTournamentStarted}
                             >
                               {userTeams.map((team) => (
                                 <MenuItem key={team.id} value={team.id}>
@@ -1381,7 +1405,8 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                             loadingTeams ||
                             !selectedTeamId ||
                             userTeams.length === 0 ||
-                            hasPendingRequest
+                            hasPendingRequest ||
+                            hasTournamentStarted
                           }
                           sx={{
                             bgcolor: theme.palette.primary.main,
@@ -2009,6 +2034,10 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                     <Alert severity="info" sx={{ mb: 2 }}>
                       {t("detail.waitingApproval") || "Esperando aprobación"}
                     </Alert>
+                  ) : hasTournamentStarted ? (
+                    <Alert severity="warning" sx={{ mb: 2 }}>
+                      {t("detail.tournamentStartedMessage") || "Este torneo ya ha comenzado. No se pueden enviar más solicitudes."}
+                    </Alert>
                   ) : (
                     <>
                       {user && userTeams.length > 0 && (
@@ -2018,7 +2047,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                             value={selectedTeamId}
                             onChange={(e) => setSelectedTeamId(e.target.value)}
                             label={t("detail.selectTeam")}
-                            disabled={loadingTeams || registering || hasPendingRequest}
+                            disabled={loadingTeams || registering || hasPendingRequest || hasTournamentStarted}
                           >
                             {userTeams.map((team) => (
                               <MenuItem key={team.id} value={team.id}>
@@ -2040,7 +2069,8 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                           loadingTeams ||
                           !selectedTeamId ||
                           userTeams.length === 0 ||
-                          hasPendingRequest
+                          hasPendingRequest ||
+                          hasTournamentStarted
                         }
                         sx={{
                           bgcolor: theme.palette.primary.main,
