@@ -272,6 +272,14 @@ const SearchPage: NextPage<Props> = ({
     setSelectedRank(event.target.value);
   };
 
+  const handleUserClick = (user: User) => {
+    router.push(`/profile/${user.username}`);
+  };
+
+  const handleTeamClick = (team: Team) => {
+    router.push(`/teams/${team.id}`);
+  };
+
   const showInitialMessage =
     !query &&
     !searchValue.trim() &&
@@ -491,7 +499,7 @@ const SearchPage: NextPage<Props> = ({
                   <List>
                     {displayedUsers.map((user) => (
                       <ListItem key={user.id}>
-                        <ListItemButton>
+                        <ListItemButton onClick={() => handleUserClick(user)}>
                           <ListItemAvatar>
                             <Avatar
                               alt={`Avatar de ${user.username}`}
@@ -536,7 +544,7 @@ const SearchPage: NextPage<Props> = ({
                     {displayedTeams.map((team) => (
                       <Box key={team.id} sx={{ mb: 2 }}>
                         <ListItem>
-                          <ListItemButton>
+                          <ListItemButton onClick={() => handleTeamClick(team)}>
                             <ListItemAvatar>
                               <Avatar
                                 alt={`Logo de ${team.name}`}
