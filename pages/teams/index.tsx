@@ -22,6 +22,7 @@ import {
 } from "../../components/organisms";
 import { teamService } from "../../services/team.service";
 import type { Team } from "../../interfaces";
+import { getGameImage } from "../../utils/gameImageUtils";
 
 interface TeamCardData {
   id: number | string;
@@ -58,8 +59,8 @@ export default function TeamsPage() {
             const games =
               gamesResult.ok && gamesResult.data
                 ? gamesResult.data.map((game) => ({
-                    name: game.name,
-                    icon: game.image || "/default-game-icon.png",
+                    name: game.gameName,
+                    icon: getGameImage(game.gameName),
                   }))
                 : [];
 

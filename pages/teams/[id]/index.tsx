@@ -36,7 +36,7 @@ import { useTheme } from "@mui/material/styles";
 import type { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { teamService } from "../../../services/team.service";
 import { gameService } from "../../../services/game.service";
-import type { Team, Game } from "../../../interfaces";
+import type { Team, Game, TeamGame } from "../../../interfaces";
 import { UserContext } from "../../../context/user";
 import { getGameImage } from "../../../utils/gameImageUtils";
 import { useFeedback } from "../../../hooks/useFeedback";
@@ -53,7 +53,7 @@ export default function TeamDetailPage({ id }: Props) {
   const { user } = useContext(UserContext);
   const { showSuccess, showError } = useFeedback();
   const [team, setTeam] = useState<Team | null>(null);
-  const [teamGames, setTeamGames] = useState<Game[]>([]);
+  const [teamGames, setTeamGames] = useState<TeamGame[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +92,15 @@ export default function TeamDetailPage({ id }: Props) {
 
           // Load games - try from team data first, then fetch separately if needed
           if (teamData.games && teamData.games.length > 0) {
-            setTeamGames(teamData.games);
+            // Convert Game[] to TeamGame[] format if needed
+            const teamGamesData = teamData.games.map((game: any) => ({
+              id: game.id || "",
+              teamId: id,
+              gameId: game.id || "",
+              gameName: game.name || game.gameName || "",
+              addedAt: game.addedAt || new Date().toISOString(),
+            }));
+            setTeamGames(teamGamesData);
           } else {
             // If not in team data, fetch them separately
             const gamesResult = await teamService.findAllGames(id);
@@ -237,7 +245,15 @@ export default function TeamDetailPage({ id }: Props) {
 
         // Try to load games from the team data first (if available)
         if (teamData.games && teamData.games.length > 0) {
-          setTeamGames(teamData.games);
+          // Convert Game[] to TeamGame[] format if needed
+          const teamGamesData = teamData.games.map((game: any) => ({
+            id: game.id || "",
+            teamId: id,
+            gameId: game.id || "",
+            gameName: game.name || game.gameName || "",
+            addedAt: game.addedAt || new Date().toISOString(),
+          }));
+          setTeamGames(teamGamesData);
         } else {
           // If not in team data, try to fetch them separately
           const gamesResult = await teamService.findAllGames(id);
@@ -485,8 +501,8 @@ export default function TeamDetailPage({ id }: Props) {
 
   // Transform games for TeamGamesGrid
   const gamesForDisplay = teamGames.map((game) => ({
-    name: game.name,
-    icon: getGameImage(game.name),
+    name: game.gameName,
+    icon: getGameImage(game.gameName),
   }));
 
   // Mock data for achievements (until API provides them)

@@ -2,7 +2,7 @@ import { api } from "../lib/api";
 import { ServiceResult } from "./types";
 import { getToken } from "./auth.service";
 import { v4 as uuidv4 } from "uuid";
-import type { Team } from "../interfaces";
+import type { Team, TeamGame } from "../interfaces";
 import type { Game } from "../interfaces";
 
 interface CreateTeamPayload {
@@ -146,9 +146,9 @@ export const teamService = {
    * Find all games for a team
    * GET /api/team/:id/games
    */
-  findAllGames: async (teamId: string): Promise<ServiceResult<Game[]>> => {
+  findAllGames: async (teamId: string): Promise<ServiceResult<TeamGame[]>> => {
     const token = await getToken();
-    return safeCall<Game[]>(() => api.get(`/team/${teamId}/games`, {}, token));
+    return safeCall<TeamGame[]>(() => api.get(`/team/${teamId}/games`, {}, token));
   },
 
   /**

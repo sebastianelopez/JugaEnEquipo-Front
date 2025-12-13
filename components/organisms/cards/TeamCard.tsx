@@ -15,6 +15,7 @@ import TrophyIcon from "@mui/icons-material/EmojiEvents";
 import { useTheme, alpha } from "@mui/material/styles";
 import { teamService } from "../../../services/team.service";
 import { BackgroundFallback } from "../../atoms/BackgroundFallback";
+import { getGameImage } from "../../../utils/gameImageUtils";
 
 interface Member {
   name: string;
@@ -30,7 +31,7 @@ interface TeamLite {
   logo: string;
   banner: string;
   members: Member[];
-  games: Game[];
+  games?: Game[];
   achievements: string[];
 }
 
@@ -54,25 +55,51 @@ export const TeamCard: FC<Props> = ({
   const theme = useTheme();
   const moreCount = Math.max(0, (team.achievements?.length || 0) - 1);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
-  const [loadingBackground, setLoadingBackground] = useState(true);
+  const [games, setGames] = useState<Game[]>([]);
+
+  // Fetch games
+  useEffect(() => {
+    const loadGames = async () => {
+      if (!team.id) {
+        return;
+      }
+      try {
+        const gamesResult = await teamService.findAllGames(String(team.id));
+
+        if (gamesResult.ok && gamesResult.data) {
+          const transformedGames = gamesResult.data.map((game) => {
+            console.log("Game:", game);
+            const iconPath = getGameImage(game.gameName);
+
+            return {
+              name: game.gameName,
+              icon: iconPath,
+            };
+          });
+
+          setGames(transformedGames);
+        }
+      } catch (error) {
+        console.error("Error loading games:", error);
+      }
+    };
+
+    loadGames();
+  }, [team.id]);
 
   // Fetch background image
   useEffect(() => {
     const loadBackgroundImage = async () => {
       if (!team.id) {
-        setLoadingBackground(false);
         return;
       }
       try {
-        setLoadingBackground(true);
         const result = await teamService.getBackgroundImage(String(team.id));
         if (result.ok) {
           setBackgroundImage(result.data);
         }
       } catch (error) {
         console.error("Error loading background image:", error);
-      } finally {
-        setLoadingBackground(false);
       }
     };
 
@@ -93,6 +120,7 @@ export const TeamCard: FC<Props> = ({
           boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.25)}`,
           borderColor: theme.palette.primary.main,
         },
+        minHeight: { sm: 450 },
       }}
       onClick={() => onClick(team.id)}
     >
@@ -201,103 +229,109 @@ export const TeamCard: FC<Props> = ({
           </Box>
         </Box>
 
-        <Box sx={{ mb: { xs: 1.5, sm: 2 } }}>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-            <GameIcon
-              sx={{
-                color: theme.palette.info.main,
-                fontSize: { xs: "1rem", sm: "1.2rem" },
-              }}
-            />
+        {games.length > 0 && (
+          <Box sx={{ mb: { xs: 1.5, sm: 2 } }}>
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{ mb: 1 }}
+            >
+              <GameIcon
+                sx={{
+                  color: theme.palette.info.main,
+                  fontSize: { xs: "1rem", sm: "1.2rem" },
+                }}
+              />
+              <Typography
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontSize: { xs: "0.8rem", sm: "0.85rem" },
+                  fontWeight: 600,
+                }}
+              >
+                {gamesLabel}
+              </Typography>
+            </Stack>
+            <Box sx={{ display: "flex", overflow: "hidden" }}>
+              {games.map((g, i) => (
+                <Avatar
+                  key={i}
+                  src={g.icon}
+                  alt={g.name}
+                  sx={{
+                    width: { xs: 28, sm: 32 },
+                    height: { xs: 28, sm: 32 },
+                    borderWidth: { xs: 1.5, sm: 2 },
+                    borderStyle: "solid",
+                    borderColor: theme.palette.background.default,
+                    ml: i === 0 ? 0 : { xs: -0.75, sm: -1 },
+                  }}
+                />
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        {team.achievements.length > 0 && (
+          <Box
+            sx={{
+              bgcolor: theme.palette.background.default,
+              borderRadius: 2,
+              p: { xs: 1.25, sm: 1.5 },
+              mt: { xs: 1.5, sm: 2 },
+            }}
+          >
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{ mb: 1 }}
+            >
+              <TrophyIcon
+                sx={{
+                  color: theme.palette.warning.main,
+                  fontSize: { xs: "1rem", sm: "1.2rem" },
+                }}
+              />
+              <Typography
+                sx={{
+                  color: theme.palette.warning.main,
+                  fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                  fontWeight: 600,
+                }}
+              >
+                {achievementsLabel}
+              </Typography>
+            </Stack>
             <Typography
               sx={{
                 color: theme.palette.text.secondary,
-                fontSize: { xs: "0.8rem", sm: "0.85rem" },
-                fontWeight: 600,
+                fontSize: { xs: "0.75rem", sm: "0.8rem" },
+                lineHeight: 1.4,
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
               }}
             >
-              {gamesLabel}
+              {team.achievements?.[0]}
             </Typography>
-          </Stack>
-          <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-            {team.games.map((g, i) => (
+            {moreCount > 0 && (
               <Chip
-                key={i}
-                avatar={
-                  <Avatar
-                    src={g.icon}
-                    alt={g.name}
-                    sx={{
-                      width: { xs: 18, sm: 20 },
-                      height: { xs: 18, sm: 20 },
-                    }}
-                  />
-                }
-                label={g.name}
+                label={formatMore(moreCount)}
                 size="small"
                 sx={{
-                  bgcolor: theme.palette.background.default,
-                  color: theme.palette.text.primary,
-                  fontSize: { xs: "0.7rem", sm: "0.75rem" },
-                  height: { xs: 24, sm: 28 },
+                  bgcolor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText,
+                  fontSize: { xs: "0.65rem", sm: "0.7rem" },
+                  height: { xs: 18, sm: 20 },
+                  mt: 1,
                 }}
               />
-            ))}
-          </Stack>
-        </Box>
-
-        <Box
-          sx={{
-            bgcolor: theme.palette.background.default,
-            borderRadius: 2,
-            p: { xs: 1.25, sm: 1.5 },
-            mt: { xs: 1.5, sm: 2 },
-          }}
-        >
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-            <TrophyIcon
-              sx={{
-                color: theme.palette.warning.main,
-                fontSize: { xs: "1rem", sm: "1.2rem" },
-              }}
-            />
-            <Typography
-              sx={{
-                color: theme.palette.warning.main,
-                fontSize: { xs: "0.7rem", sm: "0.75rem" },
-                fontWeight: 600,
-              }}
-            >
-              {achievementsLabel}
-            </Typography>
-          </Stack>
-          <Typography
-            sx={{
-              color: theme.palette.text.secondary,
-              fontSize: { xs: "0.75rem", sm: "0.8rem" },
-              lineHeight: 1.4,
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }}
-          >
-            {team.achievements?.[0]}
-          </Typography>
-          {moreCount > 0 && (
-            <Chip
-              label={formatMore(moreCount)}
-              size="small"
-              sx={{
-                bgcolor: theme.palette.primary.main,
-                color: theme.palette.primary.contrastText,
-                fontSize: { xs: "0.65rem", sm: "0.7rem" },
-                height: { xs: 18, sm: 20 },
-                mt: 1,
-              }}
-            />
-          )}
-        </Box>
+            )}
+          </Box>
+        )}
       </CardContent>
     </Card>
   );
