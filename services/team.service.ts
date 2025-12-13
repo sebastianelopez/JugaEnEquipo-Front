@@ -76,6 +76,9 @@ export const teamService = {
     userId?: string;
     leaderId?: string;
     creatorId?: string;
+    limit?: number;
+    offset?: number;
+    name?: string;
   }): Promise<ServiceResult<Team[]>> => {
     const token = await getToken();
     const queryParams: any = {};
@@ -97,6 +100,15 @@ export const teamService = {
     }
     if (params?.creatorId) {
       queryParams.creatorId = params.creatorId;
+    }
+    if (params?.limit !== undefined) {
+      queryParams.limit = params.limit;
+    }
+    if (params?.offset !== undefined) {
+      queryParams.offset = params.offset;
+    }
+    if (params?.name) {
+      queryParams.name = params.name;
     }
 
     return safeCall<Team[]>(() => api.get("/teams", queryParams, token));
