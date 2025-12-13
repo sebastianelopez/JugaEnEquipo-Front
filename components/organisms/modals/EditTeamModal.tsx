@@ -16,7 +16,7 @@ import { useFeedback } from "../../../hooks/useFeedback";
 import { useTranslations } from "next-intl";
 import { useTheme } from "@mui/material/styles";
 import { handleImagePreviewChange } from "../../../utils/imageFileUtils";
-import type { Team, Game } from "../../../interfaces";
+import type { Team, Game, TeamGame } from "../../../interfaces";
 
 interface EditTeamPayload {
   name: string;
@@ -28,7 +28,7 @@ interface EditTeamModalProps {
   open: boolean;
   onClose: () => void;
   team: Team;
-  teamGames: Game[];
+  teamGames: TeamGame[];
   onUpdated?: () => void;
 }
 
@@ -132,7 +132,7 @@ export const EditTeamModal: FC<EditTeamModalProps> = ({
       }
 
       // Update games
-      const currentGameIds = teamGames.map((g) => g.id);
+      const currentGameIds = teamGames.map((g) => g.gameId);
       const gamesToAdd = selectedGames.filter(
         (id) => !currentGameIds.includes(id)
       );
@@ -289,7 +289,14 @@ export const EditTeamModal: FC<EditTeamModalProps> = ({
             description: team.description,
             image: team.image,
           }}
-          initialGames={teamGames}
+          initialGames={teamGames.map((tg) => ({
+            id: tg.gameId,
+            name: tg.gameName,
+            description: "",
+            minPlayersQuantity: 0,
+            maxPlayersQuantity: 0,
+            isVisible: true,
+          }))}
           onSubmit={handleSubmit}
           submitting={submitting}
         />

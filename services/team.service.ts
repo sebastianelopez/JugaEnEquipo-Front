@@ -2,7 +2,7 @@ import { api } from "../lib/api";
 import { ServiceResult } from "./types";
 import { getToken } from "./auth.service";
 import { v4 as uuidv4 } from "uuid";
-import type { Team } from "../interfaces";
+import type { Team, TeamGame } from "../interfaces";
 import type { Game } from "../interfaces";
 
 interface CreateTeamPayload {
@@ -76,6 +76,9 @@ export const teamService = {
     userId?: string;
     leaderId?: string;
     creatorId?: string;
+    limit?: number;
+    offset?: number;
+    name?: string;
   }): Promise<ServiceResult<Team[]>> => {
     const token = await getToken();
     const queryParams: any = {};
@@ -97,6 +100,15 @@ export const teamService = {
     }
     if (params?.creatorId) {
       queryParams.creatorId = params.creatorId;
+    }
+    if (params?.limit !== undefined) {
+      queryParams.limit = params.limit;
+    }
+    if (params?.offset !== undefined) {
+      queryParams.offset = params.offset;
+    }
+    if (params?.name) {
+      queryParams.name = params.name;
     }
 
     return safeCall<Team[]>(() => api.get("/teams", queryParams, token));
@@ -146,9 +158,9 @@ export const teamService = {
    * Find all games for a team
    * GET /api/team/:id/games
    */
-  findAllGames: async (teamId: string): Promise<ServiceResult<Game[]>> => {
+  findAllGames: async (teamId: string): Promise<ServiceResult<TeamGame[]>> => {
     const token = await getToken();
-    return safeCall<Game[]>(() => api.get(`/team/${teamId}/games`, {}, token));
+    return safeCall<TeamGame[]>(() => api.get(`/team/${teamId}/games`, {}, token));
   },
 
   /**

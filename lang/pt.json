@@ -464,9 +464,16 @@
         "noGamesAdded": "Você ainda não adicionou nenhum jogo. Clique em 'Adicionar Jogo' para começar.",
         "unknownGame": "Jogo desconhecido",
         "ownershipNotVerified": "A propriedade desta conta não está verificada",
+        "confirmDeletePlayerTitle": "Excluir jogo?",
         "confirmDeletePlayer": "Tem certeza de que deseja remover este jogo do seu perfil?",
+        "playerAlreadyExists": "Jogador já existe",
+        "playerAlreadyExistsMessage": "Você já tem um jogador adicionado para {gameName}. Por favor, edite o existente ou exclua-o antes de adicionar um novo.",
+        "alreadyAdded": "(Já adicionado)",
+        "userNotFoundError": "Usuário não encontrado",
+        "userNotFoundErrorMessage": "Não foi possível encontrar seu usuário. Por favor, faça login novamente.",
         "cancel": "Cancelar",
-        "save": "Salvar"
+        "save": "Salvar",
+        "delete": "Excluir"
     },
     "Notifications": {
         "newMessage": "{username} te enviou uma mensagem",
@@ -769,7 +776,8 @@
         "noUsersFound": "Nenhum usuário encontrado para sua pesquisa",
         "noGroupsFound": "Nenhum grupo encontrado para sua pesquisa",
         "clearSearch": "Limpar pesquisa",
-        "enterSearchTerm": "Digite um termo de pesquisa para começar"
+        "enterSearchTerm": "Digite um termo de pesquisa para começar",
+        "filters": "Filtros"
     },
     "Admin": {
         "navbar": {

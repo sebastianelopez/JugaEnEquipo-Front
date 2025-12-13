@@ -12,3 +12,11 @@ export interface Team {
   updatedAt: string;
   deletedAt: string | null;
 }
+
+export interface TeamGame {
+  id: string;
+  teamId: string;
+  gameId: string;
+  gameName: string;
+  addedAt: string;
+}

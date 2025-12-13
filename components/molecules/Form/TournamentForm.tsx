@@ -1,12 +1,7 @@
 import { FC, useMemo, useState, useEffect, useRef } from "react";
 import { Formik, Form, useFormikContext } from "formik";
 import * as Yup from "yup";
-import {
-  Box,
-  Button,
-  MenuItem,
-  Stack,
-} from "@mui/material";
+import { Box, Button, MenuItem, Stack, Avatar } from "@mui/material";
 import { MyTextInput, MySelect, UserSearchSelect } from "../../atoms";
 import { MyDateTimePicker } from "../../atoms/MyDateTimePicker";
 import { gameService } from "../../../services/game.service";
@@ -16,6 +11,7 @@ import { Rank } from "../../../interfaces/rank";
 import type { CreateTournamentPayload } from "../../../interfaces";
 import { useTranslations } from "next-intl";
 import dayjs from "dayjs";
+import { getGameImage } from "../../../utils/gameImageUtils";
 
 interface TournamentFormProps {
   initialValues?: Partial<CreateTournamentPayload>;
@@ -48,7 +44,6 @@ const GameIdWatcher: FC<{
   return null;
 };
 
-
 export const TournamentForm: FC<TournamentFormProps> = ({
   initialValues,
   onSubmit,
@@ -74,7 +69,6 @@ export const TournamentForm: FC<TournamentFormProps> = ({
     };
     fetchGames();
   }, []);
-
 
   const fetchRanks = async (gameId: string) => {
     if (!gameId) {
@@ -250,10 +244,45 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                   fullWidth
                   disabled={loadingGames}
                   whiteText={whiteText}
+                  renderValue={(value: string) => {
+                    const selectedGame = games.find((g) => g.id === value);
+                    if (!selectedGame) return "";
+                    return (
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                      >
+                        <Avatar
+                          src={getGameImage(selectedGame.name)}
+                          alt={selectedGame.name}
+                          sx={{
+                            width: 24,
+                            height: 24,
+                          }}
+                        >
+                          {selectedGame.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                        {selectedGame.name}
+                      </Box>
+                    );
+                  }}
                 >
                   {games.map((g) => (
                     <MenuItem key={g.id} value={g.id}>
-                      {g.name}
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                      >
+                        <Avatar
+                          src={getGameImage(g.name)}
+                          alt={g.name}
+                          sx={{
+                            width: 32,
+                            height: 32,
+                          }}
+                        >
+                          {g.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                        {g.name}
+                      </Box>
                     </MenuItem>
                   ))}
                 </MySelect>

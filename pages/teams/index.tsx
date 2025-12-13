@@ -3,15 +3,15 @@ import { useTranslations } from "next-intl";
 import type { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { useTheme } from "@mui/material/styles";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Box,
   Container,
   Typography,
   Grid,
-  Pagination,
   CircularProgress,
   Alert,
+  Skeleton,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { MainLayout } from "../../layouts";
@@ -22,6 +22,7 @@ import {
 } from "../../components/organisms";
 import { teamService } from "../../services/team.service";
 import type { Team } from "../../interfaces";
+import { getGameImage } from "../../utils/gameImageUtils";
 
 interface TeamCardData {
   id: number | string;
@@ -40,85 +41,135 @@ export default function TeamsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [teams, setTeams] = useState<TeamCardData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openCreate, setOpenCreate] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const itemsPerPage = 6;
+  const observerTarget = useRef<HTMLDivElement>(null);
 
-  const loadTeams = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await teamService.search();
+  const transformTeam = async (team: Team): Promise<TeamCardData> => {
+    const gamesResult = await teamService.findAllGames(team.id);
+    const games =
+      gamesResult.ok && gamesResult.data
+        ? gamesResult.data.map((game) => ({
+            name: game.gameName,
+            icon: getGameImage(game.gameName),
+          }))
+        : [];
 
-      if (result.ok && result.data) {
-        const transformedTeams: TeamCardData[] = await Promise.all(
-          result.data.map(async (team: Team) => {
-            const gamesResult = await teamService.findAllGames(team.id);
-            const games =
-              gamesResult.ok && gamesResult.data
-                ? gamesResult.data.map((game) => ({
-                    name: game.name,
-                    icon: game.image || "/default-game-icon.png",
-                  }))
-                : [];
+    // Try to get members from team.users first, if not available, fetch them
+    let members =
+      (team as any).users?.map((user: any) => ({
+        name: user.username || `${user.firstname} ${user.lastname}`,
+        avatar: user.profileImage || "/default-avatar.png",
+      })) || [];
 
-            const members =
-              (team as any).users?.map((user: any) => ({
-                name: user.username || `${user.firstname} ${user.lastname}`,
-                avatar: user.profileImage || "/default-avatar.png",
-              })) || [];
-
-            return {
-              id: team.id,
-              name: team.name,
-              logo: team.image || "/default-team-logo.png",
-              banner: team.image || "/default-team-banner.png",
-              members,
-              games,
-              achievements: (team as any).achievements || [],
-            };
-          })
-        );
-        setTeams(transformedTeams);
-      } else {
-        setError(
-          result.ok === false
-            ? result.errorMessage
-            : (t("loadTeamsError") as string)
-        );
+    // If no members in response, try to fetch them
+    if (members.length === 0) {
+      const membersResult = await teamService.findMembers(String(team.id));
+      if (membersResult.ok && membersResult.data) {
+        members = membersResult.data.map((user: any) => ({
+          name: user.username || `${user.firstname} ${user.lastname}`,
+          avatar: user.profileImage || "/default-avatar.png",
+        }));
       }
-    } catch (err: any) {
-      setError(err?.message || (t("loadTeamsError") as string));
-    } finally {
-      setLoading(false);
     }
+
+    return {
+      id: team.id,
+      name: team.name,
+      logo: team.image || "/default-team-logo.png",
+      banner: team.image || "/default-team-banner.png",
+      members,
+      games,
+      achievements: (team as any).achievements || [],
+    };
   };
+
+  const fetchTeams = useCallback(
+    async (page: number = 1, append: boolean = false) => {
+      setLoading(true);
+      try {
+        const offset = (page - 1) * itemsPerPage;
+
+        const searchParams: any = {
+          limit: itemsPerPage,
+          offset: offset,
+        };
+
+        if (searchQuery.trim()) {
+          searchParams.name = searchQuery.trim();
+        }
+
+        const result = await teamService.search(searchParams);
+
+        if (result.ok && result.data) {
+          const transformedTeams: TeamCardData[] = await Promise.all(
+            result.data.map(transformTeam)
+          );
+
+          if (append) {
+            setTeams((prev) => [...prev, ...transformedTeams]);
+          } else {
+            setTeams(transformedTeams);
+          }
+
+          setHasMore(transformedTeams.length === itemsPerPage);
+          setError(null);
+          return;
+        }
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+        setError((error as any)?.message || (t("loadTeamsError") as string));
+      } finally {
+        setLoading(false);
+      }
+
+      if (!append) {
+        setTeams([]);
+        setHasMore(false);
+      }
+    },
+    [searchQuery, itemsPerPage, t]
+  );
 
   useEffect(() => {
-    loadTeams();
-  }, []);
+    setCurrentPage(1);
+    setTeams([]);
+    setHasMore(true);
+    fetchTeams(1, false);
+  }, [searchQuery, fetchTeams]);
 
-  const filteredTeams = teams.filter(
-    (team) =>
-      team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      team.games.some((game) =>
-        game.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-  );
+  useEffect(() => {
+    if (currentPage === 1) return;
+    fetchTeams(currentPage, true);
+  }, [currentPage, fetchTeams]);
 
-  const totalPages = Math.ceil(filteredTeams.length / itemsPerPage);
-  const paginatedTeams = filteredTeams.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setCurrentPage((prev) => prev + 1);
+        }
+      },
+      { 
+        threshold: 0.1,
+        rootMargin: "0px 0px 400px 0px" // Activa la carga 400px antes de que sea visible
+      }
+    );
 
-  const handlePageChange = (
-    _event: React.ChangeEvent<unknown>,
-    value: number
-  ) => {
-    setCurrentPage(value);
-  };
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, loading]);
 
   const handleTeamClick = (id: number | string) => {
     router.push(`/teams/${id}`);
@@ -164,125 +215,136 @@ export default function TeamsPage() {
           />
         </Box>
 
-        {/* Loading State */}
-        {loading && (
+        {/* Teams Grid */}
+        {teams.length === 0 && !loading ? (
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              minHeight: { xs: "300px", md: "400px" },
-              py: { xs: 4, md: 0 },
+              textAlign: "center",
+              py: { xs: 6, md: 10 },
+              px: { xs: 2, md: 0 },
+              color: theme.palette.text.secondary,
             }}
           >
-            <CircularProgress />
-          </Box>
-        )}
-
-        {/* Error State */}
-        {error && !loading && (
-          <Box sx={{ mb: { xs: 3, md: 4 }, px: { xs: 1, md: 0 } }}>
-            <Alert
-              severity="error"
-              sx={{ fontSize: { xs: "0.875rem", md: "1rem" } }}
+            <Typography
+              variant="h5"
+              sx={{
+                mb: 2,
+                color: theme.palette.text.primary,
+                fontWeight: 600,
+              }}
             >
-              {error}
-            </Alert>
+              {searchQuery
+                ? (t("noTeamsFound") as string)
+                : (t("noTeams") as string)}
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.secondary,
+                maxWidth: "400px",
+                mx: "auto",
+              }}
+            >
+              {searchQuery
+                ? (t("tryOtherSearchTerms") as string)
+                : (t("beFirstToCreateTeam") as string)}
+            </Typography>
           </Box>
-        )}
-
-        {/* Teams Grid */}
-        {!loading && !error && (
+        ) : (
           <>
-            {paginatedTeams.length === 0 ? (
-              <Box
-                sx={{
-                  textAlign: "center",
-                  py: { xs: 6, md: 10 },
-                  px: { xs: 2, md: 0 },
-                  color: theme.palette.text.secondary,
-                }}
-              >
-                <Typography
-                  variant="h5"
-                  sx={{
-                    mb: 2,
-                    color: theme.palette.text.primary,
-                    fontWeight: 600,
-                  }}
+            {/* Error State */}
+            {error && (
+              <Box sx={{ mb: { xs: 3, md: 4 }, px: { xs: 1, md: 0 } }}>
+                <Alert
+                  severity="error"
+                  sx={{ fontSize: { xs: "0.875rem", md: "1rem" } }}
                 >
-                  {searchQuery
-                    ? (t("noTeamsFound") as string)
-                    : (t("noTeams") as string)}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    maxWidth: "400px",
-                    mx: "auto",
-                  }}
-                >
-                  {searchQuery
-                    ? (t("tryOtherSearchTerms") as string)
-                    : (t("beFirstToCreateTeam") as string)}
-                </Typography>
+                  {error}
+                </Alert>
               </Box>
-            ) : (
-              <>
-                <Grid container spacing={{ xs: 2, sm: 3 }}>
-                  {paginatedTeams.map((team) => (
-                    <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={team.id}>
-                      <TeamCard
-                        team={team}
-                        onClick={handleTeamClick}
-                        membersLabel={t("members")}
-                        gamesLabel={t("games")}
-                        achievementsLabel={t("achievements")}
-                        formatMore={(count) => t("more", { count }) as string}
-                      />
+            )}
+
+            <Grid container spacing={{ xs: 2, sm: 3 }}>
+              {teams.map((team) => (
+                <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={team.id}>
+                  <TeamCard
+                    team={team}
+                    onClick={handleTeamClick}
+                    membersLabel={t("members")}
+                    gamesLabel={t("games")}
+                    achievementsLabel={t("achievements")}
+                    formatMore={(count) => t("more", { count }) as string}
+                  />
+                </Grid>
+              ))}
+
+              {/* Loading skeletons */}
+              {loading && teams.length === 0 && (
+                <>
+                  {[1, 2, 3, 4, 5, 6].map((item) => (
+                    <Grid
+                      size={{ xs: 12, sm: 6, lg: 4 }}
+                      key={`skeleton-${item}`}
+                    >
+                      <Box
+                        sx={{
+                          p: { xs: 1.5, md: 2 },
+                          border: `1px solid ${theme.palette.divider}`,
+                          borderRadius: 2,
+                        }}
+                      >
+                        <Skeleton
+                          variant="rectangular"
+                          sx={{
+                            height: { xs: 150, md: 200 },
+                            mb: { xs: 1.5, md: 2 },
+                            borderRadius: 1,
+                          }}
+                        />
+                        <Skeleton
+                          variant="text"
+                          sx={{
+                            width: "60%",
+                            height: { xs: 24, md: 30 },
+                            mb: 1,
+                          }}
+                        />
+                        <Skeleton
+                          variant="text"
+                          sx={{
+                            width: "80%",
+                            height: { xs: 18, md: 20 },
+                            mb: 0.5,
+                          }}
+                        />
+                        <Skeleton
+                          variant="text"
+                          sx={{
+                            width: "40%",
+                            height: { xs: 18, md: 20 },
+                          }}
+                        />
+                      </Box>
                     </Grid>
                   ))}
-                </Grid>
+                </>
+              )}
+            </Grid>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      mt: { xs: 4, md: 6 },
-                      mb: { xs: 2, md: 0 },
-                    }}
-                  >
-                    <Pagination
-                      count={totalPages}
-                      page={currentPage}
-                      onChange={handlePageChange}
-                      size="medium"
-                      sx={{
-                        "& .MuiPaginationItem-root": {
-                          color: theme.palette.text.primary,
-                          borderColor: theme.palette.divider,
-                          fontSize: { xs: "0.875rem", md: "1rem" },
-                          minWidth: { xs: "32px", md: "40px" },
-                          height: { xs: "32px", md: "40px" },
-                        },
-                        "& .MuiPaginationItem-root.Mui-selected": {
-                          bgcolor: theme.palette.primary.main,
-                          color: theme.palette.primary.contrastText,
-                          "&:hover": {
-                            bgcolor: theme.palette.primary.dark,
-                          },
-                        },
-                        "& .MuiPaginationItem-root:hover": {
-                          bgcolor: theme.palette.action.hover,
-                        },
-                      }}
-                    />
-                  </Box>
-                )}
-              </>
+            {/* Intersection Observer target */}
+            {hasMore && (
+              <Box
+                ref={observerTarget}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 100,
+                  mt: 4,
+                }}
+              >
+                {loading && teams.length > 0 && <CircularProgress />}
+              </Box>
             )}
           </>
         )}
@@ -292,8 +354,11 @@ export default function TeamsPage() {
         open={openCreate}
         onClose={() => setOpenCreate(false)}
         onCreated={() => {
-          // Reload teams after creating a new one
-          loadTeams();
+          // Reset and reload teams after creating a new one
+          setCurrentPage(1);
+          setTeams([]);
+          setHasMore(true);
+          fetchTeams(1, false);
         }}
       />
     </MainLayout>
