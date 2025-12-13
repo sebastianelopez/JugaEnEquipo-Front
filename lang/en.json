@@ -464,9 +464,16 @@
         "noGamesAdded": "You haven't added any games yet. Click 'Add Game' to get started.",
         "unknownGame": "Unknown game",
         "ownershipNotVerified": "Account ownership is not verified",
+        "confirmDeletePlayerTitle": "Delete game?",
         "confirmDeletePlayer": "Are you sure you want to remove this game from your profile?",
+        "playerAlreadyExists": "Player already exists",
+        "playerAlreadyExistsMessage": "You already have a player added for {gameName}. Please edit the existing one or delete it before adding a new one.",
+        "alreadyAdded": "(Already added)",
+        "userNotFoundError": "User not found",
+        "userNotFoundErrorMessage": "Could not find your user. Please log in again.",
         "cancel": "Cancel",
-        "save": "Save"
+        "save": "Save",
+        "delete": "Delete"
     },
     "Notifications": {
         "newMessage": "{username} sent you a message",

@@ -19,6 +19,18 @@ interface RankImageConfig {
 const getRankImageFromCDN = (config: RankImageConfig): string => {
   const { gameId, gameName, rankId, rankName } = config;
 
+  // Check if rank is unranked
+  const normalizedRankName = rankName?.trim().toLowerCase() || "";
+  if (
+    normalizedRankName === "unranked" ||
+    normalizedRankName === "sin rango" ||
+    normalizedRankName === "sem classificação" ||
+    normalizedRankName === "" ||
+    !rankName
+  ) {
+    return getUnrankedImage(gameName);
+  }
+
   // Option A: Use gameId and rankId
   if (rankId) {
     return `/images/ranks/${gameId}/${rankId}.png`;
@@ -26,8 +38,8 @@ const getRankImageFromCDN = (config: RankImageConfig): string => {
 
   // Option B: Use gameName and rankName (normalized)
   const normalizedGameName = gameName.toLowerCase().replace(/\s+/g, "-");
-  const normalizedRankName = rankName.toLowerCase().replace(/\s+/g, "-");
-  return `/images/ranks/${normalizedGameName}/${normalizedRankName}.png`;
+  const normalizedRankNameForPath = normalizedRankName.replace(/\s+/g, "-");
+  return `/images/ranks/${normalizedGameName}/${normalizedRankNameForPath}.png`;
 };
 
 /**
@@ -35,16 +47,64 @@ const getRankImageFromCDN = (config: RankImageConfig): string => {
  * Example: https://res.cloudinary.com/your-cloud/image/upload/ranks/{gameId}/{rankId}.png
  */
 const getRankImageFromExternalCDN = (config: RankImageConfig): string => {
-  const { gameId, rankId, rankName } = config;
+  const { gameId, gameName, rankId, rankName } = config;
   const CDN_BASE_URL =
     process.env.NEXT_PUBLIC_RANK_IMAGES_CDN || "https://your-cdn.com";
+
+  // Check if rank is unranked
+  const normalizedRankName = rankName?.trim().toLowerCase() || "";
+  if (
+    normalizedRankName === "unranked" ||
+    normalizedRankName === "sin rango" ||
+    normalizedRankName === "sem classificação" ||
+    normalizedRankName === "" ||
+    !rankName
+  ) {
+    return getUnrankedImage(gameName);
+  }
 
   if (rankId) {
     return `${CDN_BASE_URL}/ranks/${gameId}/${rankId}.png`;
   }
 
-  const normalizedRankName = rankName.toLowerCase().replace(/\s+/g, "-");
-  return `${CDN_BASE_URL}/ranks/${gameId}/${normalizedRankName}.png`;
+  const normalizedRankNameForPath = normalizedRankName.replace(/\s+/g, "-");
+  return `${CDN_BASE_URL}/ranks/${gameId}/${normalizedRankNameForPath}.png`;
+};
+
+/**
+ * Helper function to get unranked image for a game
+ */
+const getUnrankedImage = (gameName: string): string => {
+  const normalizedGameName = gameName?.trim().toLowerCase() || "";
+
+  if (normalizedGameName === "valorant") {
+    return "/images/ranks/valorant/valorant-unranked.png";
+  }
+
+  if (
+    normalizedGameName.includes("counter-strike") ||
+    normalizedGameName.includes("counter strike") ||
+    normalizedGameName === "cs2" ||
+    normalizedGameName === "cs 2"
+  ) {
+    return "/images/ranks/counter-strike-2/unranked-counter-strike.png";
+  }
+
+  if (normalizedGameName === "dota 2" || normalizedGameName === "dota-2") {
+    return "/images/ranks/dota-2/unranked-dota-2.webp";
+  }
+
+  if (
+    normalizedGameName === "league of legends" ||
+    normalizedGameName === "league-of-legends" ||
+    normalizedGameName === "lol"
+  ) {
+    return "/images/ranks/league-of-legends/unranked-lol.png";
+  }
+
+  // Fallback for other games
+  const normalizedGameNameForCDN = normalizedGameName.replace(/\s+/g, "-");
+  return `/images/ranks/${normalizedGameNameForCDN}/unranked.png`;
 };
 
 /**
@@ -56,6 +116,18 @@ const getRankImageFromLocalMap = (config: RankImageConfig): string => {
 
   // Normalize rank name (trim, handle case variations)
   const normalizedRankName = rankName?.trim() || "";
+
+  // Check if rank is unranked
+  const normalizedRankNameLower = normalizedRankName.toLowerCase();
+  if (
+    normalizedRankNameLower === "unranked" ||
+    normalizedRankNameLower === "sin rango" ||
+    normalizedRankNameLower === "sem classificação" ||
+    normalizedRankNameLower === "" ||
+    !normalizedRankName
+  ) {
+    return getUnrankedImage(gameName);
+  }
 
   // Valorant uses format: {RankName}_{Level}_Rank.png
   // Example: Gold_1_Rank.png, Gold_2_Rank.png, Gold_3_Rank.png
@@ -232,6 +304,7 @@ const getRankImageFromLocalMap = (config: RankImageConfig): string => {
       Master: "/images/ranks/league-of-legends/master.png",
       Grandmaster: "/images/ranks/league-of-legends/grandmaster.png",
       Challenger: "/images/ranks/league-of-legends/challenger.png",
+      Unranked: "/images/ranks/league-of-legends/unranked-lol.png",
       // Case variations
       iron: "/images/ranks/league-of-legends/iron.png",
       bronze: "/images/ranks/league-of-legends/bronze.png",
@@ -243,6 +316,7 @@ const getRankImageFromLocalMap = (config: RankImageConfig): string => {
       master: "/images/ranks/league-of-legends/master.png",
       grandmaster: "/images/ranks/league-of-legends/grandmaster.png",
       challenger: "/images/ranks/league-of-legends/challenger.png",
+      unranked: "/images/ranks/league-of-legends/unranked-lol.png",
     },
     // Add more games as needed
   };
@@ -306,7 +380,7 @@ export const getRankImageFromPlayer = (
   gameRank?: { id: string; name: string; level: number }
 ): string => {
   if (!gameRank) {
-    return "/images/image-placeholder.png";
+    return getUnrankedImage(gameName);
   }
 
   return getRankImage({
@@ -324,8 +398,12 @@ export const getRankImageFromPlayer = (
 export const getRankImageFromRank = (
   gameName: string,
   gameId: string,
-  rank: { id: string; rankName: string }
+  rank?: { id: string; rankName: string }
 ): string => {
+  if (!rank || !rank.rankName) {
+    return getUnrankedImage(gameName);
+  }
+
   return getRankImage({
     gameId,
     gameName,

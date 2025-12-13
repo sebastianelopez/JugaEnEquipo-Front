@@ -10,6 +10,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
   TextField,
   FormControl,
@@ -74,12 +75,16 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
-  const [gameRequirements, setGameRequirements] = useState<GameRequirements>({});
+  const [gameRequirements, setGameRequirements] = useState<GameRequirements>(
+    {}
+  );
   const [ranks, setRanks] = useState<Rank[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [rolesData, setRolesData] = useState<Map<string, Role[]>>(new Map());
   const [loadingRequirements, setLoadingRequirements] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [playerToDelete, setPlayerToDelete] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState<PlayerFormData>({
@@ -87,7 +92,9 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
     gameRoleIds: [],
     accountData: {},
   });
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof PlayerFormData | "accountData", string>>>({});
+  const [formErrors, setFormErrors] = useState<
+    Partial<Record<keyof PlayerFormData | "accountData", string>>
+  >({});
 
   // Load games
   useEffect(() => {
@@ -126,11 +133,13 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
         const result = await playerService.search({ userId: user.id });
         if (result.ok && result.data) {
           setPlayers(result.data || []);
-          
+
           // Load roles for each unique game
           const rolesMap = new Map<string, Role[]>();
-          const uniqueGameIds = Array.from(new Set(result.data.map((p: Player) => p.gameId)));
-          
+          const uniqueGameIds = Array.from(
+            new Set(result.data.map((p: Player) => p.gameId))
+          );
+
           for (const gameId of uniqueGameIds) {
             if (!rolesMap.has(gameId)) {
               const rolesResult = await roleService.findAllByGame(gameId);
@@ -139,7 +148,7 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
               }
             }
           }
-          
+
           setRolesData(rolesMap);
         } else {
           // If search fails or returns empty, set empty array
@@ -172,7 +181,9 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
         setSelectedGame(game || null);
 
         // Load requirements
-        const requirementsResult = await gameService.getGameRequirements(formData.gameId);
+        const requirementsResult = await gameService.getGameRequirements(
+          formData.gameId
+        );
         if (requirementsResult.ok && requirementsResult.data) {
           setGameRequirements(requirementsResult.data);
         }
@@ -235,7 +246,9 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
   }, []);
 
   const validateForm = useCallback((): boolean => {
-    const errors: Partial<Record<keyof PlayerFormData | "accountData", string>> = {};
+    const errors: Partial<
+      Record<keyof PlayerFormData | "accountData", string>
+    > = {};
 
     if (!formData.gameId) {
       errors.gameId = t("gameRequired");
@@ -265,6 +278,21 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
       return;
     }
 
+    // Check if a player with the same gameId already exists (excluding the one being edited)
+    const existingPlayer = players.find(
+      (p) => p.gameId === formData.gameId && p.id !== editingPlayer?.id
+    );
+
+    if (existingPlayer) {
+      const gameName =
+        games.find((g) => g.id === formData.gameId)?.name || t("unknownGame");
+      showError({
+        title: t("playerAlreadyExists"),
+        message: t("playerAlreadyExistsMessage", { gameName }),
+      });
+      return;
+    }
+
     try {
       setSaving(true);
       const playerId = editingPlayer?.id || uuidv4();
@@ -273,7 +301,9 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
       if (result.ok) {
         showSuccess({
           title: editingPlayer ? t("playerUpdated") : t("playerAdded"),
-          message: editingPlayer ? t("playerUpdatedMessage") : t("playerAddedMessage"),
+          message: editingPlayer
+            ? t("playerUpdatedMessage")
+            : t("playerAddedMessage"),
         });
         handleCloseDialog();
         onSave?.();
@@ -287,34 +317,66 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
       } else {
         showError({
           title: editingPlayer ? t("playerUpdateError") : t("playerAddError"),
-          message: result.errorMessage || (editingPlayer ? t("playerUpdateErrorMessage") : t("playerAddErrorMessage")),
+          message:
+            result.errorMessage ||
+            (editingPlayer
+              ? t("playerUpdateErrorMessage")
+              : t("playerAddErrorMessage")),
         });
       }
     } catch (error: any) {
       showError({
         title: editingPlayer ? t("playerUpdateError") : t("playerAddError"),
-        message: error?.message || (editingPlayer ? t("playerUpdateErrorMessage") : t("playerAddErrorMessage")),
+        message:
+          error?.message ||
+          (editingPlayer
+            ? t("playerUpdateErrorMessage")
+            : t("playerAddErrorMessage")),
       });
     } finally {
       setSaving(false);
     }
-  }, [formData, editingPlayer, validateForm, t, showError, showSuccess, handleCloseDialog, onSave]);
+  }, [
+    formData,
+    editingPlayer,
+    validateForm,
+    t,
+    showError,
+    showSuccess,
+    handleCloseDialog,
+    onSave,
+    players,
+    games,
+    user,
+  ]);
 
-  const handleDelete = useCallback(async (playerId: string) => {
-    if (!confirm(t("confirmDeletePlayer"))) {
-      return;
-    }
+  const handleDeleteClick = useCallback((playerId: string) => {
+    setPlayerToDelete(playerId);
+    setOpenDeleteDialog(true);
+  }, []);
+
+  const handleCancelDelete = useCallback(() => {
+    setOpenDeleteDialog(false);
+    setPlayerToDelete(null);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!playerToDelete) return;
 
     try {
-      const result = await playerService.delete(playerId);
+      const result = await playerService.delete(playerToDelete);
       if (result.ok) {
         showSuccess({
           title: t("playerDeleted"),
           message: t("playerDeletedMessage"),
         });
+        setOpenDeleteDialog(false);
+        setPlayerToDelete(null);
         // Reload players
         if (user?.id) {
-          const playersResult = await playerService.search({ userId: user.id });
+          const playersResult = await playerService.search({
+            userId: user.id,
+          });
           if (playersResult.ok && playersResult.data) {
             setPlayers(playersResult.data || []);
           }
@@ -324,23 +386,46 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
           title: t("playerDeleteError"),
           message: result.errorMessage || t("playerDeleteErrorMessage"),
         });
+        setOpenDeleteDialog(false);
+        setPlayerToDelete(null);
       }
     } catch (error: any) {
       showError({
         title: t("playerDeleteError"),
         message: error?.message || t("playerDeleteErrorMessage"),
       });
+      setOpenDeleteDialog(false);
+      setPlayerToDelete(null);
     }
-  }, [t, showError, showSuccess]);
+  }, [playerToDelete, t, showError, showSuccess, user?.id, setPlayers]);
 
-  const getPlayerRoles = useCallback((roleIds: string[], gameId: string) => {
-    const gameRoles = rolesData.get(gameId) || [];
-    return gameRoles.filter((r) => roleIds.includes(r.id));
-  }, [rolesData]);
+  const getPlayerRoles = useCallback(
+    (roleIds: string[], gameId: string) => {
+      const gameRoles = rolesData.get(gameId) || [];
+      return gameRoles.filter((r) => roleIds.includes(r.id));
+    },
+    [rolesData]
+  );
+
+  const isGameAlreadyAdded = useCallback(
+    (gameId: string) => {
+      return players.some(
+        (p) => p.gameId === gameId && p.id !== editingPlayer?.id
+      );
+    },
+    [players, editingPlayer]
+  );
 
   return (
     <Box>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
         <Typography variant="h6" gutterBottom>
           {t("gamesTitle")}
         </Typography>
@@ -366,12 +451,21 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
       ) : (
         <Stack spacing={2}>
           {players.map((player) => {
-            const playerRoles = getPlayerRoles(player.gameRoleIds || [], player.gameId);
+            const playerRoles = getPlayerRoles(
+              player.gameRoleIds || [],
+              player.gameId
+            );
 
             return (
               <Paper key={player.id} sx={{ p: 2, position: "relative" }}>
                 {player.isOwnershipVerified === false && (
-                  <Tooltip title={t("ownershipNotVerified") || "La propiedad de esta cuenta no está verificada"} arrow>
+                  <Tooltip
+                    title={
+                      t("ownershipNotVerified") ||
+                      "La propiedad de esta cuenta no está verificada"
+                    }
+                    arrow
+                  >
                     <Box
                       sx={{
                         position: "absolute",
@@ -393,14 +487,28 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
                 )}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <Avatar
-                    src={player.gameName ? getGameImage(player.gameName) : undefined}
+                    src={
+                      player.gameName
+                        ? getGameImage(player.gameName)
+                        : undefined
+                    }
                     alt={player.gameName}
                     sx={{ width: 56, height: 56 }}
                   />
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="h6">{player.gameName || t("unknownGame")}</Typography>
+                    <Typography variant="h6">
+                      {player.gameName || t("unknownGame")}
+                    </Typography>
                     {player.gameRank && (
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.5, mb: 0.5 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.75,
+                          mt: 0.5,
+                          mb: 0.5,
+                        }}
+                      >
                         <Box
                           sx={{
                             width: 28,
@@ -414,7 +522,11 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
                           }}
                         >
                           <Image
-                            src={getRankImageFromPlayer(player.gameName, player.gameId, player.gameRank)}
+                            src={getRankImageFromPlayer(
+                              player.gameName,
+                              player.gameId,
+                              player.gameRank
+                            )}
                             alt={player.gameRank.name}
                             fill
                             style={{ objectFit: "contain" }}
@@ -428,21 +540,41 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
                       </Box>
                     )}
                     {playerRoles.length > 0 && (
-                      <Box sx={{ display: "flex", gap: 1, mt: 1, flexWrap: "wrap" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 1,
+                          mt: 1,
+                          flexWrap: "wrap",
+                        }}
+                      >
                         {playerRoles.map((role) => (
-                          <Chip key={role.id} label={role.roleName} size="small" />
+                          <Chip
+                            key={role.id}
+                            label={role.roleName}
+                            size="small"
+                          />
                         ))}
                       </Box>
                     )}
                     {player.accountData?.username && (
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 0.5 }}
+                      >
                         {t("username")}: {player.accountData.username}
                         {player.accountData.tag && `#${player.accountData.tag}`}
-                        {player.accountData.region && ` (${player.accountData.region})`}
+                        {player.accountData.region &&
+                          ` (${player.accountData.region})`}
                       </Typography>
                     )}
                     {player.accountData?.steamId && (
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 0.5 }}
+                      >
                         Steam ID: {player.accountData.steamId}
                       </Typography>
                     )}
@@ -465,7 +597,7 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
                     </IconButton>
                     <IconButton
                       color="error"
-                      onClick={() => player.id && handleDelete(player.id)}
+                      onClick={() => player.id && handleDeleteClick(player.id)}
                       size="small"
                     >
                       <DeleteIcon />
@@ -479,25 +611,60 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
       )}
 
       {/* Add/Edit Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingPlayer ? t("editGame") : t("addGame")}</DialogTitle>
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {editingPlayer ? t("editGame") : t("addGame")}
+        </DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
             <FormControl fullWidth error={!!formErrors.gameId}>
               <InputLabel>{t("selectGame")}</InputLabel>
               <Select
                 value={formData.gameId}
-                onChange={(e) => setFormData({ ...formData, gameId: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, gameId: e.target.value })
+                }
                 label={t("selectGame")}
                 disabled={loadingGames || !!editingPlayer}
               >
-                {games.map((game) => (
-                  <MenuItem key={game.id} value={game.id}>
-                    {game.name}
-                  </MenuItem>
-                ))}
+                {games.map((game) => {
+                  const isDisabled = isGameAlreadyAdded(game.id);
+                  return (
+                    <MenuItem
+                      key={game.id}
+                      value={game.id}
+                      disabled={isDisabled}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          width: "100%",
+                        }}
+                      >
+                        <Typography sx={{ flex: 1 }}>{game.name}</Typography>
+                        {isDisabled && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ ml: 1, fontStyle: "italic" }}
+                          >
+                            {t("alreadyAdded")}
+                          </Typography>
+                        )}
+                      </Box>
+                    </MenuItem>
+                  );
+                })}
               </Select>
-              {formErrors.gameId && <FormHelperText>{formErrors.gameId}</FormHelperText>}
+              {formErrors.gameId && (
+                <FormHelperText>{formErrors.gameId}</FormHelperText>
+              )}
             </FormControl>
 
             {loadingRequirements && (
@@ -514,7 +681,10 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
                     multiple
                     value={formData.gameRoleIds}
                     onChange={(e) =>
-                      setFormData({ ...formData, gameRoleIds: e.target.value as string[] })
+                      setFormData({
+                        ...formData,
+                        gameRoleIds: e.target.value as string[],
+                      })
                     }
                     label={t("selectRoles")}
                   >
@@ -524,7 +694,9 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {formErrors.gameRoleIds && <FormHelperText>{formErrors.gameRoleIds}</FormHelperText>}
+                  {formErrors.gameRoleIds && (
+                    <FormHelperText>{formErrors.gameRoleIds}</FormHelperText>
+                  )}
                 </FormControl>
 
                 {gameRequirements.steamId && (
@@ -535,7 +707,10 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        accountData: { ...formData.accountData, steamId: e.target.value },
+                        accountData: {
+                          ...formData.accountData,
+                          steamId: e.target.value,
+                        },
                       })
                     }
                     error={!!formErrors.accountData}
@@ -552,7 +727,10 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        accountData: { ...formData.accountData, username: e.target.value },
+                        accountData: {
+                          ...formData.accountData,
+                          username: e.target.value,
+                        },
                       })
                     }
                     error={!!formErrors.accountData}
@@ -569,7 +747,10 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        accountData: { ...formData.accountData, tag: e.target.value },
+                        accountData: {
+                          ...formData.accountData,
+                          tag: e.target.value,
+                        },
                       })
                     }
                     error={!!formErrors.accountData}
@@ -586,7 +767,10 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          accountData: { ...formData.accountData, region: e.target.value },
+                          accountData: {
+                            ...formData.accountData,
+                            region: e.target.value,
+                          },
                         })
                       }
                       label={t("riotRegion")}
@@ -619,7 +803,31 @@ export const SettingsGames: FC<SettingsGamesProps> = ({ onSave }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={openDeleteDialog}
+        onClose={handleCancelDelete}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          {t("confirmDeletePlayerTitle")}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            {t("confirmDeletePlayer")}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} variant="outlined">
+            {t("cancel")}
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained" autoFocus>
+            {t("delete")}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
-

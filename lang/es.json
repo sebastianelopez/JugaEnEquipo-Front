@@ -464,9 +464,16 @@
         "noGamesAdded": "No has agregado ningún juego aún. Haz clic en 'Agregar Juego' para comenzar.",
         "unknownGame": "Juego desconocido",
         "ownershipNotVerified": "La propiedad de esta cuenta no está verificada",
+        "confirmDeletePlayerTitle": "¿Eliminar juego?",
         "confirmDeletePlayer": "¿Estás seguro de que deseas eliminar este juego de tu perfil?",
+        "playerAlreadyExists": "Jugador ya existe",
+        "playerAlreadyExistsMessage": "Ya tienes un jugador agregado para {gameName}. Por favor, edita el existente o elimínalo antes de agregar uno nuevo.",
+        "alreadyAdded": "(Ya agregado)",
+        "userNotFoundError": "Usuario no encontrado",
+        "userNotFoundErrorMessage": "No se pudo encontrar tu usuario. Por favor, inicia sesión nuevamente.",
         "cancel": "Cancelar",
-        "save": "Guardar"
+        "save": "Guardar",
+        "delete": "Eliminar"
     },
     "Notifications": {
         "newMessage": "{username} te envió un mensaje",
