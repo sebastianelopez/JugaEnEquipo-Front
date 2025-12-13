@@ -26,20 +26,24 @@ export const GamesGrid = ({ games }: GamesGridProps) => {
   const t = useTranslations("Settings");
 
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5 }}>
       {games.map((game, idx) => (
-        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={idx}>
+        <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={idx}>
           <Paper
             sx={{
               bgcolor: theme.palette.background.paper,
-              p: 3,
+              p: { xs: 2, sm: 2.5, lg: 3 },
               borderRadius: 2,
               textAlign: "center",
               transition: "all 0.3s ease",
               position: "relative",
-              ":hover": {
-                transform: "translateY(-4px)",
-                boxShadow: `0 8px 20px rgba(0,0,0,0.2)`,
+              maxWidth: { md: "400px", lg: "none" },
+              mx: { md: "auto", lg: 0 },
+              "@media (hover: hover)": {
+                "&:hover": {
+                  transform: "translateY(-4px)",
+                  boxShadow: `0 8px 20px rgba(0,0,0,0.2)`,
+                },
               },
             }}
           >
@@ -48,8 +52,8 @@ export const GamesGrid = ({ games }: GamesGridProps) => {
                 <Box
                   sx={{
                     position: "absolute",
-                    top: 8,
-                    right: 8,
+                    top: { xs: 6, sm: 7, lg: 8 },
+                    right: { xs: 6, sm: 7, lg: 8 },
                     color: theme.palette.text.secondary,
                     display: "flex",
                     alignItems: "center",
@@ -67,10 +71,20 @@ export const GamesGrid = ({ games }: GamesGridProps) => {
             <Avatar
               src={game.icon}
               alt={game.name}
-              sx={{ width: 64, height: 64, mx: "auto", mb: 2 }}
+              sx={{
+                width: { xs: 48, sm: 56, md: 60, lg: 64 },
+                height: { xs: 48, sm: 56, md: 60, lg: 64 },
+                mx: "auto",
+                mb: { xs: 1.5, sm: 1.75, md: 1.75, lg: 2 },
+              }}
             />
             <Typography
-              sx={{ color: theme.palette.text.primary, fontWeight: 700, mb: 1 }}
+              sx={{
+                color: theme.palette.text.primary,
+                fontWeight: 700,
+                mb: 1,
+                fontSize: { xs: "0.95rem", sm: "0.98rem", md: "1rem", lg: "1rem" },
+              }}
             >
               {game.name}
             </Typography>
@@ -79,9 +93,9 @@ export const GamesGrid = ({ games }: GamesGridProps) => {
                 sx={{
                   display: "flex",
                   flexWrap: "wrap",
-                  gap: 0.5,
+                  gap: { xs: 0.25, sm: 0.5 },
                   justifyContent: "center",
-                  mb: 1,
+                  mb: { xs: 0.75, sm: 1 },
                 }}
               >
                 {game.roles.map((role, idx) => (
@@ -90,7 +104,11 @@ export const GamesGrid = ({ games }: GamesGridProps) => {
                     label={role.roleName}
                     size="small"
                     color="primary"
-                    sx={{ fontWeight: 600 }}
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                      height: { xs: 20, sm: 24 },
+                    }}
                   />
                 ))}
               </Box>
@@ -99,17 +117,18 @@ export const GamesGrid = ({ games }: GamesGridProps) => {
               <Box
                 sx={{
                   display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 1,
-                  mb: 1,
+                  gap: { xs: 0.5, sm: 1 },
+                  mb: { xs: 0.75, sm: 1 },
                 }}
               >
                 {game.gameId && (
                   <Box
                     sx={{
-                      width: 32,
-                      height: 32,
+                      width: { xs: 28, sm: 32 },
+                      height: { xs: 28, sm: 32 },
                       position: "relative",
                       flexShrink: 0,
                       borderRadius: 1,
@@ -132,7 +151,17 @@ export const GamesGrid = ({ games }: GamesGridProps) => {
                   label={`${game.gameRank.name} (Level ${game.gameRank.level})`}
                   size="small"
                   color="secondary"
-                  sx={{ fontWeight: 600 }}
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                    height: { xs: 20, sm: 24 },
+                    maxWidth: { xs: "100%", sm: "none" },
+                    "& .MuiChip-label": {
+                      whiteSpace: { xs: "normal", sm: "nowrap" },
+                      textAlign: "center",
+                      px: { xs: 1, sm: 1.5 },
+                    },
+                  }}
                 />
               </Box>
             )}
@@ -141,15 +170,21 @@ export const GamesGrid = ({ games }: GamesGridProps) => {
                 label={game.rank}
                 size="small"
                 color="secondary"
-                sx={{ fontWeight: 600, mb: 1 }}
+                sx={{
+                  fontWeight: 600,
+                  mb: { xs: 0.75, sm: 1 },
+                  fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                  height: { xs: 20, sm: 24 },
+                }}
               />
             )}
             {game.accountInfo && (
               <Typography
                 sx={{
                   color: theme.palette.text.secondary,
-                  fontSize: "0.875rem",
-                  mt: 1,
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                  mt: { xs: 0.75, sm: 1 },
+                  px: { xs: 0.5, sm: 0 },
                 }}
               >
                 {game.accountInfo}
@@ -159,8 +194,8 @@ export const GamesGrid = ({ games }: GamesGridProps) => {
               <Typography
                 sx={{
                   color: theme.palette.text.secondary,
-                  fontSize: "0.8rem",
-                  mt: 1,
+                  fontSize: { xs: "0.7rem", sm: "0.8rem" },
+                  mt: { xs: 0.75, sm: 1 },
                 }}
               >
                 {game.hoursPlayed.toLocaleString()} horas
