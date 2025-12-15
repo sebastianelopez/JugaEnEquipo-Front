@@ -18,6 +18,7 @@
         "subtitle": "Discover the best esports teams",
         "searchPlaceholder": "Search teams by name or game...",
         "create": "Create team",
+        "mineOnly": "My teams",
         "members": "Members",
         "games": "Games",
         "achievements": "Featured achievements",

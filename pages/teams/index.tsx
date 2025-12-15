@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 import type { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { useTheme } from "@mui/material/styles";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useContext } from "react";
 import {
   Box,
   Container,
@@ -23,6 +23,7 @@ import {
 import { teamService } from "../../services/team.service";
 import type { Team } from "../../interfaces";
 import { getGameImage } from "../../utils/gameImageUtils";
+import { UserContext } from "../../context/user";
 
 interface TeamCardData {
   id: number | string;
@@ -38,7 +39,9 @@ export default function TeamsPage() {
   const router = useRouter();
   const t = useTranslations("Teams");
   const theme = useTheme();
+  const { user } = useContext(UserContext);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showMineOnly, setShowMineOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [teams, setTeams] = useState<TeamCardData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -102,6 +105,10 @@ export default function TeamsPage() {
           searchParams.name = searchQuery.trim();
         }
 
+        if (showMineOnly && user?.id) {
+          searchParams.mine = true;
+        }
+
         const result = await teamService.search(searchParams);
 
         if (result.ok && result.data) {
@@ -131,7 +138,7 @@ export default function TeamsPage() {
         setHasMore(false);
       }
     },
-    [searchQuery, itemsPerPage, t]
+    [searchQuery, showMineOnly, user?.id, itemsPerPage, t]
   );
 
   useEffect(() => {
@@ -139,7 +146,7 @@ export default function TeamsPage() {
     setTeams([]);
     setHasMore(true);
     fetchTeams(1, false);
-  }, [searchQuery, fetchTeams]);
+  }, [searchQuery, showMineOnly, fetchTeams]);
 
   useEffect(() => {
     if (currentPage === 1) return;
@@ -212,6 +219,10 @@ export default function TeamsPage() {
             onOpenCreate={() => setOpenCreate(true)}
             placeholder={t("searchPlaceholder") as string}
             createLabel={t("create") as string}
+            showMineOnly={showMineOnly}
+            onShowMineOnlyChange={setShowMineOnly}
+            mineOnlyLabel={t("mineOnly") as string}
+            user={user}
           />
         </Box>
 
