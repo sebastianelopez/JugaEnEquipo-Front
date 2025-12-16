@@ -114,7 +114,9 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
   const [selectedLeaveTeamId, setSelectedLeaveTeamId] = useState<string>("");
   const [setFinalPositionsModalOpen, setSetFinalPositionsModalOpen] =
     useState(false);
-  const [finalizedStatusId, setFinalizedStatusId] = useState<string | null>(null);
+  const [finalizedStatusId, setFinalizedStatusId] = useState<string | null>(
+    null
+  );
   const { getStatusName, loading: loadingStatus } = useTournamentStatus();
 
   // Get tournament status name
@@ -659,12 +661,15 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
   // Check if tournament has ended
   const hasTournamentEnded = useMemo(() => {
     if (!tournament) return false;
-    
+
     // Check if tournament status is "Finalized"
-    if (finalizedStatusId && tournament.tournamentStatusId === finalizedStatusId) {
+    if (
+      finalizedStatusId &&
+      tournament.tournamentStatusId === finalizedStatusId
+    ) {
       return true;
     }
-    
+
     // Fallback: Check if end date has passed or if winners are set
     if (tournament.endAt) {
       try {
@@ -677,7 +682,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
         // Invalid date, continue to check winners
       }
     }
-    
+
     // Check if winners are set
     if (
       tournament.firstPlaceTeamId ||
@@ -686,7 +691,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
     ) {
       return true;
     }
-    
+
     return false;
   }, [
     tournament,
@@ -894,7 +899,12 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                 </IconButton>
               )}
             </Stack>
-            <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              flexWrap="wrap"
+            >
               {game && (
                 <Avatar
                   src={getGameImage(game.name)}
@@ -920,7 +930,11 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       const status = tournamentStatusName.toLowerCase();
                       if (status === "active" || status === "ongoing") {
                         return theme.palette.success.main;
-                      } else if (status === "finalized" || status === "finished" || status === "archived") {
+                      } else if (
+                        status === "finalized" ||
+                        status === "finished" ||
+                        status === "archived"
+                      ) {
                         return theme.palette.grey[600];
                       } else if (status === "suspended") {
                         return theme.palette.error.main;
@@ -932,15 +946,29 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                     color: (() => {
                       const status = tournamentStatusName.toLowerCase();
                       if (status === "active" || status === "ongoing") {
-                        return theme.palette.getContrastText(theme.palette.success.main);
-                      } else if (status === "finalized" || status === "finished" || status === "archived") {
-                        return theme.palette.getContrastText(theme.palette.grey[600]);
+                        return theme.palette.getContrastText(
+                          theme.palette.success.main
+                        );
+                      } else if (
+                        status === "finalized" ||
+                        status === "finished" ||
+                        status === "archived"
+                      ) {
+                        return theme.palette.getContrastText(
+                          theme.palette.grey[600]
+                        );
                       } else if (status === "suspended") {
-                        return theme.palette.getContrastText(theme.palette.error.main);
+                        return theme.palette.getContrastText(
+                          theme.palette.error.main
+                        );
                       } else if (status === "created") {
-                        return theme.palette.getContrastText(theme.palette.info.main);
+                        return theme.palette.getContrastText(
+                          theme.palette.info.main
+                        );
                       }
-                      return theme.palette.getContrastText(theme.palette.primary.main);
+                      return theme.palette.getContrastText(
+                        theme.palette.primary.main
+                      );
                     })(),
                     fontWeight: 700,
                     fontSize: { xs: "0.75rem", md: "0.875rem" },
@@ -985,7 +1013,12 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
 
                     <Stack spacing={3}>
                       {/* Type and Mode */}
-                      <Stack direction="row" spacing={2} flexWrap="wrap" alignItems="center">
+                      <Stack
+                        direction="row"
+                        spacing={2}
+                        flexWrap="wrap"
+                        alignItems="center"
+                      >
                         <Chip
                           icon={<TrophyIcon />}
                           label={
@@ -1008,10 +1041,18 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                             label={tournamentStatusName}
                             sx={{
                               bgcolor: (() => {
-                                const status = tournamentStatusName.toLowerCase();
-                                if (status === "active" || status === "ongoing") {
+                                const status =
+                                  tournamentStatusName.toLowerCase();
+                                if (
+                                  status === "active" ||
+                                  status === "ongoing"
+                                ) {
                                   return theme.palette.success.main;
-                                } else if (status === "finalized" || status === "finished" || status === "archived") {
+                                } else if (
+                                  status === "finalized" ||
+                                  status === "finished" ||
+                                  status === "archived"
+                                ) {
                                   return theme.palette.grey[600];
                                 } else if (status === "suspended") {
                                   return theme.palette.error.main;
@@ -1021,17 +1062,35 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                                 return theme.palette.primary.main;
                               })(),
                               color: (() => {
-                                const status = tournamentStatusName.toLowerCase();
-                                if (status === "active" || status === "ongoing") {
-                                  return theme.palette.getContrastText(theme.palette.success.main);
-                                } else if (status === "finalized" || status === "finished" || status === "archived") {
-                                  return theme.palette.getContrastText(theme.palette.grey[600]);
+                                const status =
+                                  tournamentStatusName.toLowerCase();
+                                if (
+                                  status === "active" ||
+                                  status === "ongoing"
+                                ) {
+                                  return theme.palette.getContrastText(
+                                    theme.palette.success.main
+                                  );
+                                } else if (
+                                  status === "finalized" ||
+                                  status === "finished" ||
+                                  status === "archived"
+                                ) {
+                                  return theme.palette.getContrastText(
+                                    theme.palette.grey[600]
+                                  );
                                 } else if (status === "suspended") {
-                                  return theme.palette.getContrastText(theme.palette.error.main);
+                                  return theme.palette.getContrastText(
+                                    theme.palette.error.main
+                                  );
                                 } else if (status === "created") {
-                                  return theme.palette.getContrastText(theme.palette.info.main);
+                                  return theme.palette.getContrastText(
+                                    theme.palette.info.main
+                                  );
                                 }
-                                return theme.palette.getContrastText(theme.palette.primary.main);
+                                return theme.palette.getContrastText(
+                                  theme.palette.primary.main
+                                );
                               })(),
                               fontWeight: 600,
                               fontSize: "0.9rem",
@@ -1425,7 +1484,9 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                             <Tooltip
                               title={
                                 hasTournamentEnded
-                                  ? (t("detail.tournamentEndedCannotRemove") as string) ||
+                                  ? (t(
+                                      "detail.tournamentEndedCannotRemove"
+                                    ) as string) ||
                                     "El torneo ha finalizado, no se pueden eliminar equipos"
                                   : ""
                               }
@@ -1459,7 +1520,8 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                                         : theme.palette.error.dark,
                                     },
                                     "&.Mui-disabled": {
-                                      bgcolor: theme.palette.action.disabledBackground,
+                                      bgcolor:
+                                        theme.palette.action.disabledBackground,
                                       color: theme.palette.action.disabled,
                                     },
                                   }}
@@ -1816,7 +1878,12 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
 
                   <Stack spacing={3}>
                     {/* Type and Mode */}
-                    <Stack direction="row" spacing={2} flexWrap="wrap" alignItems="center">
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      flexWrap="wrap"
+                      alignItems="center"
+                    >
                       <Chip
                         icon={<TrophyIcon />}
                         label={
@@ -1842,7 +1909,11 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                               const status = tournamentStatusName.toLowerCase();
                               if (status === "active" || status === "ongoing") {
                                 return theme.palette.success.main;
-                              } else if (status === "finalized" || status === "finished" || status === "archived") {
+                              } else if (
+                                status === "finalized" ||
+                                status === "finished" ||
+                                status === "archived"
+                              ) {
                                 return theme.palette.grey[600];
                               } else if (status === "suspended") {
                                 return theme.palette.error.main;
@@ -1854,15 +1925,29 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                             color: (() => {
                               const status = tournamentStatusName.toLowerCase();
                               if (status === "active" || status === "ongoing") {
-                                return theme.palette.getContrastText(theme.palette.success.main);
-                              } else if (status === "finalized" || status === "finished" || status === "archived") {
-                                return theme.palette.getContrastText(theme.palette.grey[600]);
+                                return theme.palette.getContrastText(
+                                  theme.palette.success.main
+                                );
+                              } else if (
+                                status === "finalized" ||
+                                status === "finished" ||
+                                status === "archived"
+                              ) {
+                                return theme.palette.getContrastText(
+                                  theme.palette.grey[600]
+                                );
                               } else if (status === "suspended") {
-                                return theme.palette.getContrastText(theme.palette.error.main);
+                                return theme.palette.getContrastText(
+                                  theme.palette.error.main
+                                );
                               } else if (status === "created") {
-                                return theme.palette.getContrastText(theme.palette.info.main);
+                                return theme.palette.getContrastText(
+                                  theme.palette.info.main
+                                );
                               }
-                              return theme.palette.getContrastText(theme.palette.primary.main);
+                              return theme.palette.getContrastText(
+                                theme.palette.primary.main
+                              );
                             })(),
                             fontWeight: 600,
                             fontSize: "0.9rem",
@@ -2221,7 +2306,9 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                           <Tooltip
                             title={
                               hasTournamentEnded
-                                ? (t("detail.tournamentEndedCannotRemove") as string) ||
+                                ? (t(
+                                    "detail.tournamentEndedCannotRemove"
+                                  ) as string) ||
                                   "El torneo ha finalizado, no se pueden eliminar equipos"
                                 : ""
                             }
@@ -2255,7 +2342,8 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                                       : theme.palette.error.dark,
                                   },
                                   "&.Mui-disabled": {
-                                    bgcolor: theme.palette.action.disabledBackground,
+                                    bgcolor:
+                                      theme.palette.action.disabledBackground,
                                     color: theme.palette.action.disabled,
                                   },
                                 }}
