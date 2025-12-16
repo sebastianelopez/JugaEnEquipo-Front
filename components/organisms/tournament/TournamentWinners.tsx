@@ -167,10 +167,11 @@ export const TournamentWinners: FC<TournamentWinnersProps> = ({
           {winners.map((winner) => {
             if (!winner.team) return null;
 
+            const team = winner.team;
             return (
               <Box
-                key={winner.team.id}
-                onClick={() => router.push(`/teams/${winner.team.id}`)}
+                key={team.id}
+                onClick={() => router.push(`/teams/${team.id}`)}
                 sx={{
                   display: "flex",
                   alignItems: "center",
@@ -204,8 +205,8 @@ export const TournamentWinners: FC<TournamentWinnersProps> = ({
                   {getPositionIcon(winner.position)}
                 </Box>
                 <Avatar
-                  src={winner.team.image}
-                  alt={winner.team.name}
+                  src={team.image}
+                  alt={team.name}
                   sx={{
                     width: 56,
                     height: 56,
@@ -221,7 +222,7 @@ export const TournamentWinners: FC<TournamentWinnersProps> = ({
                       mb: 0.5,
                     }}
                   >
-                    {winner.team.name}
+                    {team.name}
                   </Typography>
                   <Chip
                     label={getPositionLabel(winner.position)}

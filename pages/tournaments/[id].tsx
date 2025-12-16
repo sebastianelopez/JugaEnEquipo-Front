@@ -20,7 +20,6 @@ import { TournamentHero } from "../../components/organisms/tournament/Tournament
 import { TournamentInfoCard } from "../../components/organisms/tournament/TournamentInfoCard";
 import { TournamentTeamsList } from "../../components/organisms/tournament/TournamentTeamsList";
 import { TournamentJoinSection } from "../../components/organisms/tournament/TournamentJoinSection";
-import { TeamMembersModal } from "../../components/organisms/tournament/TeamMembersModal";
 import { TournamentDialogs } from "../../components/organisms/tournament/TournamentDialogs";
 import { SuccessSnackbar } from "../../components/atoms/SuccessSnackbar";
 import { useTournamentStatus } from "../../hooks/useTournamentStatus";
@@ -463,16 +462,6 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
     }
   };
 
-  const handleOpenModal = (team: any) => {
-    setSelectedTeam(team);
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setSelectedTeam(null);
-  };
-
   const handleDeleteTournamentClick = () => {
     setDeleteTournamentDialogOpen(true);
   };
@@ -871,13 +860,6 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
             </Box>
           </Box>
         </Container>
-
-        {/* Modal for Team Members */}
-        <TeamMembersModal
-          open={modalOpen}
-          onClose={handleCloseModal}
-          team={selectedTeam}
-        />
 
         <EditTournamentModal
           open={editModalOpen}
