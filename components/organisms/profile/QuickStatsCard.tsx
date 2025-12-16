@@ -5,13 +5,13 @@ import { useTranslations } from "next-intl";
 interface QuickStatsProps {
   currentTeams: number;
   activeGames: number;
-  totalAchievements: number;
+  totalAchievements?: number;
 }
 
 export const QuickStatsCard = ({
   currentTeams,
   activeGames,
-  totalAchievements,
+  totalAchievements = 0,
 }: QuickStatsProps) => {
   const theme = useTheme();
   const t = useTranslations("Profile");
@@ -79,31 +79,6 @@ export const QuickStatsCard = ({
               }}
             >
               {activeGames}
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              bgcolor: theme.palette.background.default,
-              borderRadius: 2,
-              p: 2,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Typography
-              sx={{ color: theme.palette.text.secondary, fontSize: "0.9rem" }}
-            >
-              {t("totalAchievements", { default: "Total Logros" })}
-            </Typography>
-            <Typography
-              sx={{
-                color: theme.palette.warning.main,
-                fontWeight: 700,
-                fontSize: "1.2rem",
-              }}
-            >
-              {totalAchievements}
             </Typography>
           </Box>
         </Stack>

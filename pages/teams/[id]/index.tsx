@@ -17,6 +17,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import { EmojiEvents as TrophyIcon } from "@mui/icons-material";
 
 import { useRouter } from "next/router";
 import { useEffect, useState, useContext } from "react";
@@ -24,7 +25,6 @@ import { MainLayout } from "../../../layouts";
 import {
   TeamHero,
   TeamGamesGrid,
-  AchievementsList,
   JoinCard,
   TeamTabs,
 } from "../../../components/organisms";
@@ -41,6 +41,9 @@ import { UserContext } from "../../../context/user";
 import { getGameImage } from "../../../utils/gameImageUtils";
 import { useFeedback } from "../../../hooks/useFeedback";
 import { SuccessSnackbar } from "../../../components/atoms/SuccessSnackbar";
+import { tournamentService } from "../../../services/tournament.service";
+import { TournamentsGrid } from "../../../components/organisms/profile/TournamentsGrid";
+import type { Tournament } from "../../../interfaces";
 
 interface Props {
   id: string;
@@ -71,6 +74,33 @@ export default function TeamDetailPage({ id }: Props) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+  const [wonTournaments, setWonTournaments] = useState<Tournament[]>([]);
+  const [loadingWonTournaments, setLoadingWonTournaments] = useState(false);
+
+  useEffect(() => {
+    const loadWonTournaments = async () => {
+      if (!id) return;
+      setLoadingWonTournaments(true);
+      try {
+        const result = await tournamentService.findTournamentsWon({
+          teamId: id,
+          limit: 10,
+          page: 1,
+        });
+        if (result.ok && result.data) {
+          setWonTournaments(result.data);
+        }
+      } catch (error) {
+        console.error("Error loading won tournaments:", error);
+      } finally {
+        setLoadingWonTournaments(false);
+      }
+    };
+
+    if (id) {
+      loadWonTournaments();
+    }
+  }, [id]);
 
   useEffect(() => {
     const loadTeam = async () => {
@@ -505,8 +535,6 @@ export default function TeamDetailPage({ id }: Props) {
     icon: getGameImage(game.gameName),
   }));
 
-  // Mock data for achievements (until API provides them)
-  const achievements: any[] = [];
   const stats = {
     totalTournaments: 0,
     wins: 0,
@@ -515,7 +543,6 @@ export default function TeamDetailPage({ id }: Props) {
 
   // Check if there's data to display
   const hasGames = gamesForDisplay.length > 0;
-  const hasAchievements = achievements.length > 0;
   const hasStats =
     stats.totalTournaments > 0 || stats.wins > 0 || stats.winRate > 0;
   const hasDescription =
@@ -778,8 +805,8 @@ export default function TeamDetailPage({ id }: Props) {
                 </CardContent>
               </Card>
 
-              {/* Achievements Section */}
-              {hasAchievements && (
+              {/* Won Tournaments Section */}
+              {wonTournaments.length > 0 && (
                 <Card
                   sx={{
                     bgcolor: theme.palette.background.paper,
@@ -788,15 +815,32 @@ export default function TeamDetailPage({ id }: Props) {
                   }}
                 >
                   <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
-                    <AchievementsList
-                      achievements={achievements as any}
-                      title={t("achievementsTitle") as string}
-                      formatDate={(iso: string) =>
-                        new Date(iso).toLocaleDateString()
-                      }
-                      formatPrize={(prize: string) =>
-                        t("prize", { prize }) as string
-                      }
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
+                      <TrophyIcon
+                        sx={{
+                          color: theme.palette.warning.main,
+                          fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                        }}
+                      />
+                      <Typography
+                        variant="h5"
+                        sx={{
+                          color: theme.palette.text.primary,
+                          fontWeight: 700,
+                          fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
+                        }}
+                      >
+                        {t("wonTournaments") || "Podios en Torneos"}
+                      </Typography>
+                    </Stack>
+                    <TournamentsGrid
+                      tournaments={wonTournaments.map((tournament) => ({
+                        id: tournament.id,
+                        name: tournament.name,
+                        game: tournament.gameName,
+                        date: tournament.endAt,
+                        placement: "1er Lugar",
+                      }))}
                     />
                   </CardContent>
                 </Card>
@@ -1101,8 +1145,8 @@ export default function TeamDetailPage({ id }: Props) {
               </CardContent>
             </Card>
 
-            {/* Achievements Section */}
-            {hasAchievements && (
+            {/* Won Tournaments Section */}
+            {wonTournaments.length > 0 && (
               <Card
                 sx={{
                   bgcolor: theme.palette.background.paper,
@@ -1111,15 +1155,32 @@ export default function TeamDetailPage({ id }: Props) {
                 }}
               >
                 <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
-                  <AchievementsList
-                    achievements={achievements as any}
-                    title={t("achievementsTitle") as string}
-                    formatDate={(iso: string) =>
-                      new Date(iso).toLocaleDateString()
-                    }
-                    formatPrize={(prize: string) =>
-                      t("prize", { prize }) as string
-                    }
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
+                    <TrophyIcon
+                      sx={{
+                        color: theme.palette.warning.main,
+                        fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                      }}
+                    />
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        color: theme.palette.text.primary,
+                        fontWeight: 700,
+                        fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
+                      }}
+                    >
+                      {t("wonTournaments") || "Podios en Torneos"}
+                    </Typography>
+                  </Stack>
+                  <TournamentsGrid
+                    tournaments={wonTournaments.map((tournament) => ({
+                      id: tournament.id,
+                      name: tournament.name,
+                      game: tournament.gameName,
+                      date: tournament.endAt,
+                      placement: "1er Lugar",
+                    }))}
                   />
                 </CardContent>
               </Card>

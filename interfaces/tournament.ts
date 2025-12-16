@@ -5,6 +5,11 @@ import { User } from "./user";
 export type TournamentType = "Oficial" | "Amateur";
 export type ParticipationMode = "individual" | "team";
 
+export interface TournamentStatus {
+  id: string;
+  name: string;
+}
+
 export interface Tournament {
   id: string;
   gameId: string;
@@ -28,6 +33,9 @@ export interface Tournament {
   updatedAt: string | null;
   deletedAt: string | null; // (soft delete)
   isUserRegistered: boolean;
+  firstPlaceTeamId: string | null;
+  secondPlaceTeamId: string | null;
+  thirdPlaceTeamId: string | null;
 }
 
 export interface CreateTournamentPayload {
