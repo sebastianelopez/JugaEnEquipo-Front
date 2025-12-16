@@ -189,7 +189,7 @@ export const TournamentRequestsAdmin: FC<Props> = ({ tournamentId, onRequestUpda
           bgcolor: theme.palette.background.paper,
           borderRadius: { xs: 2, md: 3 },
           border: `1px solid ${theme.palette.divider}`,
-          mt: { xs: 2, md: 3 },
+          mb: { xs: 2, md: 3 },
         }}
       >
         <CardContent sx={{ p: { xs: 2, md: 4 } }}>
