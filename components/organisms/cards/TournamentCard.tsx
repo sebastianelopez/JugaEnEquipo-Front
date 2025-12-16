@@ -23,6 +23,7 @@ import { getGameImage } from "../../../utils/gameImageUtils";
 import { gameService } from "../../../services/game.service";
 import { tournamentService } from "../../../services/tournament.service";
 import { BackgroundFallback } from "../../atoms/BackgroundFallback";
+import { useTournamentStatus } from "../../../hooks/useTournamentStatus";
 
 interface TournamentCardProps {
   tournament: Tournament & { image?: string; teams?: any[]; users?: any[] };
@@ -44,8 +45,15 @@ export const TournamentCard: FC<TournamentCardProps> = ({
   const [loadingGame, setLoadingGame] = useState(false);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [loadingBackground, setLoadingBackground] = useState(true);
+  const { getStatusName, loading: loadingStatus } = useTournamentStatus();
 
-  // Determine tournament status based on dates
+  // Get tournament status from API
+  const tournamentStatusName = useMemo(() => {
+    if (loadingStatus) return null;
+    return getStatusName(tournament.tournamentStatusId);
+  }, [getStatusName, tournament.tournamentStatusId, loadingStatus]);
+
+  // Determine tournament status based on dates (fallback)
   const tournamentStatus = useMemo(() => {
     const now = new Date();
     const startDate = new Date(tournament.startAt);
@@ -164,7 +172,49 @@ export const TournamentCard: FC<TournamentCardProps> = ({
       aria-label={`${tournament.name} - ${gameName}`}
     >
       {/* Status Badge */}
-      {tournamentStatus === "ongoing" && (
+      {tournamentStatusName && (
+        <Chip
+          label={tournamentStatusName}
+          size="small"
+          sx={{
+            position: "absolute",
+            top: { xs: 12, md: 16 },
+            right: { xs: 12, md: 16 },
+            zIndex: 1,
+            bgcolor: (() => {
+              const status = tournamentStatusName.toLowerCase();
+              if (status === "active" || status === "ongoing") {
+                return theme.palette.success.main;
+              } else if (status === "finalized" || status === "finished" || status === "archived") {
+                return theme.palette.grey[600];
+              } else if (status === "suspended") {
+                return theme.palette.error.main;
+              } else if (status === "created") {
+                return theme.palette.info.main;
+              }
+              return theme.palette.primary.main;
+            })(),
+            color: (() => {
+              const status = tournamentStatusName.toLowerCase();
+              if (status === "active" || status === "ongoing") {
+                return theme.palette.getContrastText(theme.palette.success.main);
+              } else if (status === "finalized" || status === "finished" || status === "archived") {
+                return theme.palette.getContrastText(theme.palette.grey[600]);
+              } else if (status === "suspended") {
+                return theme.palette.getContrastText(theme.palette.error.main);
+              } else if (status === "created") {
+                return theme.palette.getContrastText(theme.palette.info.main);
+              }
+              return theme.palette.getContrastText(theme.palette.primary.main);
+            })(),
+            fontWeight: 700,
+            fontSize: { xs: "0.65rem", md: "0.75rem" },
+            height: { xs: 20, md: 24 },
+            boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.2)}`,
+          }}
+        />
+      )}
+      {!tournamentStatusName && tournamentStatus === "ongoing" && (
         <Chip
           label={t("card.status.ongoing") || "En curso"}
           size="small"
@@ -182,7 +232,7 @@ export const TournamentCard: FC<TournamentCardProps> = ({
           }}
         />
       )}
-      {tournamentStatus === "finished" && (
+      {!tournamentStatusName && tournamentStatus === "finished" && (
         <Chip
           label={t("card.status.finished") || "Finalizado"}
           size="small"
@@ -200,7 +250,7 @@ export const TournamentCard: FC<TournamentCardProps> = ({
           }}
         />
       )}
-      {isAlmostFull && tournamentStatus === "upcoming" && (
+      {isAlmostFull && tournamentStatus === "upcoming" && !tournamentStatusName && (
         <Chip
           label={t("card.status.almostFull") || "Casi lleno"}
           size="small"

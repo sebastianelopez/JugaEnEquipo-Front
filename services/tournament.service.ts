@@ -1,7 +1,7 @@
 import { api } from "../lib/api";
 import { ServiceResult } from "./types";
 import { getToken } from "./auth.service";
-import type { Tournament, CreateTournamentPayload, Team } from "../interfaces";
+import type { Tournament, CreateTournamentPayload, Team, TournamentStatus } from "../interfaces";
 
 export interface TournamentRequest {
   id: string;
@@ -161,9 +161,11 @@ export const tournamentService = {
    */
   searchStatus: async (params?: {
     [key: string]: any;
-  }): Promise<ServiceResult<any>> => {
+  }): Promise<ServiceResult<{ data: TournamentStatus[]; metadata: any }>> => {
     const token = await getToken();
-    return safeCall<any>(() => api.get("/tournament-status", params, token));
+    return safeCall<{ data: TournamentStatus[]; metadata: any }>(() =>
+      api.get("/tournament-status", params, token)
+    );
   },
 
   /**
@@ -270,6 +272,45 @@ export const tournamentService = {
     const token = await getToken();
     return safeCall<void>(() =>
       api.put(`/tournament/request/${requestId}/decline`, undefined, token)
+    );
+  },
+
+  /**
+   * Set final positions for a tournament
+   * PUT /api/tournament/:tournament_id/final-positions
+   */
+  setFinalPositions: async (
+    tournamentId: string,
+    payload: {
+      firstPlaceTeamId: string;
+      secondPlaceTeamId: string;
+      thirdPlaceTeamId: string;
+    }
+  ): Promise<ServiceResult<void>> => {
+    const token = await getToken();
+    return safeCall<void>(() =>
+      api.put(`/tournament/${tournamentId}/final-positions`, payload, token)
+    );
+  },
+
+  /**
+   * Find tournaments won
+   * GET /api/tournaments/won
+   * Filters:
+   * - userId: Get all tournaments won by a user
+   * - tournamentId: Get winners of a specific tournament
+   * - teamId: Get all tournaments won by a team
+   */
+  findTournamentsWon: async (params?: {
+    limit?: number;
+    page?: number;
+    userId?: string;
+    tournamentId?: string;
+    teamId?: string;
+  }): Promise<ServiceResult<Tournament[]>> => {
+    const token = await getToken();
+    return safeCall<Tournament[]>(() =>
+      api.get("/tournaments/won", params, token)
     );
   },
 };

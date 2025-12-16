@@ -12,6 +12,7 @@ export type {
   Tournament,
   TournamentType,
   ParticipationMode,
+  TournamentStatus,
   CreateTournamentPayload,
   JoinTournamentPayload,
   CreateBackofficeTournamentPayload,

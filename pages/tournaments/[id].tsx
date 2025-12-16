@@ -30,6 +30,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Tooltip,
 } from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
@@ -58,9 +59,12 @@ import { UserContext } from "../../context/user";
 import { formatFullName } from "../../utils/textFormatting";
 import { BackgroundFallback } from "../../components/atoms/BackgroundFallback";
 import { EditTournamentModal } from "../../components/organisms/modals/EditTournamentModal";
+import { SetFinalPositionsModal } from "../../components/organisms/modals/SetFinalPositionsModal";
 import { TournamentRequestsAdmin } from "../../components/organisms/tournament/TournamentRequestsAdmin";
 import { TournamentTabs } from "../../components/organisms/tournament/TournamentTabs";
+import { TournamentWinners } from "../../components/organisms/tournament/TournamentWinners";
 import { SuccessSnackbar } from "../../components/atoms/SuccessSnackbar";
+import { useTournamentStatus } from "../../hooks/useTournamentStatus";
 
 interface Props {
   id: string;
@@ -86,16 +90,21 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
   const [success, setSuccess] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
   const [tournamentTeams, setTournamentTeams] = useState<Team[]>([]);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [loadingBackground, setLoadingBackground] = useState(true);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
-  const [pendingRequestTeamId, setPendingRequestTeamId] = useState<string | null>(null);
+  const [pendingRequestTeamId, setPendingRequestTeamId] = useState<
+    string | null
+  >(null);
   const [responsibleUser, setResponsibleUser] = useState<User | null>(null);
   const [loadingResponsible, setLoadingResponsible] = useState(false);
-  const [deleteTournamentDialogOpen, setDeleteTournamentDialogOpen] = useState(false);
+  const [deleteTournamentDialogOpen, setDeleteTournamentDialogOpen] =
+    useState(false);
   const [deletingTournament, setDeletingTournament] = useState(false);
   const [removeTeamDialogOpen, setRemoveTeamDialogOpen] = useState(false);
   const [teamToRemove, setTeamToRemove] = useState<Team | null>(null);
@@ -103,6 +112,36 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
   const [leaveTeamDialogOpen, setLeaveTeamDialogOpen] = useState(false);
   const [userRegisteredTeams, setUserRegisteredTeams] = useState<Team[]>([]);
   const [selectedLeaveTeamId, setSelectedLeaveTeamId] = useState<string>("");
+  const [setFinalPositionsModalOpen, setSetFinalPositionsModalOpen] =
+    useState(false);
+  const [finalizedStatusId, setFinalizedStatusId] = useState<string | null>(null);
+  const { getStatusName, loading: loadingStatus } = useTournamentStatus();
+
+  // Get tournament status name
+  const tournamentStatusName = useMemo(() => {
+    if (loadingStatus || !tournament) return null;
+    return getStatusName(tournament.tournamentStatusId);
+  }, [getStatusName, tournament?.tournamentStatusId, loadingStatus]);
+
+  // Load finalized status ID
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const result = await tournamentService.searchStatus();
+      if (!mounted) return;
+      if (result.ok && result.data?.data) {
+        const finalizedStatus = result.data.data.find(
+          (status: any) => status.name === "Finalized"
+        );
+        if (finalizedStatus) {
+          setFinalizedStatusId(finalizedStatus.id);
+        }
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -239,8 +278,14 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
   // Check for pending requests
   useEffect(() => {
     const checkPendingRequests = async () => {
-      const isCreator = user && tournament && tournament.responsibleId === user.id;
-      if (!tournament?.id || !user || isCreator || tournament?.isUserRegistered) {
+      const isCreator =
+        user && tournament && tournament.responsibleId === user.id;
+      if (
+        !tournament?.id ||
+        !user ||
+        isCreator ||
+        tournament?.isUserRegistered
+      ) {
         return;
       }
 
@@ -250,13 +295,13 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
           const pendingRequests = result.data.filter(
             (req) => !req.status || req.status === "pending"
           );
-          
+
           // Check if user's teams have pending requests
           const userTeamIds = userTeams.map((team) => team.id);
           const hasUserPendingRequest = pendingRequests.some((req) =>
             userTeamIds.includes(req.teamId)
           );
-          
+
           if (hasUserPendingRequest) {
             const userPendingRequest = pendingRequests.find((req) =>
               userTeamIds.includes(req.teamId)
@@ -273,7 +318,13 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
     if (user && userTeams.length > 0 && tournament?.id) {
       checkPendingRequests();
     }
-  }, [tournament?.id, user, userTeams, tournament?.responsibleId, tournament?.isUserRegistered]);
+  }, [
+    tournament?.id,
+    user,
+    userTeams,
+    tournament?.responsibleId,
+    tournament?.isUserRegistered,
+  ]);
 
   // Load responsible user information
   useEffect(() => {
@@ -285,7 +336,9 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
 
       setLoadingResponsible(true);
       try {
-        const userData = await userService.getUserById(tournament.responsibleId);
+        const userData = await userService.getUserById(
+          tournament.responsibleId
+        );
         if (userData) {
           setResponsibleUser(userData);
         }
@@ -301,7 +354,19 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
 
   const handleRegisterTeam = async () => {
     if (!selectedTeamId || !tournament) {
-      setSnackbarMessage(t("detail.selectTeamError") || "Por favor selecciona un equipo");
+      setSnackbarMessage(
+        t("detail.selectTeamError") || "Por favor selecciona un equipo"
+      );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    // Check if tournament has started (no new registrations allowed after start)
+    if (hasTournamentStarted) {
+      setSnackbarMessage(
+        t("detail.tournamentStarted") || "Este torneo ya ha comenzado"
+      );
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
       return;
@@ -352,7 +417,8 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
     // Si no hay equipos registrados, mostrar error
     if (userRegisteredTeams.length === 0) {
       setSnackbarMessage(
-        t("detail.noTeamFound") || "No se encontró un equipo registrado en este torneo"
+        t("detail.noTeamFound") ||
+          "No se encontró un equipo registrado en este torneo"
       );
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -386,7 +452,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
         tournament.id,
         teamId
       );
-      
+
       if (result.ok) {
         setSnackbarMessage(
           t("detail.leaveSuccess") || "Has dejado el torneo exitosamente"
@@ -425,7 +491,9 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
 
   const handleCancelLeaveTeam = () => {
     setLeaveTeamDialogOpen(false);
-    setSelectedLeaveTeamId(userRegisteredTeams.length === 1 ? userRegisteredTeams[0].id : "");
+    setSelectedLeaveTeamId(
+      userRegisteredTeams.length === 1 ? userRegisteredTeams[0].id : ""
+    );
   };
 
   const handleConfirmLeaveTeam = () => {
@@ -565,9 +633,77 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
     return user && tournament && tournament.responsibleId === user.id;
   }, [user, tournament]);
 
+  const isTournamentCreatorOrResponsible = useMemo(() => {
+    if (!user || !tournament) return false;
+    const isResponsible = tournament.responsibleId === user.id;
+    const isCreator = (tournament as any)?.creatorId === user.id;
+    return isResponsible || isCreator;
+  }, [user, tournament]);
+
   const canEditTournament = useMemo(() => {
     return isTournamentCreator;
   }, [isTournamentCreator]);
+
+  // Check if tournament has started (no new registrations allowed after start)
+  const hasTournamentStarted = useMemo(() => {
+    if (!tournament?.startAt) return false;
+    try {
+      const startDate = new Date(tournament.startAt);
+      const now = new Date();
+      return startDate < now;
+    } catch {
+      return false;
+    }
+  }, [tournament?.startAt]);
+
+  // Check if tournament has ended
+  const hasTournamentEnded = useMemo(() => {
+    if (!tournament) return false;
+    
+    // Check if tournament status is "Finalized"
+    if (finalizedStatusId && tournament.tournamentStatusId === finalizedStatusId) {
+      return true;
+    }
+    
+    // Fallback: Check if end date has passed or if winners are set
+    if (tournament.endAt) {
+      try {
+        const endDate = new Date(tournament.endAt);
+        const now = new Date();
+        if (endDate.getTime() < now.getTime()) {
+          return true;
+        }
+      } catch {
+        // Invalid date, continue to check winners
+      }
+    }
+    
+    // Check if winners are set
+    if (
+      tournament.firstPlaceTeamId ||
+      tournament.secondPlaceTeamId ||
+      tournament.thirdPlaceTeamId
+    ) {
+      return true;
+    }
+    
+    return false;
+  }, [
+    tournament,
+    tournament?.tournamentStatusId,
+    tournament?.endAt,
+    tournament?.firstPlaceTeamId,
+    tournament?.secondPlaceTeamId,
+    tournament?.thirdPlaceTeamId,
+    finalizedStatusId,
+  ]);
+
+  // Check if tournament has winners
+  const hasWinners = useMemo(() => {
+    if (!tournament) return false;
+    const t = tournament as any;
+    return !!(t.firstPlaceTeamId || t.secondPlaceTeamId || t.thirdPlaceTeamId);
+  }, [tournament]);
   const startDateLabel = useMemo(() => {
     if (!tournament?.startAt) return "-";
     try {
@@ -670,7 +806,10 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
               />
             </Box>
           )}
-          <Container maxWidth="xl" sx={{ pb: 4, position: "relative", zIndex: 1 }}>
+          <Container
+            maxWidth="xl"
+            sx={{ pb: 4, position: "relative", zIndex: 1 }}
+          >
             <Button
               startIcon={<ArrowBackIcon />}
               onClick={() => router.push("/tournaments")}
@@ -755,7 +894,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                 </IconButton>
               )}
             </Stack>
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
               {game && (
                 <Avatar
                   src={getGameImage(game.name)}
@@ -772,6 +911,43 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
               >
                 {game?.name}
               </Typography>
+              {tournamentStatusName && (
+                <Chip
+                  label={tournamentStatusName}
+                  size="small"
+                  sx={{
+                    bgcolor: (() => {
+                      const status = tournamentStatusName.toLowerCase();
+                      if (status === "active" || status === "ongoing") {
+                        return theme.palette.success.main;
+                      } else if (status === "finalized" || status === "finished" || status === "archived") {
+                        return theme.palette.grey[600];
+                      } else if (status === "suspended") {
+                        return theme.palette.error.main;
+                      } else if (status === "created") {
+                        return theme.palette.info.main;
+                      }
+                      return theme.palette.primary.main;
+                    })(),
+                    color: (() => {
+                      const status = tournamentStatusName.toLowerCase();
+                      if (status === "active" || status === "ongoing") {
+                        return theme.palette.getContrastText(theme.palette.success.main);
+                      } else if (status === "finalized" || status === "finished" || status === "archived") {
+                        return theme.palette.getContrastText(theme.palette.grey[600]);
+                      } else if (status === "suspended") {
+                        return theme.palette.getContrastText(theme.palette.error.main);
+                      } else if (status === "created") {
+                        return theme.palette.getContrastText(theme.palette.info.main);
+                      }
+                      return theme.palette.getContrastText(theme.palette.primary.main);
+                    })(),
+                    fontWeight: 700,
+                    fontSize: { xs: "0.75rem", md: "0.875rem" },
+                    height: { xs: 28, md: 32 },
+                  }}
+                />
+              )}
             </Stack>
           </Container>
         </Box>
@@ -809,7 +985,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
 
                     <Stack spacing={3}>
                       {/* Type and Mode */}
-                      <Stack direction="row" spacing={2} flexWrap="wrap">
+                      <Stack direction="row" spacing={2} flexWrap="wrap" alignItems="center">
                         <Chip
                           icon={<TrophyIcon />}
                           label={
@@ -827,6 +1003,42 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                             py: 2.5,
                           }}
                         />
+                        {tournamentStatusName && (
+                          <Chip
+                            label={tournamentStatusName}
+                            sx={{
+                              bgcolor: (() => {
+                                const status = tournamentStatusName.toLowerCase();
+                                if (status === "active" || status === "ongoing") {
+                                  return theme.palette.success.main;
+                                } else if (status === "finalized" || status === "finished" || status === "archived") {
+                                  return theme.palette.grey[600];
+                                } else if (status === "suspended") {
+                                  return theme.palette.error.main;
+                                } else if (status === "created") {
+                                  return theme.palette.info.main;
+                                }
+                                return theme.palette.primary.main;
+                              })(),
+                              color: (() => {
+                                const status = tournamentStatusName.toLowerCase();
+                                if (status === "active" || status === "ongoing") {
+                                  return theme.palette.getContrastText(theme.palette.success.main);
+                                } else if (status === "finalized" || status === "finished" || status === "archived") {
+                                  return theme.palette.getContrastText(theme.palette.grey[600]);
+                                } else if (status === "suspended") {
+                                  return theme.palette.getContrastText(theme.palette.error.main);
+                                } else if (status === "created") {
+                                  return theme.palette.getContrastText(theme.palette.info.main);
+                                }
+                                return theme.palette.getContrastText(theme.palette.primary.main);
+                              })(),
+                              fontWeight: 600,
+                              fontSize: "0.9rem",
+                              py: 2.5,
+                            }}
+                          />
+                        )}
                       </Stack>
 
                       <Divider sx={{ bgcolor: theme.palette.secondary.dark }} />
@@ -840,7 +1052,11 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                         }}
                       >
                         <Box>
-                          <Stack direction="row" spacing={1} alignItems="center">
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
                             <CalendarIcon
                               sx={{ color: theme.palette.info.main }}
                             />
@@ -863,7 +1079,11 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                               </Typography>
                             </Box>
                           </Stack>
-                          <Stack direction="row" spacing={1} alignItems="center">
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
                             <CalendarIcon
                               sx={{ color: theme.palette.info.main }}
                             />
@@ -889,8 +1109,14 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                         </Box>
 
                         <Box>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <PublicIcon sx={{ color: theme.palette.info.main }} />
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <PublicIcon
+                              sx={{ color: theme.palette.info.main }}
+                            />
                             <Box>
                               <Typography
                                 sx={{
@@ -913,8 +1139,14 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                         </Box>
 
                         <Box>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <GroupsIcon sx={{ color: theme.palette.info.main }} />
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <GroupsIcon
+                              sx={{ color: theme.palette.info.main }}
+                            />
                             <Box>
                               <Typography
                                 sx={{
@@ -938,7 +1170,11 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                         </Box>
 
                         <Box>
-                          <Stack direction="row" spacing={1} alignItems="center">
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
                             <TrophyIcon
                               sx={{ color: theme.palette.warning.main }}
                             />
@@ -966,8 +1202,14 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
 
                         {tournament?.responsibleId && (
                           <Box>
-                            <Stack direction="row" spacing={1} alignItems="center">
-                              <PersonIcon sx={{ color: theme.palette.info.main }} />
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <PersonIcon
+                                sx={{ color: theme.palette.info.main }}
+                              />
                               <Box sx={{ flex: 1 }}>
                                 <Typography
                                   sx={{
@@ -999,7 +1241,9 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                                       },
                                     }}
                                     onClick={() => {
-                                      router.push(`/profile/${responsibleUser.username}`);
+                                      router.push(
+                                        `/profile/${responsibleUser.username}`
+                                      );
                                     }}
                                   >
                                     <Avatar
@@ -1081,50 +1325,61 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       </Box>
 
                       {/* Rules */}
-                      <Box>
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            color: theme.palette.text.primary,
-                            fontWeight: 600,
-                            mb: 2,
-                          }}
-                        >
-                          {t("detail.rules")}
-                        </Typography>
-                        {Array.isArray((tournament as any)?.rules) ? (
-                          <Stack spacing={1}>
-                            {(tournament as any).rules.map(
-                              (rule: string, index: number) => (
-                                <Stack key={index} direction="row" spacing={1}>
-                                  <Typography
-                                    sx={{ color: theme.palette.info.main }}
-                                  >
-                                    •
-                                  </Typography>
-                                  <Typography
-                                    sx={{ color: theme.palette.text.secondary }}
-                                  >
-                                    {rule}
-                                  </Typography>
-                                </Stack>
-                              )
-                            )}
-                          </Stack>
-                        ) : (tournament as any)?.rules ? (
+                      {tournament?.rules && (
+                        <Box>
                           <Typography
+                            variant="h6"
                             sx={{
-                              color: theme.palette.text.secondary,
-                              whiteSpace: "pre-wrap",
+                              color: theme.palette.text.primary,
+                              fontWeight: 600,
+                              mb: 2,
                             }}
                           >
-                            {String((tournament as any).rules)}
+                            {t("detail.rules")}
                           </Typography>
-                        ) : null}
-                      </Box>
+                          {Array.isArray((tournament as any)?.rules) ? (
+                            <Stack spacing={1}>
+                              {(tournament as any).rules.map(
+                                (rule: string, index: number) => (
+                                  <Stack
+                                    key={index}
+                                    direction="row"
+                                    spacing={1}
+                                  >
+                                    <Typography
+                                      sx={{ color: theme.palette.info.main }}
+                                    >
+                                      •
+                                    </Typography>
+                                    <Typography
+                                      sx={{
+                                        color: theme.palette.text.secondary,
+                                      }}
+                                    >
+                                      {rule}
+                                    </Typography>
+                                  </Stack>
+                                )
+                              )}
+                            </Stack>
+                          ) : (tournament as any)?.rules ? (
+                            <Typography
+                              sx={{
+                                color: theme.palette.text.secondary,
+                                whiteSpace: "pre-wrap",
+                              }}
+                            >
+                              {String((tournament as any).rules)}
+                            </Typography>
+                          ) : null}
+                        </Box>
+                      )}
                     </Stack>
                   </CardContent>
                 </Card>
+
+                {/* Tournament Winners */}
+                <TournamentWinners tournamentId={id} />
 
                 {/* Teams List */}
                 <Card
@@ -1167,28 +1422,53 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       {tournamentTeams.map((team: Team) => (
                         <Box key={team.id} sx={{ position: "relative" }}>
                           {canEditTournament && (
-                            <IconButton
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoveTeamClick(team);
-                              }}
-                              sx={{
-                                position: "absolute",
-                                top: 8,
-                                right: 8,
-                                zIndex: 10,
-                                bgcolor: theme.palette.error.main,
-                                color: theme.palette.error.contrastText,
-                                width: 32,
-                                height: 32,
-                                "&:hover": {
-                                  bgcolor: theme.palette.error.dark,
-                                },
-                              }}
-                              size="small"
+                            <Tooltip
+                              title={
+                                hasTournamentEnded
+                                  ? (t("detail.tournamentEndedCannotRemove") as string) ||
+                                    "El torneo ha finalizado, no se pueden eliminar equipos"
+                                  : ""
+                              }
+                              disableHoverListener={!hasTournamentEnded}
                             >
-                              <RemoveCircleIcon fontSize="small" />
-                            </IconButton>
+                              <span
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
+                              >
+                                <IconButton
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (!hasTournamentEnded) {
+                                      handleRemoveTeamClick(team);
+                                    }
+                                  }}
+                                  disabled={!!hasTournamentEnded}
+                                  sx={{
+                                    position: "absolute",
+                                    top: 8,
+                                    right: 8,
+                                    zIndex: 10,
+                                    bgcolor: theme.palette.error.main,
+                                    color: theme.palette.error.contrastText,
+                                    width: 32,
+                                    height: 32,
+                                    "&:hover": {
+                                      bgcolor: hasTournamentEnded
+                                        ? theme.palette.error.main
+                                        : theme.palette.error.dark,
+                                    },
+                                    "&.Mui-disabled": {
+                                      bgcolor: theme.palette.action.disabledBackground,
+                                      color: theme.palette.action.disabled,
+                                    },
+                                  }}
+                                  size="small"
+                                >
+                                  <RemoveCircleIcon fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
                           )}
                           <Card
                             sx={{
@@ -1210,7 +1490,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                                 boxShadow: theme.shadows[4],
                               },
                             }}
-                            onClick={() => handleOpenModal(team)}
+                            onClick={() => router.push(`/teams/${team.id}`)}
                           >
                             <CardContent sx={{ p: 2, textAlign: "center" }}>
                               <Avatar
@@ -1244,21 +1524,80 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
             }
             secondTabContent={
               canEditTournament ? (
-                <TournamentRequestsAdmin
-                  tournamentId={id}
-                  onRequestUpdated={() => {
-                    tournamentService.find(id).then((res) => {
-                      if (res.ok && res.data) {
-                        setTournament(res.data as any);
-                      }
-                    });
-                    tournamentService.getTournamentTeams(id).then((teamsResult) => {
-                      if (teamsResult.ok && teamsResult.data) {
-                        setTournamentTeams(teamsResult.data);
-                      }
-                    });
-                  }}
-                />
+                <>
+                  {isTournamentCreatorOrResponsible &&
+                    tournamentTeams.length >= 3 && (
+                      <Card
+                        sx={{
+                          bgcolor: theme.palette.background.paper,
+                          borderRadius: { xs: 2, md: 3 },
+                          border: `1px solid ${theme.palette.secondary.dark}`,
+                          mb: 3,
+                        }}
+                      >
+                        <CardContent sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              color: theme.palette.text.primary,
+                              fontWeight: 700,
+                              mb: 2,
+                            }}
+                          >
+                            {hasWinners
+                              ? t("detail.editFinalPositions") ||
+                                "Editar Posiciones Finales"
+                              : t("detail.setFinalPositions") ||
+                                "Establecer Posiciones Finales"}
+                          </Typography>
+                          <Typography
+                            sx={{
+                              color: theme.palette.text.secondary,
+                              mb: 3,
+                            }}
+                          >
+                            {t("detail.setPositionsInfo") ||
+                              "Selecciona los equipos que ocuparon el primer, segundo y tercer lugar del torneo."}
+                          </Typography>
+                          <Button
+                            variant="contained"
+                            startIcon={<TrophyIcon />}
+                            onClick={() => setSetFinalPositionsModalOpen(true)}
+                            sx={{
+                              bgcolor: theme.palette.warning.main,
+                              color: theme.palette.common.black,
+                              "&:hover": {
+                                bgcolor: theme.palette.warning.dark,
+                              },
+                            }}
+                          >
+                            {hasWinners
+                              ? t("detail.editFinalPositions") ||
+                                "Editar Posiciones"
+                              : t("detail.setFinalPositions") ||
+                                "Establecer Posiciones Finales"}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    )}
+                  <TournamentRequestsAdmin
+                    tournamentId={id}
+                    onRequestUpdated={() => {
+                      tournamentService.find(id).then((res) => {
+                        if (res.ok && res.data) {
+                          setTournament(res.data as any);
+                        }
+                      });
+                      tournamentService
+                        .getTournamentTeams(id)
+                        .then((teamsResult) => {
+                          if (teamsResult.ok && teamsResult.data) {
+                            setTournamentTeams(teamsResult.data);
+                          }
+                        });
+                    }}
+                  />
+                </>
               ) : (
                 <Card
                   sx={{
@@ -1280,44 +1619,52 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       {t("detail.joinTournament")}
                     </Typography>
 
-                    <Box
-                      sx={{
-                        bgcolor:
-                          theme.palette.mode === "dark"
-                            ? theme.palette.action.hover
-                            : theme.palette.grey[100],
-                        borderRadius: 2,
-                        p: 3,
-                        mb: 3,
-                        textAlign: "center",
-                      }}
-                    >
-                      <Typography
+                    {!hasTournamentEnded && (
+                      <Box
                         sx={{
-                          color: theme.palette.text.secondary,
-                          fontSize: "0.9rem",
-                          mb: 1,
+                          bgcolor:
+                            theme.palette.mode === "dark"
+                              ? theme.palette.action.hover
+                              : theme.palette.grey[100],
+                          borderRadius: 2,
+                          p: 3,
+                          mb: 3,
+                          textAlign: "center",
                         }}
                       >
-                        {t("detail.availableSlots")}
-                      </Typography>
-                      <Typography
-                        variant="h3"
-                        sx={{ color: theme.palette.info.main, fontWeight: 800 }}
-                      >
-                        {maxCapacity
-                          ? Math.max((maxCapacity as number) - registeredCount, 0)
-                          : "-"}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          color: theme.palette.text.secondary,
-                          fontSize: "0.85rem",
-                        }}
-                      >
-                        {maxCapacity ?? "-"} {t("detail.teams")}
-                      </Typography>
-                    </Box>
+                        <Typography
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            fontSize: "0.9rem",
+                            mb: 1,
+                          }}
+                        >
+                          {t("detail.availableSlots")}
+                        </Typography>
+                        <Typography
+                          variant="h3"
+                          sx={{
+                            color: theme.palette.info.main,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {maxCapacity
+                            ? Math.max(
+                                (maxCapacity as number) - registeredCount,
+                                0
+                              )
+                            : "-"}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            fontSize: "0.85rem",
+                          }}
+                        >
+                          {maxCapacity ?? "-"} {t("detail.teams")}
+                        </Typography>
+                      </Box>
+                    )}
 
                     {isTournamentCreator ? (
                       <Alert severity="info" sx={{ mb: 2 }}>
@@ -1350,6 +1697,11 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       <Alert severity="info" sx={{ mb: 2 }}>
                         {t("detail.waitingApproval") || "Esperando aprobación"}
                       </Alert>
+                    ) : hasTournamentStarted ? (
+                      <Alert severity="warning" sx={{ mb: 2 }}>
+                        {t("detail.tournamentStartedMessage") ||
+                          "Este torneo ya ha comenzado. No se pueden enviar más solicitudes."}
+                      </Alert>
                     ) : (
                       <>
                         {user && userTeams.length > 0 && (
@@ -1357,9 +1709,16 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                             <InputLabel>{t("detail.selectTeam")}</InputLabel>
                             <Select
                               value={selectedTeamId}
-                              onChange={(e) => setSelectedTeamId(e.target.value)}
+                              onChange={(e) =>
+                                setSelectedTeamId(e.target.value)
+                              }
                               label={t("detail.selectTeam")}
-                              disabled={loadingTeams || registering || hasPendingRequest}
+                              disabled={
+                                loadingTeams ||
+                                registering ||
+                                hasPendingRequest ||
+                                hasTournamentStarted
+                              }
                             >
                               {userTeams.map((team) => (
                                 <MenuItem key={team.id} value={team.id}>
@@ -1381,7 +1740,8 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                             loadingTeams ||
                             !selectedTeamId ||
                             userTeams.length === 0 ||
-                            hasPendingRequest
+                            hasPendingRequest ||
+                            hasTournamentStarted
                           }
                           sx={{
                             bgcolor: theme.palette.primary.main,
@@ -1418,8 +1778,8 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
             }
             secondTabLabel={
               canEditTournament
-                ? (t("detail.administration") || "Administración")
-                : (t("detail.joinTournament") || "Unirse al Torneo")
+                ? t("detail.administration") || "Administración"
+                : t("detail.joinTournament") || "Unirse al Torneo"
             }
           />
 
@@ -1456,7 +1816,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
 
                   <Stack spacing={3}>
                     {/* Type and Mode */}
-                    <Stack direction="row" spacing={2} flexWrap="wrap">
+                    <Stack direction="row" spacing={2} flexWrap="wrap" alignItems="center">
                       <Chip
                         icon={<TrophyIcon />}
                         label={
@@ -1474,6 +1834,42 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                           py: 2.5,
                         }}
                       />
+                      {tournamentStatusName && (
+                        <Chip
+                          label={tournamentStatusName}
+                          sx={{
+                            bgcolor: (() => {
+                              const status = tournamentStatusName.toLowerCase();
+                              if (status === "active" || status === "ongoing") {
+                                return theme.palette.success.main;
+                              } else if (status === "finalized" || status === "finished" || status === "archived") {
+                                return theme.palette.grey[600];
+                              } else if (status === "suspended") {
+                                return theme.palette.error.main;
+                              } else if (status === "created") {
+                                return theme.palette.info.main;
+                              }
+                              return theme.palette.primary.main;
+                            })(),
+                            color: (() => {
+                              const status = tournamentStatusName.toLowerCase();
+                              if (status === "active" || status === "ongoing") {
+                                return theme.palette.getContrastText(theme.palette.success.main);
+                              } else if (status === "finalized" || status === "finished" || status === "archived") {
+                                return theme.palette.getContrastText(theme.palette.grey[600]);
+                              } else if (status === "suspended") {
+                                return theme.palette.getContrastText(theme.palette.error.main);
+                              } else if (status === "created") {
+                                return theme.palette.getContrastText(theme.palette.info.main);
+                              }
+                              return theme.palette.getContrastText(theme.palette.primary.main);
+                            })(),
+                            fontWeight: 600,
+                            fontSize: "0.9rem",
+                            py: 2.5,
+                          }}
+                        />
+                      )}
                     </Stack>
 
                     <Divider sx={{ bgcolor: theme.palette.secondary.dark }} />
@@ -1613,8 +2009,14 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
 
                       {tournament?.responsibleId && (
                         <Box>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <PersonIcon sx={{ color: theme.palette.info.main }} />
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <PersonIcon
+                              sx={{ color: theme.palette.info.main }}
+                            />
                             <Box sx={{ flex: 1 }}>
                               <Typography
                                 sx={{
@@ -1646,7 +2048,9 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                                     },
                                   }}
                                   onClick={() => {
-                                    router.push(`/profile/${responsibleUser.username}`);
+                                    router.push(
+                                      `/profile/${responsibleUser.username}`
+                                    );
                                   }}
                                 >
                                   <Avatar
@@ -1728,50 +2132,55 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                     </Box>
 
                     {/* Rules */}
-                    <Box>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          color: theme.palette.text.primary,
-                          fontWeight: 600,
-                          mb: 2,
-                        }}
-                      >
-                        {t("detail.rules")}
-                      </Typography>
-                      {Array.isArray((tournament as any)?.rules) ? (
-                        <Stack spacing={1}>
-                          {(tournament as any).rules.map(
-                            (rule: string, index: number) => (
-                              <Stack key={index} direction="row" spacing={1}>
-                                <Typography
-                                  sx={{ color: theme.palette.info.main }}
-                                >
-                                  •
-                                </Typography>
-                                <Typography
-                                  sx={{ color: theme.palette.text.secondary }}
-                                >
-                                  {rule}
-                                </Typography>
-                              </Stack>
-                            )
-                          )}
-                        </Stack>
-                      ) : (tournament as any)?.rules ? (
+                    {tournament?.rules && (
+                      <Box>
                         <Typography
+                          variant="h6"
                           sx={{
-                            color: theme.palette.text.secondary,
-                            whiteSpace: "pre-wrap",
+                            color: theme.palette.text.primary,
+                            fontWeight: 600,
+                            mb: 2,
                           }}
                         >
-                          {String((tournament as any).rules)}
+                          {t("detail.rules")}
                         </Typography>
-                      ) : null}
-                    </Box>
+                        {Array.isArray((tournament as any)?.rules) ? (
+                          <Stack spacing={1}>
+                            {(tournament as any).rules.map(
+                              (rule: string, index: number) => (
+                                <Stack key={index} direction="row" spacing={1}>
+                                  <Typography
+                                    sx={{ color: theme.palette.info.main }}
+                                  >
+                                    •
+                                  </Typography>
+                                  <Typography
+                                    sx={{ color: theme.palette.text.secondary }}
+                                  >
+                                    {rule}
+                                  </Typography>
+                                </Stack>
+                              )
+                            )}
+                          </Stack>
+                        ) : (tournament as any)?.rules ? (
+                          <Typography
+                            sx={{
+                              color: theme.palette.text.secondary,
+                              whiteSpace: "pre-wrap",
+                            }}
+                          >
+                            {String((tournament as any).rules)}
+                          </Typography>
+                        ) : null}
+                      </Box>
+                    )}
                   </Stack>
                 </CardContent>
               </Card>
+
+              {/* Tournament Winners */}
+              <TournamentWinners tournamentId={id} />
 
               {/* Teams List */}
               <Card
@@ -1809,28 +2218,53 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                     {tournamentTeams.map((team: Team) => (
                       <Box key={team.id} sx={{ position: "relative" }}>
                         {canEditTournament && (
-                          <IconButton
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoveTeamClick(team);
-                            }}
-                            sx={{
-                              position: "absolute",
-                              top: 8,
-                              right: 8,
-                              zIndex: 10,
-                              bgcolor: theme.palette.error.main,
-                              color: theme.palette.error.contrastText,
-                              width: 32,
-                              height: 32,
-                              "&:hover": {
-                                bgcolor: theme.palette.error.dark,
-                              },
-                            }}
-                            size="small"
+                          <Tooltip
+                            title={
+                              hasTournamentEnded
+                                ? (t("detail.tournamentEndedCannotRemove") as string) ||
+                                  "El torneo ha finalizado, no se pueden eliminar equipos"
+                                : ""
+                            }
+                            disableHoverListener={!hasTournamentEnded}
                           >
-                            <RemoveCircleIcon fontSize="small" />
-                          </IconButton>
+                            <span
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              <IconButton
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!hasTournamentEnded) {
+                                    handleRemoveTeamClick(team);
+                                  }
+                                }}
+                                disabled={!!hasTournamentEnded}
+                                sx={{
+                                  position: "absolute",
+                                  top: 8,
+                                  right: 8,
+                                  zIndex: 10,
+                                  bgcolor: theme.palette.error.main,
+                                  color: theme.palette.error.contrastText,
+                                  width: 32,
+                                  height: 32,
+                                  "&:hover": {
+                                    bgcolor: hasTournamentEnded
+                                      ? theme.palette.error.main
+                                      : theme.palette.error.dark,
+                                  },
+                                  "&.Mui-disabled": {
+                                    bgcolor: theme.palette.action.disabledBackground,
+                                    color: theme.palette.action.disabled,
+                                  },
+                                }}
+                                size="small"
+                              >
+                                <RemoveCircleIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
                         )}
                         <Card
                           sx={{
@@ -1852,7 +2286,7 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                               boxShadow: theme.shadows[4],
                             },
                           }}
-                          onClick={() => handleOpenModal(team)}
+                          onClick={() => router.push(`/teams/${team.id}`)}
                         >
                           <CardContent sx={{ p: 2, textAlign: "center" }}>
                             <Avatar
@@ -1919,63 +2353,130 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                       : t("detail.joinTournament")}
                   </Typography>
 
-                  <Box
-                    sx={{
-                      bgcolor:
-                        theme.palette.mode === "dark"
-                          ? theme.palette.action.hover
-                          : theme.palette.grey[100],
-                      borderRadius: 2,
-                      p: 3,
-                      mb: 3,
-                      textAlign: "center",
-                    }}
-                  >
-                    <Typography
+                  {!hasTournamentEnded && (
+                    <Box
                       sx={{
-                        color: theme.palette.text.secondary,
-                        fontSize: "0.9rem",
-                        mb: 1,
+                        bgcolor:
+                          theme.palette.mode === "dark"
+                            ? theme.palette.action.hover
+                            : theme.palette.grey[100],
+                        borderRadius: 2,
+                        p: 3,
+                        mb: 3,
+                        textAlign: "center",
                       }}
                     >
-                      {t("detail.availableSlots")}
-                    </Typography>
-                    <Typography
-                      variant="h3"
-                      sx={{ color: theme.palette.info.main, fontWeight: 800 }}
-                    >
-                      {maxCapacity
-                        ? Math.max((maxCapacity as number) - registeredCount, 0)
-                        : "-"}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      {maxCapacity ?? "-"} {t("detail.teams")}
-                    </Typography>
-                  </Box>
+                      <Typography
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontSize: "0.9rem",
+                          mb: 1,
+                        }}
+                      >
+                        {t("detail.availableSlots")}
+                      </Typography>
+                      <Typography
+                        variant="h3"
+                        sx={{ color: theme.palette.info.main, fontWeight: 800 }}
+                      >
+                        {maxCapacity
+                          ? Math.max(
+                              (maxCapacity as number) - registeredCount,
+                              0
+                            )
+                          : "-"}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {maxCapacity ?? "-"} {t("detail.teams")}
+                      </Typography>
+                    </Box>
+                  )}
 
                   {canEditTournament && (
-                    <TournamentRequestsAdmin
-                      tournamentId={id}
-                      onRequestUpdated={() => {
-                        // Reload tournament data
-                        tournamentService.find(id).then((res) => {
-                          if (res.ok && res.data) {
-                            setTournament(res.data as any);
-                          }
-                        });
-                        // Reload teams
-                        tournamentService.getTournamentTeams(id).then((teamsResult) => {
-                          if (teamsResult.ok && teamsResult.data) {
-                            setTournamentTeams(teamsResult.data);
-                          }
-                        });
-                      }}
-                    />
+                    <>
+                      {isTournamentCreatorOrResponsible &&
+                        tournamentTeams.length >= 3 && (
+                          <Card
+                            sx={{
+                              bgcolor: theme.palette.background.paper,
+                              borderRadius: 3,
+                              border: `1px solid ${theme.palette.secondary.dark}`,
+                              mb: 3,
+                            }}
+                          >
+                            <CardContent sx={{ p: 4 }}>
+                              <Typography
+                                variant="h6"
+                                sx={{
+                                  color: theme.palette.text.primary,
+                                  fontWeight: 700,
+                                  mb: 2,
+                                }}
+                              >
+                                {hasWinners
+                                  ? t("detail.editFinalPositions") ||
+                                    "Editar Posiciones Finales"
+                                  : t("detail.setFinalPositions") ||
+                                    "Establecer Posiciones Finales"}
+                              </Typography>
+                              <Typography
+                                sx={{
+                                  color: theme.palette.text.secondary,
+                                  mb: 3,
+                                }}
+                              >
+                                {t("detail.setPositionsInfo") ||
+                                  "Selecciona los equipos que ocuparon el primer, segundo y tercer lugar del torneo."}
+                              </Typography>
+                              <Button
+                                variant="contained"
+                                startIcon={<TrophyIcon />}
+                                onClick={() =>
+                                  setSetFinalPositionsModalOpen(true)
+                                }
+                                fullWidth
+                                sx={{
+                                  bgcolor: theme.palette.warning.main,
+                                  color: theme.palette.common.black,
+                                  "&:hover": {
+                                    bgcolor: theme.palette.warning.dark,
+                                  },
+                                }}
+                              >
+                                {hasWinners
+                                  ? t("detail.editFinalPositions") ||
+                                    "Editar Posiciones"
+                                  : t("detail.setFinalPositions") ||
+                                    "Establecer Posiciones Finales"}
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        )}
+                      <TournamentRequestsAdmin
+                        tournamentId={id}
+                        onRequestUpdated={() => {
+                          // Reload tournament data
+                          tournamentService.find(id).then((res) => {
+                            if (res.ok && res.data) {
+                              setTournament(res.data as any);
+                            }
+                          });
+                          // Reload teams
+                          tournamentService
+                            .getTournamentTeams(id)
+                            .then((teamsResult) => {
+                              if (teamsResult.ok && teamsResult.data) {
+                                setTournamentTeams(teamsResult.data);
+                              }
+                            });
+                        }}
+                      />
+                    </>
                   )}
 
                   {isTournamentCreator ? (
@@ -2009,6 +2510,11 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                     <Alert severity="info" sx={{ mb: 2 }}>
                       {t("detail.waitingApproval") || "Esperando aprobación"}
                     </Alert>
+                  ) : hasTournamentStarted ? (
+                    <Alert severity="warning" sx={{ mb: 2 }}>
+                      {t("detail.tournamentStartedMessage") ||
+                        "Este torneo ya ha comenzado. No se pueden enviar más solicitudes."}
+                    </Alert>
                   ) : (
                     <>
                       {user && userTeams.length > 0 && (
@@ -2018,7 +2524,12 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                             value={selectedTeamId}
                             onChange={(e) => setSelectedTeamId(e.target.value)}
                             label={t("detail.selectTeam")}
-                            disabled={loadingTeams || registering || hasPendingRequest}
+                            disabled={
+                              loadingTeams ||
+                              registering ||
+                              hasPendingRequest ||
+                              hasTournamentStarted
+                            }
                           >
                             {userTeams.map((team) => (
                               <MenuItem key={team.id} value={team.id}>
@@ -2040,7 +2551,8 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
                           loadingTeams ||
                           !selectedTeamId ||
                           userTeams.length === 0 ||
-                          hasPendingRequest
+                          hasPendingRequest ||
+                          hasTournamentStarted
                         }
                         sx={{
                           bgcolor: theme.palette.primary.main,
@@ -2185,175 +2697,205 @@ const TournamentDetailPage: NextPage<Props> = ({ id }) => {
               )}
             </List>
           </Box>
-          </Modal>
-        </Box>
+        </Modal>
+      </Box>
 
-        <EditTournamentModal
-          open={editModalOpen}
-          onClose={() => setEditModalOpen(false)}
-          tournament={tournament}
-          onUpdated={() => {
-            // Reload tournament data
-            tournamentService.find(id).then((res) => {
-              if (res.ok && res.data) {
-                setTournament(res.data as any);
-              }
-            });
-            // Reload background image
-            tournamentService.getBackgroundImage(id).then((result) => {
-              if (result.ok && result.data) {
-                setBackgroundImage(result.data);
-              }
-            });
-            // Reload teams
-            tournamentService.getTournamentTeams(id).then((teamsResult) => {
-              if (teamsResult.ok && teamsResult.data) {
-                setTournamentTeams(teamsResult.data);
-              }
-            });
-          }}
-        />
+      <EditTournamentModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        tournament={tournament}
+        onUpdated={() => {
+          // Reload tournament data
+          tournamentService.find(id).then((res) => {
+            if (res.ok && res.data) {
+              setTournament(res.data as any);
+            }
+          });
+          // Reload background image
+          tournamentService.getBackgroundImage(id).then((result) => {
+            if (result.ok && result.data) {
+              setBackgroundImage(result.data);
+            }
+          });
+          // Reload teams
+          tournamentService.getTournamentTeams(id).then((teamsResult) => {
+            if (teamsResult.ok && teamsResult.data) {
+              setTournamentTeams(teamsResult.data);
+            }
+          });
+        }}
+      />
 
-        {/* Delete Tournament Confirmation Dialog */}
-        <Dialog
-          open={deleteTournamentDialogOpen}
-          onClose={() => !deletingTournament && setDeleteTournamentDialogOpen(false)}
-          aria-labelledby="delete-tournament-dialog-title"
-          aria-describedby="delete-tournament-dialog-description"
-        >
-          <DialogTitle id="delete-tournament-dialog-title">
-            {t("detail.deleteTournamentTitle") || "Eliminar Torneo"}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText id="delete-tournament-dialog-description">
-              {t("detail.deleteTournamentConfirmation", { tournamentName: tournament?.name || "" }) ||
-                `¿Estás seguro de que deseas eliminar el torneo "${tournament?.name || ""}"? Esta acción no se puede deshacer.`}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setDeleteTournamentDialogOpen(false)}
-              variant="outlined"
-              disabled={deletingTournament}
-            >
-              {t("detail.cancel")}
-            </Button>
-            <Button
-              onClick={handleConfirmDeleteTournament}
-              color="error"
-              variant="contained"
-              disabled={deletingTournament}
-              autoFocus
-            >
-              {deletingTournament
-                ? t("detail.deletingTournament") || "Eliminando..."
-                : t("detail.delete")}
-            </Button>
-          </DialogActions>
-        </Dialog>
+      {/* Delete Tournament Confirmation Dialog */}
+      <Dialog
+        open={deleteTournamentDialogOpen}
+        onClose={() =>
+          !deletingTournament && setDeleteTournamentDialogOpen(false)
+        }
+        aria-labelledby="delete-tournament-dialog-title"
+        aria-describedby="delete-tournament-dialog-description"
+      >
+        <DialogTitle id="delete-tournament-dialog-title">
+          {t("detail.deleteTournamentTitle") || "Eliminar Torneo"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-tournament-dialog-description">
+            {t("detail.deleteTournamentConfirmation", {
+              tournamentName: tournament?.name || "",
+            }) ||
+              `¿Estás seguro de que deseas eliminar el torneo "${
+                tournament?.name || ""
+              }"? Esta acción no se puede deshacer.`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteTournamentDialogOpen(false)}
+            variant="outlined"
+            disabled={deletingTournament}
+          >
+            {t("detail.cancel")}
+          </Button>
+          <Button
+            onClick={handleConfirmDeleteTournament}
+            color="error"
+            variant="contained"
+            disabled={deletingTournament}
+            autoFocus
+          >
+            {deletingTournament
+              ? t("detail.deletingTournament") || "Eliminando..."
+              : t("detail.delete")}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-        {/* Remove Team Confirmation Dialog */}
-        <Dialog
-          open={removeTeamDialogOpen}
-          onClose={() => !removingTeam && setRemoveTeamDialogOpen(false)}
-          aria-labelledby="remove-team-dialog-title"
-          aria-describedby="remove-team-dialog-description"
-        >
-          <DialogTitle id="remove-team-dialog-title">
-            {t("detail.removeTeamTitle") || "Remover Equipo del Torneo"}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText id="remove-team-dialog-description">
-              {t("detail.removeTeamConfirmation", { teamName: teamToRemove?.name ?? "" }) ||
-                `¿Estás seguro de que deseas remover el equipo "${teamToRemove?.name ?? ""}" del torneo?`}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={handleCancelRemoveTeam}
-              variant="outlined"
-              disabled={removingTeam}
-            >
-              {t("detail.cancel")}
-            </Button>
-            <Button
-              onClick={handleConfirmRemoveTeam}
-              color="error"
-              variant="contained"
-              disabled={removingTeam}
-              autoFocus
-            >
-              {removingTeam
-                ? t("detail.removingTeam") || "Removiendo..."
-                : t("detail.removeTeam") || "Remover"}
-            </Button>
-          </DialogActions>
-        </Dialog>
+      {/* Remove Team Confirmation Dialog */}
+      <Dialog
+        open={removeTeamDialogOpen}
+        onClose={() => !removingTeam && setRemoveTeamDialogOpen(false)}
+        aria-labelledby="remove-team-dialog-title"
+        aria-describedby="remove-team-dialog-description"
+      >
+        <DialogTitle id="remove-team-dialog-title">
+          {t("detail.removeTeamTitle") || "Remover Equipo del Torneo"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="remove-team-dialog-description">
+            {t("detail.removeTeamConfirmation", {
+              teamName: teamToRemove?.name ?? "",
+            }) ||
+              `¿Estás seguro de que deseas remover el equipo "${
+                teamToRemove?.name ?? ""
+              }" del torneo?`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleCancelRemoveTeam}
+            variant="outlined"
+            disabled={removingTeam}
+          >
+            {t("detail.cancel")}
+          </Button>
+          <Button
+            onClick={handleConfirmRemoveTeam}
+            color="error"
+            variant="contained"
+            disabled={removingTeam}
+            autoFocus
+          >
+            {removingTeam
+              ? t("detail.removingTeam") || "Removiendo..."
+              : t("detail.removeTeam") || "Remover"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-        {/* Select Team to Leave Tournament Dialog */}
-        <Dialog
-          open={leaveTeamDialogOpen}
-          onClose={handleCancelLeaveTeam}
-          aria-labelledby="leave-team-dialog-title"
-          aria-describedby="leave-team-dialog-description"
-        >
-          <DialogTitle id="leave-team-dialog-title">
-            {t("detail.selectTeamToLeave") || "Seleccionar Equipo para Dejar el Torneo"}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText id="leave-team-dialog-description" sx={{ mb: 2 }}>
-              {t("detail.selectTeamToLeaveDescription") ||
-                "Tienes múltiples equipos registrados en este torneo. Selecciona cuál equipo deseas que deje el torneo:"}
-            </DialogContentText>
-            <FormControl fullWidth>
-              <InputLabel>{t("detail.selectTeam") || "Equipo"}</InputLabel>
-              <Select
-                value={selectedLeaveTeamId}
-                onChange={(e) => setSelectedLeaveTeamId(e.target.value)}
-                label={t("detail.selectTeam") || "Equipo"}
-                disabled={leaving}
-              >
-                {userRegisteredTeams.map((team) => (
-                  <MenuItem key={team.id} value={team.id}>
-                    {team.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={handleCancelLeaveTeam}
-              variant="outlined"
+      {/* Select Team to Leave Tournament Dialog */}
+      <Dialog
+        open={leaveTeamDialogOpen}
+        onClose={handleCancelLeaveTeam}
+        aria-labelledby="leave-team-dialog-title"
+        aria-describedby="leave-team-dialog-description"
+      >
+        <DialogTitle id="leave-team-dialog-title">
+          {t("detail.selectTeamToLeave") ||
+            "Seleccionar Equipo para Dejar el Torneo"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="leave-team-dialog-description" sx={{ mb: 2 }}>
+            {t("detail.selectTeamToLeaveDescription") ||
+              "Tienes múltiples equipos registrados en este torneo. Selecciona cuál equipo deseas que deje el torneo:"}
+          </DialogContentText>
+          <FormControl fullWidth>
+            <InputLabel>{t("detail.selectTeam") || "Equipo"}</InputLabel>
+            <Select
+              value={selectedLeaveTeamId}
+              onChange={(e) => setSelectedLeaveTeamId(e.target.value)}
+              label={t("detail.selectTeam") || "Equipo"}
               disabled={leaving}
             >
-              {t("detail.cancel")}
-            </Button>
-            <Button
-              onClick={handleConfirmLeaveTeam}
-              color="error"
-              variant="contained"
-              disabled={leaving || !selectedLeaveTeamId}
-              autoFocus
-            >
-              {leaving
-                ? t("detail.leaving") || "Dejando..."
-                : t("detail.leaveTournament") || "Dejar Torneo"}
-            </Button>
-          </DialogActions>
-        </Dialog>
+              {userRegisteredTeams.map((team) => (
+                <MenuItem key={team.id} value={team.id}>
+                  {team.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleCancelLeaveTeam}
+            variant="outlined"
+            disabled={leaving}
+          >
+            {t("detail.cancel")}
+          </Button>
+          <Button
+            onClick={handleConfirmLeaveTeam}
+            color="error"
+            variant="contained"
+            disabled={leaving || !selectedLeaveTeamId}
+            autoFocus
+          >
+            {leaving
+              ? t("detail.leaving") || "Dejando..."
+              : t("detail.leaveTournament") || "Dejar Torneo"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-        <SuccessSnackbar
-          open={snackbarOpen}
-          message={snackbarMessage}
-          onClose={() => setSnackbarOpen(false)}
-          severity={snackbarSeverity}
-        />
-      </MainLayout>
-    );
-  };
+      <SetFinalPositionsModal
+        open={setFinalPositionsModalOpen}
+        onClose={() => setSetFinalPositionsModalOpen(false)}
+        tournamentId={id}
+        teams={tournamentTeams}
+        onSuccess={() => {
+          tournamentService.find(id).then((res) => {
+            if (res.ok && res.data) {
+              setTournament(res.data as any);
+            }
+          });
+          tournamentService.getTournamentTeams(id).then((teamsResult) => {
+            if (teamsResult.ok && teamsResult.data) {
+              setTournamentTeams(teamsResult.data);
+            }
+          });
+        }}
+      />
 
-  export default TournamentDetailPage;
+      <SuccessSnackbar
+        open={snackbarOpen}
+        message={snackbarMessage}
+        onClose={() => setSnackbarOpen(false)}
+        severity={snackbarSeverity}
+      />
+    </MainLayout>
+  );
+};
+
+export default TournamentDetailPage;
 
 export const getServerSideProps: GetServerSideProps = async ({
   locale,

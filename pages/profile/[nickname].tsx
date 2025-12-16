@@ -16,15 +16,13 @@ import {
   GamesGrid,
   TeamsList,
   TournamentsGrid,
-  ProfileAchievementsList,
   SocialLinksCard,
-  QuickStatsCard,
   ProfileEditModal,
 } from "../../components/organisms";
 import { Post, User, Team, Player, Game, Role } from "../../interfaces";
 import { MainLayout } from "../../layouts";
 import { userService } from "../../services/user.service";
-import { useContext, useEffect, useState, useCallback } from "react";
+import { useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { postService } from "../../services/post.service";
 import { teamService } from "../../services/team.service";
 import { playerService } from "../../services/player.service";
@@ -34,6 +32,8 @@ import { PostList } from "../../components/molecules/Post/PostList";
 import { sortPostsByDate } from "../../utils/sortPosts";
 import { formatFullName } from "../../utils/textFormatting";
 import { getGameImage } from "../../utils/gameImageUtils";
+import { tournamentService } from "../../services/tournament.service";
+import type { Tournament } from "../../interfaces";
 
 interface Props {
   userFound: User;
@@ -67,6 +67,8 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [rolesData, setRolesData] = useState<Map<string, Role[]>>(new Map());
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
+  const [wonTournaments, setWonTournaments] = useState<Tournament[]>([]);
+  const [loadingWonTournaments, setLoadingWonTournaments] = useState(false);
 
   // Load background image
   useEffect(() => {
@@ -252,6 +254,29 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
     loadPlayers();
   }, [loadPlayers]);
 
+  useEffect(() => {
+    const loadWonTournaments = async () => {
+      if (!userFound.id) return;
+      setLoadingWonTournaments(true);
+      try {
+        const result = await tournamentService.findTournamentsWon({
+          userId: userFound.id,
+          limit: 10,
+          page: 1,
+        });
+        if (result.ok && result.data) {
+          setWonTournaments(result.data);
+        }
+      } catch (error) {
+        console.error("Error loading won tournaments:", error);
+      } finally {
+        setLoadingWonTournaments(false);
+      }
+    };
+
+    loadWonTournaments();
+  }, [userFound.id]);
+
   const handleOnSave = useCallback(
     async ({
       description: newDescription,
@@ -354,86 +379,47 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
 
   const hasTeams = teams.length > 0;
 
-  // MOCK DATA - Temporal until backend integration
-  const tournaments: {
-    id: string | number;
-    name: string;
-    game?: string;
-    image?: string;
-    date?: string | number | Date;
-    placement?: string;
-  }[] = [
-    {
-      id: 1,
-      name: "Championship 2024",
-      game: "Counter-Strike",
-      date: new Date("2024-10-15"),
-      placement: "1er Lugar",
-    },
-    {
-      id: 2,
-      name: "Pro League Season 12",
-      game: "Valorant",
-      date: new Date("2024-08-22"),
-      placement: "3er Lugar",
-    },
-    {
-      id: 3,
-      name: "Regional Tournament",
-      game: "Overwatch",
-      date: new Date("2024-05-10"),
-      placement: "5to Lugar",
-    },
-  ];
+  const tournaments = wonTournaments.map((t) => ({
+    id: t.id,
+    name: t.name,
+    game: t.gameName,
+    date: t.endAt,
+    placement: "1er Lugar",
+  }));
   const hasTournaments = tournaments.length > 0;
-
-  // MOCK DATA - Temporal until backend integration
-  const achievements: {
-    title: string;
-    tournament?: string;
-    game?: string;
-    date?: string | number | Date;
-    prize?: string;
-  }[] = [
-    {
-      title: "Campeón Internacional",
-      tournament: "Championship 2024",
-      game: "Counter-Strike",
-      date: new Date("2024-10-15"),
-      prize: "$5,000",
-    },
-    {
-      title: "MVP del Torneo",
-      tournament: "Pro League Season 12",
-      game: "Valorant",
-      date: new Date("2024-08-22"),
-      prize: "$1,500",
-    },
-    {
-      title: "Mejor Jugador de la Semana",
-      tournament: "Regional Tournament",
-      game: "Overwatch",
-      date: new Date("2024-05-10"),
-    },
-    {
-      title: "Consistencia Global",
-      tournament: "Mensual League",
-      game: "Heroes of the Storm",
-      date: new Date("2024-03-15"),
-    },
-  ];
-  const hasAchievements = achievements.length > 0;
 
   const currentTeams = teams.filter((team) => !team.leftDate).length;
   const activeGames = games.length;
-  const totalAchievements = achievements.length;
-  const hasQuickStats =
-    currentTeams > 0 || activeGames > 0 || totalAchievements > 0;
+  const hasQuickStats = currentTeams > 0 || activeGames > 0;
+
+  // Calculate victories (1st place) and podiums (1st, 2nd, 3rd place)
+  const userTeamIds = teams.map((team) => String(team.id));
+  const victories = useMemo(() => {
+    return wonTournaments.filter((tournament) => {
+      if (!tournament.firstPlaceTeamId) return false;
+      return userTeamIds.includes(String(tournament.firstPlaceTeamId));
+    }).length;
+  }, [wonTournaments, userTeamIds]);
+
+  const podiums = useMemo(() => {
+    return wonTournaments.filter((tournament) => {
+      const firstPlace =
+        tournament.firstPlaceTeamId &&
+        userTeamIds.includes(String(tournament.firstPlaceTeamId));
+      const secondPlace =
+        tournament.secondPlaceTeamId &&
+        userTeamIds.includes(String(tournament.secondPlaceTeamId));
+      const thirdPlace =
+        tournament.thirdPlaceTeamId &&
+        userTeamIds.includes(String(tournament.thirdPlaceTeamId));
+      return firstPlace || secondPlace || thirdPlace;
+    }).length;
+  }, [wonTournaments, userTeamIds]);
 
   const stats: { label: string; value: string | number; color?: any }[] = [
-    { label: "Torneos", value: 24, color: "primary" },
-    { label: "Victorias", value: 18, color: "success" },
+    { label: "Victorias", value: victories, color: "success" },
     { label: "Equipos", value: currentTeams, color: "info" },
+    { label: t("podiumsLabel") || "Podios", value: podiums, color: "warning" },
   ];
 
   const hasDescription =
@@ -489,13 +475,9 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
             teams={teams}
             hasTournaments={hasTournaments}
             tournaments={tournaments}
-            hasAchievements={hasAchievements}
-            achievements={achievements}
             userId={userFound.id}
-            hasQuickStats={hasQuickStats}
             currentTeams={currentTeams}
             activeGames={activeGames}
-            totalAchievements={totalAchievements}
           />
 
           {/* Desktop View: Grid Layout */}
@@ -557,25 +539,7 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
                   </Card>
                 )}
 
-                {hasAchievements && (
-                  <Card sx={{ borderRadius: 3, mb: 3 }}>
-                    <CardContent sx={{ p: 4 }}>
-                      <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
-                        {t("achievements")}
-                      </Typography>
-                      <ProfileAchievementsList achievements={achievements} />
-                    </CardContent>
-                  </Card>
-                )}
-
                 <SocialLinksCard userId={userFound.id} />
-                {hasQuickStats && (
-                  <QuickStatsCard
-                    currentTeams={currentTeams}
-                    activeGames={activeGames}
-                    totalAchievements={totalAchievements}
-                  />
-                )}
               </Grid>
             </Grid>
           </Box>

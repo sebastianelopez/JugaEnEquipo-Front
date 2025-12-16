@@ -1,8 +1,9 @@
 import { FC } from "react";
-import { Stack, TextField, InputAdornment, Button } from "@mui/material";
+import { Stack, TextField, InputAdornment, Button, FormControlLabel, Checkbox } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import { useTheme, alpha } from "@mui/material/styles";
+import type { User } from "../../../interfaces";
 
 interface Props {
   searchQuery: string;
@@ -10,9 +11,23 @@ interface Props {
   onOpenCreate?: () => void;
   placeholder: string;
   createLabel: string;
+  showMineOnly?: boolean;
+  onShowMineOnlyChange?: (value: boolean) => void;
+  mineOnlyLabel?: string;
+  user?: User;
 }
 
-export const TeamsHeader: FC<Props> = ({ searchQuery, onSearchChange, onOpenCreate, placeholder, createLabel }) => {
+export const TeamsHeader: FC<Props> = ({ 
+  searchQuery, 
+  onSearchChange, 
+  onOpenCreate, 
+  placeholder, 
+  createLabel,
+  showMineOnly = false,
+  onShowMineOnlyChange,
+  mineOnlyLabel = "Mis equipos",
+  user
+}) => {
   const theme = useTheme();
   return (
     <Stack 
@@ -49,6 +64,30 @@ export const TeamsHeader: FC<Props> = ({ searchQuery, onSearchChange, onOpenCrea
           },
         }}
       />
+      {user && onShowMineOnlyChange && (
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={showMineOnly}
+              onChange={(e) => onShowMineOnlyChange(e.target.checked)}
+              sx={{
+                color: theme.palette.info.main,
+                "&.Mui-checked": {
+                  color: theme.palette.info.main,
+                },
+              }}
+            />
+          }
+          label={mineOnlyLabel}
+          sx={{
+            color: theme.palette.text.primary,
+            fontSize: { xs: "0.875rem", md: "1rem" },
+            whiteSpace: "nowrap",
+            alignSelf: { xs: "flex-start", sm: "center" },
+            ml: { xs: 0, sm: 1 },
+          }}
+        />
+      )}
       <Button
         variant="contained"
         size="small"

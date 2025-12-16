@@ -7,7 +7,9 @@ import {
   Card,
   CardContent,
   Typography,
+  Stack,
 } from "@mui/material";
+import { EmojiEvents as TrophyIcon } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
 import { PostList } from "../../molecules/Post/PostList";
 import { Post } from "../../../interfaces";
@@ -15,9 +17,7 @@ import { AboutCard } from "./AboutCard";
 import { GamesGrid } from "./GamesGrid";
 import { TeamsList } from "./TeamsList";
 import { TournamentsGrid } from "./TournamentsGrid";
-import { AchievementsList as ProfileAchievementsList } from "./AchievementsList";
 import { SocialLinksCard } from "./SocialLinksCard";
-import { QuickStatsCard } from "./QuickStatsCard";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -85,22 +85,11 @@ interface ProfileTabsProps {
     date?: string | number | Date;
     placement?: string;
   }[];
-  // Achievements props
-  hasAchievements: boolean;
-  achievements: {
-    title: string;
-    tournament?: string;
-    game?: string;
-    date?: string | number | Date;
-    prize?: string;
-  }[];
   // Social links props
   userId: string;
   // Quick stats props
-  hasQuickStats: boolean;
   currentTeams: number;
   activeGames: number;
-  totalAchievements: number;
 }
 
 export const ProfileTabs = ({
@@ -117,13 +106,9 @@ export const ProfileTabs = ({
   teams,
   hasTournaments,
   tournaments,
-  hasAchievements,
-  achievements,
   userId,
-  hasQuickStats,
   currentTeams,
   activeGames,
-  totalAchievements,
 }: ProfileTabsProps) => {
   const t = useTranslations("Profile");
   const [tabValue, setTabValue] = useState(0);
@@ -203,33 +188,24 @@ export const ProfileTabs = ({
           {hasTournaments && (
             <Card sx={{ borderRadius: 3, mb: 3 }}>
               <CardContent sx={{ p: 4 }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
-                  {t("recentTournaments")}
-                </Typography>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
+                  <TrophyIcon
+                    sx={{
+                      color: (theme) => theme.palette.warning.main,
+                      fontSize: "2rem",
+                    }}
+                  />
+                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                    {t("recentTournaments")}
+                  </Typography>
+                </Stack>
                 <TournamentsGrid tournaments={tournaments} />
               </CardContent>
             </Card>
           )}
 
-          {hasAchievements && (
-            <Card sx={{ borderRadius: 3, mb: 3 }}>
-              <CardContent sx={{ p: 4 }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
-                  {t("achievements")}
-                </Typography>
-                <ProfileAchievementsList achievements={achievements} />
-              </CardContent>
-            </Card>
-          )}
-
           <SocialLinksCard userId={userId} />
-          {hasQuickStats && (
-            <QuickStatsCard
-              currentTeams={currentTeams}
-              activeGames={activeGames}
-              totalAchievements={totalAchievements}
-            />
-          )}
+     
         </TabPanel>
       </Paper>
     </Box>
