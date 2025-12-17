@@ -401,32 +401,14 @@ const ProfilePage: NextPage<Props> = ({ userFound }) => {
     }).length;
   }, [wonTournaments, userTeamIds]);
 
-  const podiums = useMemo(() => {
-    return wonTournaments.filter((tournament) => {
-      const firstPlace =
-        tournament.firstPlaceTeamId &&
-        userTeamIds.includes(String(tournament.firstPlaceTeamId));
-      const secondPlace =
-        tournament.secondPlaceTeamId &&
-        userTeamIds.includes(String(tournament.secondPlaceTeamId));
-      const thirdPlace =
-        tournament.thirdPlaceTeamId &&
-        userTeamIds.includes(String(tournament.thirdPlaceTeamId));
-      return firstPlace || secondPlace || thirdPlace;
-    }).length;
-  }, [wonTournaments, userTeamIds]);
-
   const stats: { label: string; value: string | number; color?: any }[] = [
     { label: "Victorias", value: victories, color: "success" },
     { label: "Equipos", value: currentTeams, color: "info" },
-    { label: t("podiumsLabel") || "Podios", value: podiums, color: "warning" },
   ];
 
   const hasDescription =
     (userFound.description?.trim?.() || "").length > 0 ||
     (stats?.length || 0) > 0;
-
-  const showPostsSection = isLoading || hasError || posts.length > 0;
 
   return (
     <>
