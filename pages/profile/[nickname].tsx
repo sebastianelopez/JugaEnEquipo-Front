@@ -549,6 +549,7 @@ export const getServerSideProps: GetServerSideProps = async ({
   params,
   locale,
   req,
+  res,
 }: GetServerSidePropsContext) => {
   const { nickname = "" } = params as { nickname: string };
   const serverToken = req.cookies["token"];
@@ -571,6 +572,13 @@ export const getServerSideProps: GetServerSideProps = async ({
         notFound: true,
       };
     }
+
+    // Set cache headers for ISR-like behavior with SSR
+    // Cache for 60 seconds, revalidate in background
+    res.setHeader(
+      'Cache-Control',
+      'public, s-maxage=60, stale-while-revalidate=120'
+    );
 
     return {
       props: {

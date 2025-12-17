@@ -367,7 +367,7 @@ const HomePage = () => {
 
 export default HomePage;
 
-export async function getStaticProps({ locale }: GetStaticPropsContext) {
+export async function getServerSideProps({ locale }: GetStaticPropsContext) {
   return {
     props: {
       messages: (await import(`../../lang/${locale}.json`)).default,

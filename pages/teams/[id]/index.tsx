@@ -1317,8 +1317,17 @@ export default function TeamDetailPage({ id }: Props) {
 export const getServerSideProps: GetServerSideProps = async ({
   params,
   locale,
+  res,
 }: GetServerSidePropsContext) => {
   const id = params?.id as string;
+
+  // Set cache headers for ISR-like behavior with SSR
+  // Cache for 90 seconds, revalidate in background
+  res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=90, stale-while-revalidate=180'
+  );
+
   return {
     props: {
       id,
