@@ -942,7 +942,15 @@ export default TournamentDetailPage;
 export const getServerSideProps: GetServerSideProps = async ({
   locale,
   params,
+  res,
 }: GetServerSidePropsContext) => {
+  // Set cache headers for ISR-like behavior with SSR
+  // Cache for 120 seconds (tournaments change less frequently), revalidate in background
+  res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=120, stale-while-revalidate=240'
+  );
+
   return {
     props: {
       id: String(params?.id || ""),
