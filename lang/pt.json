@@ -589,6 +589,7 @@
             "image": "Imagem do Torneio",
             "uploadImage": "Enviar Imagem",
             "prize": "Prêmio",
+            "prizePlaceholder": "Digite o prêmio (ex: $1000, Troféu, etc.)",
             "minRank": "Rank Mínimo (Opcional)",
             "maxRank": "Rank Máximo (Opcional)",
             "none": "Nenhum",

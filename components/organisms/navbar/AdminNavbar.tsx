@@ -36,7 +36,7 @@ export const AdminNavbar: FC<Props> = ({
           <Menu />
         </IconButton>
         <Typography variant="h6" sx={{ flexGrow: 1, color: "#fff" }}>
-          {t("title")}
+          {""}
         </Typography>
         <Box sx={{ mr: 2 }}>
           <SelectCountry height={40} />

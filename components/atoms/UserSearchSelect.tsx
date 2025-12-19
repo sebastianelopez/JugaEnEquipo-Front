@@ -9,7 +9,10 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { Person } from "@mui/icons-material";
-import { backofficeService, type User } from "../../services/backoffice.service";
+import {
+  backofficeService,
+  type User,
+} from "../../services/backoffice.service";
 
 interface UserSearchSelectProps {
   name: string;
@@ -104,7 +107,10 @@ export const UserSearchSelect: FC<UserSearchSelectProps> = ({
           if (result.ok && result.data) {
             const newUsers = result.data.data || [];
             // If we have a selected user, make sure it's in the list
-            if (selectedUser && !newUsers.find((u) => u.id === selectedUser.id)) {
+            if (
+              selectedUser &&
+              !newUsers.find((u) => u.id === selectedUser.id)
+            ) {
               setUsers([selectedUser, ...newUsers]);
             } else {
               setUsers(newUsers);
@@ -149,7 +155,9 @@ export const UserSearchSelect: FC<UserSearchSelectProps> = ({
       getOptionLabel={(option) =>
         typeof option === "string"
           ? option
-          : option.username ? `@${option.username}` : ""
+          : option.username
+          ? `@${option.username}`
+          : ""
       }
       isOptionEqualToValue={(option, value) => option.id === value.id}
       value={selectedUser}
@@ -233,70 +241,126 @@ export const UserSearchSelect: FC<UserSearchSelectProps> = ({
               </>
             ),
           }}
-          sx={whiteText ? {
-            "& .MuiOutlinedInput-root": {
-              color: "#fff",
-              "& fieldset": { borderColor: "rgba(255,255,255,0.2)" },
-              "&:hover fieldset": { borderColor: "#6C5CE7" },
-              "&.Mui-focused fieldset": { borderColor: "#6C5CE7" },
-            },
-            "& .MuiInputLabel-root": {
-              color: "rgba(255, 255, 255, 0.7)",
-            },
-            "& .MuiFormHelperText-root": {
-              color: "rgba(255, 255, 255, 0.5)",
-            },
-          } : {}}
+          sx={
+            whiteText
+              ? {
+                  "& .MuiOutlinedInput-root": {
+                    color: "#fff",
+                    backgroundColor: "rgba(108, 92, 231, 0.1)",
+                    "& fieldset": { borderColor: "rgba(255,255,255,0.2)" },
+                    "&:hover fieldset": { borderColor: "#6C5CE7" },
+                    "&.Mui-focused fieldset": { borderColor: "#6C5CE7" },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "rgba(255, 255, 255, 0.7)",
+                  },
+                  "& .MuiFormHelperText-root": {
+                    color: "rgba(255, 255, 255, 0.5)",
+                  },
+                }
+              : {}
+          }
         />
       )}
-      renderOption={(props, option) => (
+      renderOption={(props, option) => {
+        const { key, ...optionProps } = props;
+        return (
+          <Box
+            component="li"
+            key={key}
+            {...optionProps}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              py: 1.5,
+              px: 2,
+              bgcolor: whiteText ? "#2D3436" : "#fff",
+              color: whiteText ? "#fff" : "#000",
+              "&:hover": {
+                backgroundColor: whiteText
+                  ? "rgba(108, 92, 231, 0.2)"
+                  : "rgba(0, 0, 0, 0.04)",
+              },
+              "&[aria-selected='true']": {
+                backgroundColor: whiteText
+                  ? "rgba(108, 92, 231, 0.3)"
+                  : "rgba(0, 0, 0, 0.08)",
+              },
+            }}
+          >
+            <Avatar sx={{ bgcolor: "#6C5CE7", width: 32, height: 32 }}>
+              {option.username?.[0]?.toUpperCase() || "U"}
+            </Avatar>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography
+                sx={{
+                  color: whiteText ? "#fff" : "#000",
+                  fontWeight: 500,
+                  fontSize: "0.875rem",
+                }}
+              >
+                @{option.username}
+              </Typography>
+              <Typography
+                sx={{
+                  color: whiteText
+                    ? "rgba(255, 255, 255, 0.6)"
+                    : "rgba(0, 0, 0, 0.6)",
+                  fontSize: "0.75rem",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {option.email}
+              </Typography>
+            </Box>
+          </Box>
+        );
+      }}
+      PaperComponent={({ children, ...other }) => (
         <Box
-          component="li"
-          {...props}
+          component="div"
+          {...other}
           sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            py: 1.5,
-            "&:hover": {
-              backgroundColor: "rgba(108, 92, 231, 0.1)",
+            backgroundColor: whiteText ? "#2D3436" : "#fff",
+            border: whiteText
+              ? "1px solid rgba(108, 92, 231, 0.3)"
+              : "1px solid rgba(0, 0, 0, 0.12)",
+            borderRadius: 1,
+            boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.3)",
+            "& .MuiAutocomplete-listbox": {
+              backgroundColor: whiteText ? "#2D3436" : "#fff",
+              padding: 0,
+              "& .MuiAutocomplete-option": {
+                backgroundColor: whiteText ? "#2D3436" : "#fff",
+                color: whiteText ? "#fff" : "#000",
+                "&:hover": {
+                  backgroundColor: whiteText
+                    ? "rgba(108, 92, 231, 0.2)"
+                    : "rgba(0, 0, 0, 0.04)",
+                },
+                "&[aria-selected='true']": {
+                  backgroundColor: whiteText
+                    ? "rgba(108, 92, 231, 0.3)"
+                    : "rgba(0, 0, 0, 0.08)",
+                },
+              },
             },
           }}
         >
-          <Avatar sx={{ bgcolor: "#6C5CE7", width: 32, height: 32 }}>
-            {option.username?.[0]?.toUpperCase() || "U"}
-          </Avatar>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography
-              sx={{
-                color: "#fff",
-                fontWeight: 500,
-                fontSize: "0.875rem",
-              }}
-            >
-              @{option.username}
-            </Typography>
-            <Typography
-              sx={{
-                color: "rgba(255, 255, 255, 0.6)",
-                fontSize: "0.75rem",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {option.email}
-            </Typography>
-          </Box>
+          {children}
         </Box>
       )}
       sx={{
         "& .MuiAutocomplete-paper": {
-          backgroundColor: "#2D3436",
-          border: "1px solid rgba(108, 92, 231, 0.2)",
+          backgroundColor: whiteText ? "#2D3436" : "#fff",
+          border: whiteText
+            ? "1px solid rgba(108, 92, 231, 0.3)"
+            : "1px solid rgba(0, 0, 0, 0.12)",
         },
       }}
     />
   );
 };
-

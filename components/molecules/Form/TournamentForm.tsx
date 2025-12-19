@@ -318,6 +318,12 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                     required
                     whiteText={whiteText}
                   />
+                  <MyTextInput
+                    name="prize"
+                    label={t("form.prize")}
+                    placeholder={t("form.prizePlaceholder")}
+                    whiteText={whiteText}
+                  />
                 </>
               )}
 
@@ -367,7 +373,16 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                       <em>{t("form.none")}</em>
                     </MenuItem>
                     {ranks.map((rank) => (
-                      <MenuItem key={rank.id} value={rank.id}>
+                      <MenuItem
+                        key={rank.id}
+                        value={rank.id}
+                        sx={{
+                          color: whiteText ? "#fff" : "#000",
+                          backgroundColor: whiteText
+                            ? "rgba(108, 92, 231, 0.1)"
+                            : "#fff",
+                        }}
+                      >
                         {rank.rankName} (Level {rank.level})
                       </MenuItem>
                     ))}
@@ -380,6 +395,22 @@ export const TournamentForm: FC<TournamentFormProps> = ({
                 variant="contained"
                 disabled={
                   !formik.isValid || formik.isSubmitting || Boolean(submitting)
+                }
+                sx={
+                  whiteText
+                    ? {
+                        background:
+                          "linear-gradient(135deg, #6C5CE7 0%, #00CEC9 100%)",
+                        "&:hover": {
+                          background:
+                            "linear-gradient(135deg, #5B4BCF 0%, #00B8B1 100%)",
+                        },
+                        "&:disabled": {
+                          background: "rgba(108, 92, 231, 0.3)",
+                          color: "rgba(255, 255, 255, 0.5)",
+                        },
+                      }
+                    : {}
                 }
               >
                 {submitButtonText || t("create")}

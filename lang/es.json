@@ -600,6 +600,7 @@
             "image": "Imagen del Torneo",
             "uploadImage": "Subir Imagen",
             "prize": "Premio",
+            "prizePlaceholder": "Ingresa el premio (ej: $1000, Trofeo, etc.)",
             "minRank": "Rango Mínimo (Opcional)",
             "maxRank": "Rango Máximo (Opcional)",
             "none": "Ninguno",
