@@ -14,6 +14,7 @@ import {
   useTheme,
   alpha,
 } from "@mui/material";
+import { CheckCircle } from "@mui/icons-material";
 import {
   Lock,
   Login as LoginIcon,
@@ -47,6 +48,8 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  
+  const isEmailValidated = router.query.validated === "true";
 
   const onLoginAdmin = async (
     { user, password }: FormData,
@@ -168,6 +171,21 @@ export default function AdminLoginPage() {
               {t("subtitle")}
             </Typography>
           </Box>
+
+          {isEmailValidated && (
+            <Alert
+              severity="success"
+              icon={<CheckCircle />}
+              sx={{
+                mb: 3,
+                backgroundColor: "rgba(0, 206, 201, 0.1)",
+                color: "#00CEC9",
+                border: "1px solid rgba(0, 206, 201, 0.3)",
+              }}
+            >
+              {t("emailVerified")}
+            </Alert>
+          )}
 
           {showError && (
             <Alert

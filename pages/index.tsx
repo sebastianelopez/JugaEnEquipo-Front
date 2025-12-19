@@ -6,7 +6,7 @@ import { MobileAppPromotion } from "../components/three";
 import { HomeHero } from "../components/organisms/hero/HomeHero";
 import { Features, Community, Stats, CTA } from "../components/organisms";
 
-import mobileBackground from "../assets/mobile-background.png";
+import mobileBackground from "../assets/mobile-background.jpeg";
 import { AboutUs } from "../components/organisms/sections/AboutUs";
 
 const Home: NextPage = (props) => {
