@@ -17,6 +17,7 @@ export const getNotificationTranslationKey = (
     post_liked: "postLiked",
     post_shared: "postShared",
     post_moderated: "postModerated",
+    comment_moderated: "commentModerated",
     team_request_received: "teamRequestReceived",
     tournament_request_received: "tournamentRequestReceived",
     team_request_accepted: "teamRequestAccepted",
