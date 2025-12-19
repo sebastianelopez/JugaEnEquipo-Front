@@ -116,6 +116,32 @@ export const userService = {
     return response.data;
   },
 
+  updateUserNames: async (
+    id: string,
+    namesData: {
+      firstname: string;
+      lastname: string;
+      username: string;
+      email: string;
+    }
+  ): Promise<ServiceResult<User>> => {
+    try {
+      const token = await getToken();
+      const response = await api.put<UserResponse>(
+        `/user/${id}/names`,
+        namesData,
+        token
+      );
+      return { ok: true, data: response.data };
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update user names";
+      return { ok: false, errorMessage: message, error };
+    }
+  },
+
   deleteUser: async (id: string) => {
     const token = await getToken();
     return api.delete<void>(`/user/${id}`, token);
