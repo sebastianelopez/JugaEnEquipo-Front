@@ -19,12 +19,13 @@ import {
   Login as LoginIcon,
   Visibility,
   VisibilityOff,
+  CheckCircle,
 } from "@mui/icons-material";
 import { Form, Formik } from "formik";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import NextLink from "next/link";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import * as Yup from "yup";
 import logo from "../../../assets/juga-en-equipo_ISO-1-1.png";
 import { loginSafe, logout } from "../../../services/auth.service";
@@ -47,6 +48,18 @@ export const LoginForm = () => {
   const [showError, setShowError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isEmailValidated, setIsEmailValidated] = useState(false);
+
+  useEffect(() => {
+    // Check both router.query and window.location for the validated parameter
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const validated = searchParams.get("validated");
+      setIsEmailValidated(validated === "true");
+    } else if (router.isReady) {
+      setIsEmailValidated(router.query.validated === "true");
+    }
+  }, [router.isReady, router.query.validated]);
 
   const onLoginUser = async (
     { email, password }: FormData,
@@ -182,6 +195,21 @@ export const LoginForm = () => {
             {t("subtitle")}
           </Typography>
         </Box>
+
+        {isEmailValidated && (
+          <Alert
+            severity="success"
+            icon={<CheckCircle />}
+            sx={{
+              mb: 3,
+              backgroundColor: alpha(theme.palette.success.main, 0.1),
+              color: theme.palette.success.main,
+              border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`,
+            }}
+          >
+            {t("emailVerified")}
+          </Alert>
+        )}
 
         {showError && (
           <Alert
