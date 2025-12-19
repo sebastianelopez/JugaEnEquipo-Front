@@ -269,7 +269,7 @@ export default function AdminUsers() {
                           fontWeight: 600,
                         }}
                       >
-                        {t("common.user")}
+                        {tCommon("user")}
                       </TableCell>
                       <TableCell
                         sx={{
@@ -301,7 +301,7 @@ export default function AdminUsers() {
                           fontWeight: 600,
                         }}
                       >
-                        {t("common.actions")}
+                        {tCommon("actions")}
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -454,7 +454,7 @@ export default function AdminUsers() {
           <DialogContent sx={{ background: "#2D3436", pt: 3 }}>
             <Box sx={{ mb: 2 }}>
               <Typography sx={{ color: "rgba(255,255,255,0.7)", mb: 1 }}>
-                {t("common.user")}: @{selectedUser?.username}
+                {tCommon("user")}: @{selectedUser?.username}
               </Typography>
               <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
                 Email: {selectedUser?.email}

@@ -159,6 +159,36 @@ export const CommentSection = forwardRef<CommentSectionHandle, Props>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [expanded, postId]);
 
+    useEffect(() => {
+      const handleCommentModerated = (
+        event: CustomEvent<{ commentId: string; postId?: string }>
+      ) => {
+        // Remove comment if postId matches, or if postId is not provided (filter by commentId only)
+        const shouldRemove = 
+          event.detail.commentId &&
+          (!event.detail.postId || event.detail.postId === postId);
+        
+        if (shouldRemove) {
+          setComments((prevComments) =>
+            prevComments.filter((comment) => comment.id !== event.detail.commentId)
+          );
+        }
+      };
+
+      if (typeof window !== "undefined") {
+        window.addEventListener(
+          "commentModerated",
+          handleCommentModerated as EventListener
+        );
+        return () => {
+          window.removeEventListener(
+            "commentModerated",
+            handleCommentModerated as EventListener
+          );
+        };
+      }
+    }, [postId]);
+
     return (
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <Box

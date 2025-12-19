@@ -91,7 +91,7 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
           (n) => n.type === "new_message"
         );
         const otherNotifications = allNotifications.filter(
-          (n) => n.type !== "new_message" && n.type !== "post_moderated"
+          (n) => n.type !== "new_message" && n.type !== "post_moderated" && n.type !== "comment_moderated"
         );
 
         dispatch({
@@ -170,11 +170,11 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
                 // Only show once per notification ID to avoid duplicates
                 if (!processedModerationNotificationsRef.current.has(notification.id)) {
                   processedModerationNotificationsRef.current.add(notification.id);
-                  
+
                   // Add notification temporarily to show in snackbar
                   // It will be automatically removed after being displayed
                   addNotification(notification);
-                  
+
                   // Emit custom event to remove optimistic post if postId is available
                   if (notification.postId) {
                     const removePostEvent = new CustomEvent("postModerated", {
@@ -184,7 +184,7 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
                       window.dispatchEvent(removePostEvent);
                     }
                   }
-                  
+
                   // Clean up old processed notifications (keep last 100)
                   if (processedModerationNotificationsRef.current.size > 100) {
                     const idsArray = Array.from(processedModerationNotificationsRef.current);
@@ -192,7 +192,7 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
                       idsArray.slice(-100)
                     );
                   }
-                  
+
                   // Remove notification from list after snackbar is shown (12 seconds)
                   setTimeout(() => {
                     dispatch({
@@ -202,6 +202,53 @@ export const NotificationProvider: FC<PropsWithChildren> = ({ children }) => {
                   }, 12000);
                 }
                 // Don't add post_moderated notifications to the permanent list - return early
+                return;
+              }
+
+              // Handle comment_moderated notifications - show snackbar to user and remove optimistic comment
+              if (notification.type === "comment_moderated") {
+                // Only show once per notification ID to avoid duplicates
+                if (!processedModerationNotificationsRef.current.has(notification.id)) {
+                  processedModerationNotificationsRef.current.add(notification.id);
+
+                  // Add notification temporarily to show in snackbar
+                  // It will be automatically removed after being displayed
+                  addNotification(notification);
+
+                  // Emit custom event to remove optimistic comment if commentId is available
+                  if (notification.commentId) {
+                    const removeCommentEvent = new CustomEvent("commentModerated", {
+                      detail: { 
+                        commentId: notification.commentId, 
+                        postId: notification.postId || undefined 
+                      },
+                    });
+                    if (typeof window !== "undefined") {
+                      // Dispatch immediately and also after a small delay to ensure comment section is ready
+                      window.dispatchEvent(removeCommentEvent);
+                      setTimeout(() => {
+                        window.dispatchEvent(removeCommentEvent);
+                      }, 100);
+                    }
+                  }
+
+                  // Clean up old processed notifications (keep last 100)
+                  if (processedModerationNotificationsRef.current.size > 100) {
+                    const idsArray = Array.from(processedModerationNotificationsRef.current);
+                    processedModerationNotificationsRef.current = new Set(
+                      idsArray.slice(-100)
+                    );
+                  }
+
+                  // Remove notification from list after snackbar is shown (12 seconds)
+                  setTimeout(() => {
+                    dispatch({
+                      type: "[Notification] - Remove notification",
+                      payload: notification.id,
+                    });
+                  }, 12000);
+                }
+                // Don't add comment_moderated notifications to the permanent list - return early
                 return;
               }
               

@@ -48,7 +48,7 @@ import type { GetStaticPropsContext } from "next";
 import { fileToBase64 } from "../../../utils/imageFileUtils";
 import { gameService } from "../../../services/game.service";
 import { Game } from "../../../interfaces/game";
-import { Formik, Form } from "formik";
+import { Formik, Form, FormikProps } from "formik";
 import * as Yup from "yup";
 import { MyTextInput, MySelect, MyDateTimePicker } from "../../../components/atoms";
 import dayjs from "dayjs";
@@ -94,6 +94,7 @@ export default function EventsModeration() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const formikRef = useRef<FormikProps<EventFormValues>>(null);
 
   useEffect(() => {
     loadGames();
@@ -115,6 +116,13 @@ export default function EventsModeration() {
       }
     };
   }, [page, rowsPerPage, searchName]);
+
+  // Update form image field when imagePreview changes
+  useEffect(() => {
+    if (imagePreview && formikRef.current) {
+      formikRef.current.setFieldValue("image", imagePreview);
+    }
+  }, [imagePreview]);
 
   const loadGames = async () => {
     try {
@@ -552,6 +560,7 @@ export default function EventsModeration() {
           </DialogTitle>
           <DialogContent sx={{ background: "#2D3436", pt: 3 }}>
             <Formik
+              innerRef={formikRef}
               initialValues={initialValues}
               validationSchema={validationSchema}
               onSubmit={async (values, { setFieldValue }) => {
@@ -571,13 +580,6 @@ export default function EventsModeration() {
               }}
             >
               {({ setFieldValue, values, isValid, isSubmitting }) => {
-                // Update image field when imagePreview changes
-                useEffect(() => {
-                  if (imagePreview) {
-                    setFieldValue("image", imagePreview);
-                  }
-                }, [imagePreview, setFieldValue]);
-
                 return (
                   <Form>
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
