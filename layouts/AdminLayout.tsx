@@ -75,11 +75,14 @@ export const AdminLayout: FC<Props> = ({ children, title }) => {
   }, [pathname, router]); */
 
   const handleLogout = () => {
-    // Remove admin token from localStorage
-    localStorage.removeItem("adminToken");
-    // Remove auth cookies
-    Cookies.remove("token");
-    Cookies.remove("refreshToken");
+    // Remove admin tokens from cookies
+    Cookies.remove("adminToken");
+    Cookies.remove("adminRefreshToken");
+    // Remove admin token from localStorage if it exists (for safety)
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminRefreshToken");
+    }
     // Redirect to admin login
     router.push("/admin/login");
   };
