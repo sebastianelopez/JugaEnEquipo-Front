@@ -86,8 +86,8 @@ export const NotificationPopup: React.FC = () => {
     }
     setOpen(false);
 
-    // Remove post_moderated notifications immediately when snackbar closes
-    if (currentNotification?.type === "post_moderated") {
+    // Remove moderation notifications immediately when snackbar closes
+    if (currentNotification?.type === "post_moderated" || currentNotification?.type === "comment_moderated") {
       removeNotification(currentNotification.id);
     }
 
@@ -137,7 +137,9 @@ export const NotificationPopup: React.FC = () => {
     currentNotification.read === undefined ? false : currentNotification.read;
 
   const isPostModerated = currentNotification.type === "post_moderated";
-  const autoHideDuration = isPostModerated ? 12000 : 5000; // 12 seconds for post_moderated, 5 seconds for others
+  const isCommentModerated = currentNotification.type === "comment_moderated";
+  const isModerationNotification = isPostModerated || isCommentModerated;
+  const autoHideDuration = isModerationNotification ? 12000 : 5000; // 12 seconds for moderation notifications, 5 seconds for others
 
   return (
     <Snackbar
@@ -152,25 +154,25 @@ export const NotificationPopup: React.FC = () => {
     >
       <Alert
         onClose={handleClose}
-        severity={isPostModerated ? "error" : "info"}
+        severity={isModerationNotification ? "error" : "info"}
         icon={false}
         sx={{
           minWidth: 320,
           maxWidth: 400,
           width: "100%",
           cursor: "pointer",
-          backgroundColor: isPostModerated 
-            ? theme.palette.mode === "dark" 
+          backgroundColor: isModerationNotification
+            ? theme.palette.mode === "dark"
               ? "rgba(211, 47, 47, 0.15)" // Dark red background for dark mode
               : "rgba(244, 67, 54, 0.1)" // Light red background for light mode
             : theme.palette.background.paper,
           color: theme.palette.text.primary,
-          border: isPostModerated
+          border: isModerationNotification
             ? `1px solid ${theme.palette.error.main}`
             : `1px solid ${theme.palette.primary.main}`,
           boxShadow: theme.shadows[4],
           "&:hover": {
-            backgroundColor: isPostModerated
+            backgroundColor: isModerationNotification
               ? theme.palette.mode === "dark"
                 ? "rgba(211, 47, 47, 0.25)"
                 : "rgba(244, 67, 54, 0.15)"
@@ -213,7 +215,7 @@ export const NotificationPopup: React.FC = () => {
             color: theme.palette.text.primary,
           }}
         >
-          {currentNotification.type !== "post_moderated" && (
+          {currentNotification.type !== "post_moderated" && currentNotification.type !== "comment_moderated" && (
             <Avatar
               alt={currentNotification.username}
               src={currentNotification.profileImage || "/images/user-placeholder.png"}
