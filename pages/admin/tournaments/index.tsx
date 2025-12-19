@@ -835,8 +835,21 @@ export default function TournamentsModeration() {
           onClose={() => setCreateDialogOpen(false)}
           maxWidth="md"
           fullWidth
+          PaperProps={{
+            sx: {
+              background: "linear-gradient(135deg, #2D3436 0%, #1A1A2E 100%)",
+              border: "1px solid rgba(108, 92, 231, 0.3)",
+            },
+          }}
         >
-          <DialogTitle sx={{ background: "#2D3436", color: "#fff" }}>
+          <DialogTitle
+            sx={{
+              background: "linear-gradient(135deg, #6C5CE7 0%, #5B4BCF 100%)",
+              color: "#fff",
+              fontWeight: "bold",
+              py: 2,
+            }}
+          >
             {t("createOfficial")}
           </DialogTitle>
           <DialogContent sx={{ background: "#2D3436", pt: 3 }}>
@@ -847,12 +860,19 @@ export default function TournamentsModeration() {
               onSubmit={handleCreateTournament}
               submitting={creatingTournament}
               isAdminForm={true}
+              whiteText={true}
             />
           </DialogContent>
-          <DialogActions sx={{ background: "#2D3436", p: 2 }}>
+          <DialogActions sx={{ background: "#2D3436", p: 2, gap: 1 }}>
             <Button
               onClick={() => setCreateDialogOpen(false)}
-              sx={{ color: "rgba(255,255,255,0.7)" }}
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                "&:hover": {
+                  bgcolor: "rgba(255,255,255,0.1)",
+                  color: "#fff",
+                },
+              }}
               disabled={creatingTournament}
             >
               {tCommon("cancel")}

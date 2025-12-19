@@ -600,6 +600,7 @@
             "image": "Tournament Image",
             "uploadImage": "Upload Image",
             "prize": "Prize",
+            "prizePlaceholder": "Enter prize (e.g., $1000, Trophy, etc.)",
             "minRank": "Minimum Rank (Optional)",
             "maxRank": "Maximum Rank (Optional)",
             "none": "None",

@@ -223,6 +223,34 @@ export interface DashboardStatsResponse {
   data: DashboardStats;
 }
 
+export interface EventSearchParams {
+  name?: string;
+  gameId?: string;
+  type?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface EventSearchResponse {
+  data: Event[];
+  metadata: SearchMetadata;
+}
+
+export interface Event {
+  id: string;
+  name: string;
+  description: string;
+  game: string;
+  gameId?: string;
+  image: string | null;
+  type: string;
+  date: string;
+  startAt?: string;
+  endAt?: string;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
 export interface BackofficeLoginData {
   id: string;
   token: string;
@@ -506,6 +534,43 @@ export const backofficeService = {
     const token = getAdminToken();
     return safeCall<DashboardStatsResponse>(() =>
       api.get<DashboardStatsResponse>("/backoffice/dashboard/stats", {}, token)
+    );
+  },
+
+  // Event endpoints
+  searchEvents: async (
+    params?: EventSearchParams
+  ): Promise<
+    ServiceResult<{ data: Event[]; metadata: SearchMetadata }>
+  > => {
+    const token = getAdminToken();
+    return safeCall<{ data: Event[]; metadata: SearchMetadata }>(() =>
+      api.get<EventSearchResponse>("/backoffice/events", params, token)
+    );
+  },
+
+  createOrUpdateEvent: async (
+    eventId: string,
+    data: {
+      name: string;
+      description: string;
+      gameId: string;
+      type: string;
+      startAt: string; // ISO 8601 format: "YYYY-MM-DDTHH:mm:ss+00:00"
+      endAt: string; // ISO 8601 format: "YYYY-MM-DDTHH:mm:ss+00:00"
+      image: string; // base64 encoded image with data URI prefix
+    }
+  ): Promise<ServiceResult<any>> => {
+    const token = getAdminToken();
+    return safeCall<any>(() =>
+      api.put<any>(`/backoffice/event/${eventId}`, data, token)
+    );
+  },
+
+  deleteEvent: async (eventId: string): Promise<ServiceResult<void>> => {
+    const token = getAdminToken();
+    return safeCall<void>(() =>
+      api.delete<void>(`/backoffice/event/${eventId}`, token)
     );
   },
 };

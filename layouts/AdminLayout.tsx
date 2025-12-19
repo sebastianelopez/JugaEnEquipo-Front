@@ -18,6 +18,7 @@ import {
   EmojiEvents,
   Logout,
   Dashboard,
+  Event,
 } from "@mui/icons-material";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -55,6 +56,11 @@ export const AdminLayout: FC<Props> = ({ children, title }) => {
       title: t("tournaments"),
       icon: <EmojiEvents />,
       path: "/admin/tournaments",
+    },
+    {
+      title: t("events"),
+      icon: <Event />,
+      path: "/admin/events",
     },
   ];
 
