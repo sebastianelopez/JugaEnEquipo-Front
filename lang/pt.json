@@ -219,7 +219,8 @@
         "existing-account": "Não tem uma conta ainda?",
         "requiredError": "Obrigatório",
         "emailError":"Verifique o formato do e-mail",
-        "forgotPasswordLink": "Esqueceu sua senha?"
+        "forgotPasswordLink": "Esqueceu sua senha?",
+        "emailVerified": "Seu email foi verificado com sucesso. Agora você pode prosseguir para fazer login."
     },
     "ForgotPassword":{
         "title": "Recuperar Senha",
@@ -815,7 +816,8 @@
             "posts": "Posts",
             "hashtags": "Hashtags",
             "teams": "Equipes",
-            "tournaments": "Torneios"
+            "tournaments": "Torneios",
+            "events": "Eventos"
         },
         "login": {
             "title": "Login de Administrador",
@@ -824,7 +826,8 @@
             "password": "Senha",
             "loginButton": "Entrar",
             "loginFailed": "Falha no login",
-            "error": "Ocorreu um erro inesperado"
+            "error": "Ocorreu um erro inesperado",
+            "emailVerified": "Seu email foi verificado com sucesso. Agora você pode prosseguir para fazer login."
         },
         "dashboard": {
             "title": "Dashboard",
@@ -985,6 +988,43 @@
             "errorCreating": "Erro ao criar torneio",
             "noTournamentsFound": "Nenhum torneio encontrado",
             "errorLoading": "Erro ao carregar torneios"
+        },
+        "events": {
+            "title": "Gerenciamento de Eventos",
+            "searchName": "Buscar por nome...",
+            "create": "Criar Evento",
+            "event": "Evento",
+            "game": "Jogo",
+            "type": "Tipo",
+            "presencial": "Presencial",
+            "online": "Online",
+            "dates": "Datas",
+            "name": "Nome",
+            "namePlaceholder": "Digite o nome do evento",
+            "nameRequired": "Nome é obrigatório",
+            "nameMaxLength": "Nome deve ter menos de 100 caracteres",
+            "description": "Descrição",
+            "descriptionPlaceholder": "Digite a descrição do evento",
+            "descriptionRequired": "Descrição é obrigatória",
+            "descriptionMaxLength": "Descrição deve ter menos de 1000 caracteres",
+            "gameRequired": "Jogo é obrigatório",
+            "typeRequired": "Tipo é obrigatório",
+            "startAt": "Data de Início",
+            "startAtRequired": "Data de início é obrigatória",
+            "endAt": "Data de Fim",
+            "endAtRequired": "Data de fim é obrigatória",
+            "endAtAfterStart": "Data de fim deve ser posterior à data de início",
+            "image": "Imagem",
+            "imageRequired": "Imagem é obrigatória",
+            "uploadImage": "Enviar Imagem",
+            "creating": "Criando...",
+            "delete": "Excluir",
+            "deleteConfirmation": "Tem certeza de que deseja excluir este evento?",
+            "errorLoading": "Erro ao carregar eventos",
+            "errorCreating": "Erro ao criar evento",
+            "errorDeleting": "Erro ao excluir evento",
+            "errorImageConversion": "Erro ao converter imagem",
+            "noEventsFound": "Nenhum evento encontrado"
         },
         "common": {
             "loading": "Carregando...",
