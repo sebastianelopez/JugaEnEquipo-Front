@@ -19,6 +19,7 @@ interface SettingsProfileProps {
 interface ProfileFormData {
   firstName: string;
   lastName: string;
+  username: string;
   email: string;
 }
 
@@ -33,6 +34,7 @@ export const SettingsProfile: FC<SettingsProfileProps> = ({ onSave }) => {
       const data: ProfileFormData = {
         firstName: formData.get("firstName") as string,
         lastName: formData.get("lastName") as string,
+        username: formData.get("username") as string,
         email: formData.get("email") as string,
       };
       onSave?.(data);
@@ -56,6 +58,7 @@ export const SettingsProfile: FC<SettingsProfileProps> = ({ onSave }) => {
               label={t("firstName")}
               defaultValue={user?.firstname || ""}
               variant="outlined"
+              InputLabelProps={{ shrink: true }}
             />
             <TextField
               fullWidth
@@ -63,6 +66,7 @@ export const SettingsProfile: FC<SettingsProfileProps> = ({ onSave }) => {
               label={t("lastName")}
               defaultValue={user?.lastname || ""}
               variant="outlined"
+              InputLabelProps={{ shrink: true }}
             />
             <TextField
               fullWidth
@@ -72,6 +76,7 @@ export const SettingsProfile: FC<SettingsProfileProps> = ({ onSave }) => {
               variant="outlined"
               disabled
               helperText={t("usernameHelperText")}
+              InputLabelProps={{ shrink: true }}
             />
             <TextField
               fullWidth
@@ -79,7 +84,10 @@ export const SettingsProfile: FC<SettingsProfileProps> = ({ onSave }) => {
               label={t("email")}
               defaultValue={user?.email || ""}
               variant="outlined"
+              disabled
               type="email"
+              helperText={t("emailHelperText")}
+              InputLabelProps={{ shrink: true }}
             />
           </Stack>
         </Grid>

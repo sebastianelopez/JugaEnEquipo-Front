@@ -40,7 +40,7 @@ function TabPanel(props: TabPanelProps) {
 const SettingsPage: NextPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const t = useTranslations("Settings");
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const { showError, showSuccess } = useFeedback();
 
   const handleTabChange = useCallback(
@@ -50,9 +50,51 @@ const SettingsPage: NextPage = () => {
     []
   );
 
-  const handleProfileSave = useCallback((data: any) => {
-    // TODO: Implement profile update logic
-  }, []);
+  const handleProfileSave = useCallback(
+    async (data: {
+      firstName: string;
+      lastName: string;
+      username: string;
+      email: string;
+    }) => {
+      if (!user?.id) {
+        const errorMessage = t("profileUpdateErrorMessage");
+        showError({
+          title: t("profileUpdateError"),
+          message: errorMessage,
+        });
+        throw new Error(errorMessage);
+      }
+
+      const result = await userService.updateUserNames(user.id, {
+        firstname: data.firstName,
+        lastname: data.lastName,
+        username: data.username,
+        email: data.email,
+      });
+
+      if (!result.ok) {
+        const errorMessage =
+          result.errorMessage || t("profileUpdateErrorMessage");
+        showError({
+          title: t("profileUpdateError"),
+          message: errorMessage,
+        });
+        throw new Error(errorMessage);
+      }
+
+      // Update user context with the updated user data
+      if (result.data) {
+        setUser(result.data);
+      }
+
+      showSuccess({
+        title: t("profileUpdateSuccess"),
+        message: t("profileUpdateSuccessMessage"),
+      });
+    },
+    [user, setUser, showError, showSuccess, t]
+  );
 
   const handlePasswordUpdate = useCallback(
     async (data: {
